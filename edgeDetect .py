@@ -43,12 +43,40 @@ while True:
             second_longest_contour = contour
         
     # Highlight the longest edge
-    frame_with_longest_contour = original_frame.copy()
+    frame_contours = original_frame.copy()
 
     if longest_contour is not None:
-        cv.drawContours(frame_with_longest_contour, [longest_contour], -1, (0, 255, 0), 2)
-        cv.drawContours(frame_with_longest_contour, [second_longest_contour], -1, (0, 0, 255), 2)
-        cv.imshow('Longest Edge', frame_with_longest_contour)        
+
+        cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 2)
+        #cv.line(frame_contours, (0,500),  (1000,500) , (255, 255, 255), 2)
+        #cv.line(frame_contours, (500,0),  (500,1000) , (255, 255, 255), 2)
+        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 2)
+
+        x0, y0 = longest_contour[0][0]
+        x1, y1 = longest_contour[1][0]
+        x2, y2 = longest_contour[2][0]
+
+        m=(y2-y0)/(x2-x0)
+        mTan=-1/m
+        xTan=x0+2
+        yTan=int(mTan*(xTan-x0)+y0)
+        
+        cv.line(frame_contours, (x0,y0),  (xTan,yTan) , (255, 255, 255), 2)
+
+        cv.putText(frame_contours, str(mTan), (x0+10,y0-10), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+
+        #coord0=str(x0)+","+str(y0)
+        #cv.putText(frame_contours, coord0, (x0+10,y0-10), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+
+        #coord1=str(x1)+","+str(y1)
+        #cv.putText(frame_contours, coord1, (x1+10,y1-10), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+
+        
+        cv.circle(frame_contours, (x0, y0),3, (0, 0, 0), -1)
+        cv.circle(frame_contours, (x1, y1),3, (0, 0, 0), -1)    
+
+
+        cv.imshow('Longest Edge', frame_contours)        
     else:
         cv.imshow('Longest Edge', original_frame)
 
