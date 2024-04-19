@@ -25,7 +25,7 @@ while True:
     cv.imshow('Canny Edge', canny)
 
     # Find contours
-    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
     
     print(len(contours))
 
@@ -42,6 +42,7 @@ while True:
             max_length = length  
             longest_contour = contour
         elif length > second_max_length:
+            second_max_length = length
             second_longest_contour = contour
 
     if second_longest_contour is not None:     
