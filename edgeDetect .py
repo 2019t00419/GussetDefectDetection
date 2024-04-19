@@ -26,8 +26,6 @@ while True:
 
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
-    
-    print(len(contours))
 
     # Find the longest contour
     max_length = 0
@@ -37,33 +35,22 @@ while True:
 
     for contour in contours:
         length = cv.arcLength(contour, closed=True)
-        print(length)
         if length > max_length:
             max_length = length  
             longest_contour = contour
         elif length > second_max_length:
             second_max_length = length
             second_longest_contour = contour
-
-    if second_longest_contour is not None:     
-        print("second longest edge is available")
-    else:
-        print("second longest edge is not available")
         
     # Highlight the longest edge
     frame_with_longest_contour = original_frame.copy()
-    frame_with_second_longest_contour = original_frame.copy()
 
     if longest_contour is not None:
         cv.drawContours(frame_with_longest_contour, [longest_contour], -1, (0, 255, 0), 2)
+        cv.drawContours(frame_with_longest_contour, [second_longest_contour], -1, (0, 0, 255), 2)
         cv.imshow('Longest Edge', frame_with_longest_contour)        
     else:
         cv.imshow('Longest Edge', original_frame)
-    if second_longest_contour is not None:
-        cv.drawContours(frame_with_second_longest_contour, [second_longest_contour], -1, (0, 0, 255), 2)
-        cv.imshow('second_Longest Edge', frame_with_second_longest_contour)        
-    else:
-        cv.imshow('second_Longest Edge', original_frame)
 
     # Wait for 'x' key to exit
     key = cv.waitKey(5)
