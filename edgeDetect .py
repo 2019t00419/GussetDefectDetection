@@ -2,21 +2,22 @@ import cv2 as cv
 import numpy as np
 import os
 
-camera= cv.VideoCapture(0)
+
+#camera= cv.VideoCapture(0)
 
 # Check if the file exists
-#file_path = 'gusset.jpg'
-#if not os.path.exists(file_path):
-    #print("Error: File '{}' not found.".format(file_path))
-    #exit()
+file_path = 'gusset.jpg'
+if not os.path.exists(file_path):
+    print("Error: File '{}' not found.".format(file_path))
+    exit()
 
 # Read the image
-#original_frame = cv.imread(file_path)
+original_frame = cv.imread(file_path)
 threshold1=200
 threshold2=400
 while True:
     
-    _,original_frame=camera.read()
+    #_,original_frame=camera.read()
     #cv.imshow('Original Image', original_frame)
 
     # Apply Laplacian edge detection
@@ -59,63 +60,41 @@ while True:
 
         x0, y0 = longest_contour[0][0]
         x1, y1 = longest_contour[1][0]
-        x2, y2 = longest_contour[2][0]
 
-
-        m=(y2-y0)/(x2-x0)
-        mTan=-1/m
-        xTan=x1+2
-        yTan=int(mTan*(xTan-x1)+y1)
         
-        cv.line(frame_contours, (x1,y1),  (xTan,yTan) , (255, 255, 255), 2)
+        xa, ya = second_longest_contour[0][0]
 
-        cv.putText(frame_contours, "Slope of the tangent is "+str(mTan), (100,100), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
-        cv.putText(frame_contours, str(x1)+","+str(y1), (x1,y1), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+        if(x1-x0 !=0):
+            m_tangent = (-y1+y0)/(x1-x0)
+            c_tangent = y0-(m_tangent*x0)
+            eqn="y = "+ str(m_tangent)+"x + "+ str(c_tangent)
+            distance = ((m_tangent*xa)-ya+c_tangent)/(np.sqrt((m_tangent*m_tangent)+1))
+            x_approx0 = 250
+            y_approx0 = int((m_tangent*x_approx0)+c_tangent)
+            x_approx1 = 750
+            y_approx1 = int((m_tangent*x_approx1)+c_tangent)
+
+            m_normal = -1/m_tangent
+            c_normal = y0-(m_normal*x0)
+
+
+            
+            cv.line(frame_contours, (x_approx0,y_approx0),  (x_approx1,y_approx1) , (255, 255, 255), 2)
+        else:
+            eqn="x = "+ str(x0)
+
+
+        
+        #Equation of the line
+        cv.putText(frame_contours, "Equation of the outer contour at ("+ str(x0)+","+ str(y0)+ ") and ("+ str(x1)+","+ str(y1) +" is ", (100,100), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+        cv.putText(frame_contours, eqn, (100,140), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Distance is ", (100,160), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+        cv.putText(frame_contours, str(distance), (100,190), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+        #cv.putText(frame_contours, str(x1)+","+str(y1), (x1,y1), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
         #cv.putText(frame_contours, str(xTan)+","+str(yTan), (xTan,yTan), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
        
         cv.circle(frame_contours, (x1, y1),3, (0, 0, 0), -1)
-
-        xa,ya=second_longest_contour[0][0]
-        xUpLimit,yUpLimit=1000000,1000000
-        xDownLimit,yDownLimit=-1000000,-1000000
-        itr=0
-        upLimitPoint=0
-
-        for point in second_longest_contour:
-            xTemp, yTemp = point[0] 
-            itr=itr+1
-            if(xTemp>x1):
-                if(xTemp<xUpLimit):
-                    xUpLimit=xTemp
-                    yUpLimit=yTemp
-                    upLimitPoint=itr
-            elif(xTemp==x1):
-                xa=xTemp
-                ya=yTemp
-                upLimitPoint=itr
-        if(xa!=x1):
-            xDownLimit,yDownLimit=second_longest_contour[upLimitPoint-1][0]
-
-            #mNew=(yUpLimit-yDownLimit)/(xUpLimit-xDownLimit)
-            #ya=int(mNew*(x1-xDownLimit)+yDownLimit)
-            xa=x1
-            
-        
-        #cv.putText(frame_contours, "x upper limit"+str(xUpLimit)+", x lower limit"+str(xDownLimit), (300, 300), cv.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 2, cv.LINE_AA)
-        #print("ya is "+str(ya))
-
-        
-        cv.circle(frame_contours, (xUpLimit, yUpLimit), 3, (0, 0, 0), -1)
-        cv.putText(frame_contours, "Upper Limit"+ str(xUpLimit)+","+str(yUpLimit), (xUpLimit, yUpLimit-20), cv.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 2, cv.LINE_AA)
-
-        
-        cv.circle(frame_contours, (xDownLimit, yDownLimit), 3, (0, 0, 0), -1)
-        cv.putText(frame_contours, "Lower Limit"+str(xDownLimit)+","+str(yDownLimit), (xDownLimit, yDownLimit+20), cv.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 2, cv.LINE_AA)
-
-
-        cv.circle(frame_contours, (xa, ya), 3, (0, 0, 0), -1)
-        cv.putText(frame_contours, str(xa)+","+str(ya), (xa, ya), cv.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 2, cv.LINE_AA)
-
+        cv.circle(frame_contours, (xa, ya),3, (0, 0, 0), -1)
 
         cv.imshow('Longest Edge', frame_contours)        
     else:
