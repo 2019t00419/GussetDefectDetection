@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import os
-
+from fillCoordinates import fill_coordinates
 
 #camera= cv.VideoCapture(0)
 
@@ -51,156 +51,18 @@ while True:
     frame_contours = original_frame.copy()
 
     if longest_contour is not None:
+        cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+        longest_contour=fill_coordinates(longest_contour)
+        for coordinates in longest_contour:
+            x, y = coordinates[0]  # Extract x and y coordinates from the point
+            cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
 
-        cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 2)
-        #cv.line(frame_contours, (0,500),  (1000,500) , (255, 255, 255), 2)
-        #cv.line(frame_contours, (500,0),  (500,1000) , (255, 255, 255), 2)
     if second_longest_contour is not None:    
-        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 2)
-
-    if longest_contour is not None and second_longest_contour is not None:    
-
-        insert_index=0
-        last_x, last_y = longest_contour[len(longest_contour) - 1][0]
-
-        for coordinates in longest_contour:
-            next_x,next_y=coordinates[0]
-            if(next_x-last_x < -1 or next_x-last_x > 1) and (next_y - last_y ==0):
-                if next_x > last_x:
-                    new_x = next_x-1
-                    new_y = last_y
-                    while new_x > last_x:
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x-1
-                                
-                else:
-                    new_x = next_x+1
-                    new_y = next_y
-                    while new_x < last_x:
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x+1 
-                                    
-            #vertical case
-            elif(next_y-last_y < -1 or next_y-last_y > 1) and (next_x - last_x == 0):
-                if next_y > last_y:
-                    new_y = next_y-1
-                    new_x = last_x
-                    while new_y > last_y:
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_y = new_y-1
-                                
-                else:
-                    new_x = next_x
-                    new_y = next_y+1
-                    while new_y < last_y:
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_y = new_y+1
-                                
-            #angled case    
-            elif(next_x-last_x < -1 or next_x-last_x > 1) and (next_y-last_y < -1 or next_y-last_y > 1):
-
-                #print(str(next_x)+","+str(next_y))
-                #print(str(last_x)+","+str(last_y))
-                line_gradient = ( (next_y - last_y)/(next_x-last_x) )
-                line_intercept = ( next_y-(line_gradient*next_x))
-
-                if next_x > last_x:
-                        
-                    new_y = next_y
-                    new_x = next_x-1
-                    while new_x > last_x:
-                        new_y = (line_gradient*new_x)+line_intercept
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x-1
-                                
-                else:
-                    new_x = next_x+1
-                    new_y = next_y
-                    while new_x < last_x:
-                        new_y = (line_gradient*new_x)+line_intercept
-                        longest_contour = np.insert(longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x+1                            
-            #print(str(next_x)+","+str(next_y))
-            #print(str(last_x)+","+str(last_y))
-                
-            insert_index=insert_index+1    
-            last_y = next_y
-            last_x = next_x
-        for coordinates in longest_contour:
-            x, y = coordinates[0]  # Extract x and y coordinates from the point
-            cv.circle(frame_contours, (x, y), 2, (0, 0, 255), -1)
-
-#second contour
-
-        insert_index=0
-        last_x, last_y = second_longest_contour[len(second_longest_contour) - 1][0]
-
-        for coordinates in second_longest_contour:
-            next_x,next_y=coordinates[0]
-            if(next_x-last_x < -1 or next_x-last_x > 1) and (next_y - last_y ==0):
-                if next_x > last_x:
-                    new_x = next_x-1
-                    new_y = last_y
-                    while new_x > last_x:
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x-1
-                                
-                else:
-                    new_x = next_x+1
-                    new_y = next_y
-                    while new_x < last_x:
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x+1 
-                                    
-            #vertical case
-            elif(next_y-last_y < -1 or next_y-last_y > 1) and (next_x - last_x == 0):
-                if next_y > last_y:
-                    new_y = next_y-1
-                    new_x = last_x
-                    while new_y > last_y:
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_y = new_y-1
-                                
-                else:
-                    new_x = next_x
-                    new_y = next_y+1
-                    while new_y < last_y:
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_y = new_y+1
-                                
-            #angled case    
-            elif(next_x-last_x < -1 or next_x-last_x > 1) and (next_y-last_y < -1 or next_y-last_y > 1):
-
-                #print(str(next_x)+","+str(next_y))
-                #print(str(last_x)+","+str(last_y))
-                line_gradient = ( (next_y - last_y)/(next_x-last_x) )
-                line_intercept = ( next_y-(line_gradient*next_x))
-
-                if next_x > last_x:
-                        
-                    new_y = next_y
-                    new_x = next_x-1
-                    while new_x > last_x:
-                        new_y = (line_gradient*new_x)+line_intercept
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x-1
-                                
-                else:
-                    new_x = next_x+1
-                    new_y = next_y
-                    while new_x < last_x:
-                        new_y = (line_gradient*new_x)+line_intercept
-                        second_longest_contour = np.insert(second_longest_contour, insert_index, [[new_x,new_y]], axis=0)
-                        new_x = new_x+1                            
-            #print(str(next_x)+","+str(next_y))
-            #print(str(last_x)+","+str(last_y))
-                
-            insert_index=insert_index+1    
-            last_y = next_y
-            last_x = next_x
+        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 3)
+        second_longest_contour=fill_coordinates(second_longest_contour)
         for coordinates in second_longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
-            cv.circle(frame_contours, (x, y), 2, (0, 255, 0), -1)
+            cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
 
 
         cv.imshow('Longest Edge', frame_contours)        
