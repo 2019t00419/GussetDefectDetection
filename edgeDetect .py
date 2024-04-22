@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 from fillCoordinates import fill_coordinates
+from fillCoordinates import measure_distance
 
 #camera= cv.VideoCapture(0)
 
@@ -49,27 +50,41 @@ while True:
         
     # Highlight the longest edge
     frame_contours = original_frame.copy()
-
+    
     if longest_contour is not None:
+        #draw contours on to the frame
         cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+        #complete the incomplete coordinates
         longest_contour=fill_coordinates(longest_contour)
+        #plot the coordinates
         for coordinates in longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
             cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
+    else:
+        cv.imshow('Edges', original_frame)
+        print("Invalid contours")
 
-    if second_longest_contour is not None:    
+    if second_longest_contour is not None: 
+        #draw contours on to the frame   
         cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 3)
+        #complete the incomplete coordinates
         second_longest_contour=fill_coordinates(second_longest_contour)
+        #plot the coordinates
         for coordinates in second_longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
             cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
 
+         
 
-        cv.imshow('Longest Edge', frame_contours)        
+    if second_longest_contour is not None and longest_contour is not None:
+        
+        measure_distance(longest_contour,second_longest_contour,frame_contours)
+        
+        cv.imshow('Edges', frame_contours) 
+        cv.imwrite("Output.jpg",frame_contours)
     else:
-        cv.imshow('Longest Edge', original_frame)
+        cv.imshow('Edges', original_frame)
         print("Invalid contours")
-    cv.imwrite("Output.jpg",frame_contours)
     # Wait for 'x' key to exit
     key = cv.waitKey(5)
     if key == ord('x'):
