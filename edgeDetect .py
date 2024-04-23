@@ -73,7 +73,7 @@ while True:
         for coordinates in second_longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
             cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
-
+        
          
 
     if second_longest_contour is not None and longest_contour is not None:
