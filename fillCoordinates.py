@@ -144,7 +144,7 @@ def measure_distance_(longest_contour,second_longest_contour,frame_contours):
 
 
 def measure_distance(longest_contour,second_longest_contour,frame_contours):
-    tolerance=0.10
+    tolerance=0.20
     thickness=0
     defective = False
     coord_index = 0
