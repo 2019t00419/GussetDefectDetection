@@ -7,6 +7,7 @@ def fill_coordinates(contour_array):
 
     for coordinates in contour_array:
         next_x,next_y=coordinates[0]
+        contour_array = np.insert(contour_array, insert_index, [[next_x,next_y]], axis=0)
         if(next_x-last_x < -1 or next_x-last_x > 1) and (next_y - last_y ==0):
             if next_x > last_x:
                 new_x = next_x-1
@@ -72,11 +73,14 @@ def fill_coordinates(contour_array):
 
 
 
-def measure_distance_old(longest_contour,second_longest_contour,frame_contours):
+def measure_distance(longest_contour,second_longest_contour,frame_contours):
     tolerance=0.15
     thickness=32
     defective = False
-    for ref_point in range(0, int(len(second_longest_contour)/2), 100):
+    count=0
+    print(len(second_longest_contour))
+    for ref_point in range(0, int((len(second_longest_contour)-1)/2), 100):
+        #print(ref_point)
         min_dist=np.linalg.norm(longest_contour[ref_point][0] - second_longest_contour[ref_point][0])
         x_outer,y_outer = longest_contour[ref_point][0]
         x_inner,y_inner = second_longest_contour[ref_point][0]
@@ -94,7 +98,8 @@ def measure_distance_old(longest_contour,second_longest_contour,frame_contours):
         else:
             color=(0,0,0)
         cv.line(frame_contours,(x_outer,y_outer),(x_inner,y_inner),color,2)
-        cv.putText(frame_contours,("d="+str(min_dist)) , (x_outer,y_outer), cv.FONT_HERSHEY_PLAIN, 1.5 , color, 2, cv.LINE_AA)
+        cv.putText(frame_contours,(str(ref_point)+": d="+str(min_dist)) , (x_outer,y_outer), cv.FONT_HERSHEY_PLAIN, 1.5 , color, 2, cv.LINE_AA)
+        count=count+1
         
     if(defective):
         cv.putText(frame_contours,("Defective") , (400,500), cv.FONT_HERSHEY_PLAIN, 2 , (0, 0, 255), 2, cv.LINE_AA)
@@ -109,7 +114,9 @@ def measure_distance_old(longest_contour,second_longest_contour,frame_contours):
 
 
 
-def measure_distance(longest_contour,second_longest_contour,frame_contours):
+
+
+def measure_distance_(longest_contour,second_longest_contour,frame_contours):
     tolerance=0.15
     thickness=32
     defective = False
@@ -134,7 +141,6 @@ def measure_distance(longest_contour,second_longest_contour,frame_contours):
     
     cv.putText(frame_contours,("predicted_distance : "+str(predicted_distance)) , (400,600), cv.FONT_HERSHEY_PLAIN, 1.5 , (255, 255, 255), 2, cv.LINE_AA)
     
-    loop_index=0
     #Find nearest points on outer edge for each inner edge point
     distance = 0.0
 
@@ -142,17 +148,26 @@ def measure_distance(longest_contour,second_longest_contour,frame_contours):
     #print(len(longest_contour))
     #print(len(second_longest_contour))       
     #print(longest_contour[len(longest_contour)-1][0])
-    
-    
+    min_index=ref_index
+    count=0
     for inner_coordinates in second_longest_contour:
-        test_index=loop_index+ref_index
-        if(test_index>(len(longest_contour)-1)):
-            test_index = test_index - (len(longest_contour))
+        min_dist=np.linalg.norm(inner_coordinates[0]-longest_contour[ref_index][0])
+        for i in range(-200,200,1):
+            test_index=ref_index+i
+            if(test_index>(len(longest_contour)-1)):
+                test_index = test_index - (len(longest_contour))
+            elif(test_index<0):
+                test_index = (len(longest_contour))+test_index
+            dist= np.linalg.norm(inner_coordinates[0]-longest_contour[test_index][0])
+            if dist<min_dist:
+                min_dist=dist
+                min_index=test_index
+            #print(str(count)+" Searching for "+str(inner_coordinates[0])+" test_index : "+str(test_index)+" Distance : "+str(dist)+" Current min : "+str(min_dist)+" Current min index : "+str(min_index))  
 
-        min_dist= np.linalg.norm(inner_coordinates[0]-longest_contour[test_index][0])
-        print(str(inner_coordinates[0])+str(longest_contour[test_index][0])+str(min_dist))        
-        cv.line(frame_contours,(inner_coordinates[0]),(longest_contour[test_index][0]),(255,0,0),2)
-        loop_index=loop_index+1
-    print("Starting point : "+str(ref_index) +" : "+ str(longest_contour[ref_index][0]))
-
+        #print(str(inner_coordinates[0])+str(longest_contour[min_index][0])+str(min_dist)+" Min_index : "+str(min_index))        
+        cv.line(frame_contours,(inner_coordinates[0]),(longest_contour[min_index][0]),(255,0,0),2)
+        ref_index=min_index
+        count=count+1
+    #print("Starting point : "+str(ref_index) +" : "+ str(longest_contour[ref_index][0]))
+    
     return
