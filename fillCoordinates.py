@@ -4,40 +4,57 @@ import numpy as np
 def fill_coordinates(contour_array):
     insert_index=0
     last_x, last_y = contour_array[len(contour_array) - 1][0]
-
+    new_array =contour_array
     for coordinates in contour_array:
         next_x,next_y=coordinates[0]
-        contour_array = np.insert(contour_array, insert_index, [[next_x,next_y]], axis=0)
         if(next_x-last_x < -1 or next_x-last_x > 1) and (next_y - last_y ==0):
             if next_x > last_x:
                 new_x = next_x-1
                 new_y = last_y
+                count=0
                 while new_x > last_x:
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
                     new_x = new_x-1
+                    count=count+1
+                insert_index=insert_index+count    
+                if insert_index>len(new_array)-1:
+                    break                        
                             
             else:
                 new_x = next_x+1
                 new_y = next_y
+                count=0
                 while new_x < last_x:
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
                     new_x = new_x+1 
-                                
+                    count=count+1
+                insert_index=insert_index+count     
+                if insert_index>len(new_array)-1:
+                    break                                    
         #vertical case
         elif(next_y-last_y < -1 or next_y-last_y > 1) and (next_x - last_x == 0):
             if next_y > last_y:
                 new_y = next_y-1
                 new_x = last_x
+                count=0
                 while new_y > last_y:
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
                     new_y = new_y-1
-                            
+                    count=count+1
+                insert_index=insert_index+count     
+                if insert_index>len(new_array)-1:
+                    break                                
             else:
                 new_x = next_x
                 new_y = next_y+1
+                count=0
                 while new_y < last_y:
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
                     new_y = new_y+1
+                    count=count+1
+                insert_index=insert_index+count  
+                if insert_index>len(new_array)-1:
+                    break                       
                             
         #angled case    
         elif(next_x-last_x < -1 or next_x-last_x > 1) and (next_y-last_y < -1 or next_y-last_y > 1):
@@ -51,25 +68,35 @@ def fill_coordinates(contour_array):
                     
                 new_y = next_y
                 new_x = next_x-1
+                count=0
                 while new_x > last_x:
                     new_y = (line_gradient*new_x)+line_intercept
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
                     new_x = new_x-1
+                    count=count+1
+                insert_index=insert_index+count  
+                if insert_index>len(new_array)-1:
+                    break                       
                             
             else:
                 new_x = next_x+1
                 new_y = next_y
+                count=0
                 while new_x < last_x:
                     new_y = (line_gradient*new_x)+line_intercept
-                    contour_array = np.insert(contour_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_x = new_x+1                            
+                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
+                    new_x = new_x+1  
+                    count=count+1  
+                insert_index=insert_index+count 
+                if insert_index>len(new_array)-1:
+                    break                        
         #print(str(next_x)+","+str(next_y))
         #print(str(last_x)+","+str(last_y))
             
         insert_index=insert_index+1    
         last_y = next_y
         last_x = next_x
-    return contour_array
+    return new_array
 
 
 
@@ -78,8 +105,8 @@ def measure_distance(longest_contour,second_longest_contour,frame_contours):
     thickness=32
     defective = False
     count=0
-    print(len(second_longest_contour))
-    for ref_point in range(0, int((len(second_longest_contour)-1)/2), 100):
+    #print(len(second_longest_contour))
+    for ref_point in range(0, int((len(second_longest_contour)-1)), 100):
         #print(ref_point)
         min_dist=np.linalg.norm(longest_contour[ref_point][0] - second_longest_contour[ref_point][0])
         x_outer,y_outer = longest_contour[ref_point][0]
@@ -171,3 +198,10 @@ def measure_distance_(longest_contour,second_longest_contour,frame_contours):
     #print("Starting point : "+str(ref_index) +" : "+ str(longest_contour[ref_index][0]))
     
     return
+
+
+def display(frame,cont) :
+    for i in range(0,len(cont)-1,50):
+        x,y=cont[i][0]
+        cv.putText(frame,str(i),(x,y), cv.FONT_HERSHEY_PLAIN, 1.5 , (0, 0, 0), 2, cv.LINE_AA)
+    

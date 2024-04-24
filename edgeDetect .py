@@ -3,6 +3,7 @@ import numpy as np
 import os
 from fillCoordinates import fill_coordinates
 from fillCoordinates import measure_distance
+from fillCoordinates import display
 
 #camera= cv.VideoCapture(0)
 
@@ -50,15 +51,14 @@ while True:
         
     # Highlight the longest edge
     frame_contours = original_frame.copy()
-    longest_contour1 = [ [[int(400) , int(200)]] , [[int(402) , int(200)]] , [[int(404) , int(200)]]]
     
     if longest_contour is not None:
         #draw contours on to the frame
-        cv.drawContours(frame_contours, [longest_contour1], -1, (0, 255, 0), 3)
+        cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
         #complete the incomplete coordinates
-        longest_contour1=fill_coordinates(longest_contour1)
+        longest_contour=fill_coordinates(longest_contour)
         #plot the coordinates
-        for coordinates in longest_contour1:
+        for coordinates in longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
             cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
     else:
@@ -79,8 +79,8 @@ while True:
 
     if second_longest_contour is not None and longest_contour is not None:
         
-        #measure_distance(longest_contour,second_longest_contour,frame_contours)
-        
+        measure_distance(longest_contour,second_longest_contour,frame_contours)
+        #display(frame_contours,longest_contour)
         cv.imshow('Edges', frame_contours) 
         cv.imwrite("Output.jpg",frame_contours)
     else:
@@ -90,6 +90,6 @@ while True:
     key = cv.waitKey(5)
     if key == ord('x'):
         break
-    print(longest_contour)
+
 # Release resources
 cv.destroyAllWindows()
