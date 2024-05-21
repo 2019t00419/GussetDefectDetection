@@ -4,20 +4,17 @@ import os
 from fillCoordinates import fill_coordinates
 from fillCoordinates import measure_distance
 from fillCoordinates import display
-import time
 
 #camera= cv.VideoCapture(0)
 
 # Check if the file exists
-file_path = 'gusset (5).jpg'
+file_path = 'gusset.jpg'
 if not os.path.exists(file_path):
     print("Error: File '{}' not found.".format(file_path))
     exit()
 
 # Read the image
-original_frame0 = cv.imread(file_path)
-original_frame = cv.resize(original_frame0, (960, 1280))
-
+original_frame = cv.imread(file_path)
 threshold1=200
 threshold2=300
 while True:
@@ -25,10 +22,14 @@ while True:
     #_,original_frame=camera.read()
     #cv.imshow('Original Image', original_frame)
 
+    # Apply Laplacian edge detection
+    laplace = cv.Laplacian(original_frame, cv.CV_64F)
+    laplace = np.uint8(np.absolute(laplace))
+    #cv.imshow('Laplacian Edge', laplace)
 
     # Apply Canny edge detection
     canny = cv.Canny(original_frame, threshold1, threshold2)
-    cv.imshow('Canny Edge', canny)
+    #cv.imshow('Canny Edge', canny)
 
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
@@ -38,39 +39,15 @@ while True:
     second_max_length = 0
     longest_contour = None
     second_longest_contour = None
-    relative_length0 = 0
-    relative_length1 = 0
-
-    #start_time = time.time()
 
     for contour in contours:
         length = cv.arcLength(contour, closed=True)
         if length > max_length:
-            if max_length != 0:
-                relative_length1=(length-max_length)/max_length
-                if 0.05 < relative_length1 < 0.5:
-                    second_max_length = max_length
-                    second_longest_contour = longest_contour
-                    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))
-            else:
-                second_max_length = max_length
-                second_longest_contour = longest_contour
             max_length = length  
             longest_contour = contour
-
         elif length > second_max_length:
-            if second_max_length != 0:
-                relative_length1=(max_length-length)/length
-                if 0.05 < relative_length1 < 0.5:
-                    second_max_length = length
-                    second_longest_contour = contour
-                    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))
-    print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))                
-
-
-    #end_time = time.time()
-
-    #print("Execution time = "+str(1000*(end_time-start_time))+"ms")
+            second_max_length = length
+            second_longest_contour = contour
         
     # Highlight the longest edge
     frame_contours = original_frame.copy()
