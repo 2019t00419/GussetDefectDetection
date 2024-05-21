@@ -9,18 +9,14 @@ import time
 #camera= cv.VideoCapture(0)
 
 # Check if the file exists
-file_path = 'gusset (2)1.jpg'
+file_path = 'gusset (5).jpg'
 if not os.path.exists(file_path):
     print("Error: File '{}' not found.".format(file_path))
     exit()
 
 # Read the image
-original_frame = cv.imread(file_path)
-#original_frame = cv.resize(original_frame0, (960, 1280))
-
-blurred_image = cv.GaussianBlur(original_frame, (5, 5), 0)
-# Otsu's Binarization
-_, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+original_frame0 = cv.imread(file_path)
+original_frame = cv.resize(original_frame0, (960, 1280))
 
 threshold1=200
 threshold2=300
@@ -31,7 +27,7 @@ while True:
 
 
     # Apply Canny edge detection
-    canny = cv.Canny(otsu_thresholded, threshold1, threshold2)
+    canny = cv.Canny(original_frame, threshold1, threshold2)
     cv.imshow('Canny Edge', canny)
 
     # Find contours
