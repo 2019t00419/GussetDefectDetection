@@ -16,6 +16,12 @@ if not os.path.exists(file_path):
 
 # Read the image
 original_frame = cv.imread(file_path)
+frame_height, frame_width, channels = original_frame.shape
+resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
+print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
+print("Resolution factor is : "+str(resolution_factor))
+
+
 original_frame = cv.resize(original_frame, (960, 1280))
 original_frame_resized = cv.resize(original_frame, (960, 1280))
 grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
