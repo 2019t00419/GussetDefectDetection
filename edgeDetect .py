@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 from fillCoordinates import fill_coordinates
-from fillCoordinates import measure_distance
+from fillCoordinates import measure_distance_KDTree
 from fillCoordinates import display
 import time
 
@@ -12,8 +12,8 @@ import time
 file_paths = ['gusset (5).jpg','gusset (2).jpg','gusset (4).jpg','gusset_1.jpg']
 
 
-threshold1=200
-threshold2=300
+threshold1=100
+threshold2=200
 c=1
 while True:
     file_path = "in\gusset ("+str(c)+").jpg"
@@ -25,8 +25,8 @@ while True:
     original_frame = cv.imread(file_path)
     frame_height, frame_width, channels = original_frame.shape
     resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
-    print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
-    print("Resolution factor is : "+str(resolution_factor))
+    #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
+    #print("Resolution factor is : "+str(resolution_factor))
 
 
     original_frame = cv.resize(original_frame, (960, 1280))
@@ -65,7 +65,7 @@ while True:
 
     for contour in contours:
         length = cv.arcLength(contour, closed=True)
-        print(str(length))
+        #print(str(length))
         if length > max_length:
             if max_length != 0:
                 relative_length1=(length-max_length)/max_length
@@ -86,7 +86,7 @@ while True:
                     second_max_length = length
                     second_longest_contour = contour
                     #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))
-    print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))                
+    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))                
 
 
     #end_time = time.time()
@@ -123,7 +123,7 @@ while True:
 
     if second_longest_contour is not None and longest_contour is not None:
         
-        measure_distance(longest_contour,second_longest_contour,frame_contours)
+        measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours)
         #display(frame_contours,longest_contour)
         
         frame_contours_resized = cv.resize(frame_contours, (960, 1280))

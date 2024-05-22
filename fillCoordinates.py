@@ -1,5 +1,7 @@
 import cv2 as cv
 import numpy as np
+import time
+from scipy.spatial import KDTree
 
 def fill_coordinates(contour_array):
     insert_index=0
@@ -99,8 +101,84 @@ def fill_coordinates(contour_array):
     return new_array
 
 
-def measure_distance(longest_contour,second_longest_contour,frame_contours):
-    tolerance=0.20
+
+def measure_distance_KDTree(longest_contour, second_longest_contour, frame_contours):
+    start_time = time.time()  # Start time
+    
+    tolerance = 0.25
+    defective = False
+    
+    # Convert contours to NumPy arrays for efficient computation
+    longest_contour = np.array(longest_contour)
+    second_longest_contour = np.array(second_longest_contour)
+    
+    # Get the coordinates from the contours
+    longest_coords = longest_contour[:, 0]
+    second_coords = second_longest_contour[:, 0]
+    
+    # Create a KDTree for the longest_contour
+    kdtree = KDTree(longest_coords)
+    
+    # Find the minimum distances for all points in second_longest_contour using KDTree
+    min_distances, nearest_indices = kdtree.query(second_coords)
+    
+    # Calculate the average minimum distance
+    avg_dist = np.mean(min_distances)
+    thickness = avg_dist
+
+    # Variables for tracking
+    itr_count = 0
+    sum_distances = 0
+    gap = 50
+
+    # Variables for text display coordinates
+    x_out_display, y_out_display = 0, 0
+    x_in_display, y_in_display = 0, 0
+    
+    for i, inner_coordinates in enumerate(second_coords):
+        min_dist = min_distances[i]
+        
+        sum_distances += min_dist
+        itr_count += 1
+        
+        if itr_count > gap:
+            avg_segment_dist = sum_distances / itr_count
+            sum_distances = 0
+            itr_count = 0
+            
+            if ((avg_segment_dist > thickness * (1 + tolerance)) or (avg_segment_dist < thickness * (1 - tolerance))):
+                defective = True
+                color = (0, 0, 255)
+            else:
+                color = (0, 0, 0)
+            
+            cv.putText(frame_contours, str(round(avg_segment_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 2, color, 2, cv.LINE_AA)
+            cv.line(frame_contours, (x_out_display, y_out_display), (x_in_display, y_in_display), color, 2)
+        
+        elif itr_count == gap // 2:
+            nearest_point_index = nearest_indices[i]
+            x_out_display, y_out_display = longest_coords[nearest_point_index]
+            x_in_display, y_in_display = inner_coordinates
+
+    if defective:
+        cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+    else:
+        cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
+    
+    cv.putText(frame_contours, "Thickness : " + str(thickness), (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
+
+    return
+
+
+def measure_distance_my(longest_contour,second_longest_contour,frame_contours):
+    start_time = time.time()  # Start time
+    tolerance=0.25
     thickness=0
     defective = False
     coord_index = 0
@@ -180,7 +258,11 @@ def measure_distance(longest_contour,second_longest_contour,frame_contours):
     
     cv.putText(frame_contours,("Thickness : "+ str(thickness)) , (400,575), cv.FONT_HERSHEY_PLAIN, 1.5 , (255, 255, 255), 2, cv.LINE_AA)
     cv.putText(frame_contours,("Tolerance : "+str(tolerance*100)+"%") , (400,600), cv.FONT_HERSHEY_PLAIN, 1.5 , (255, 255, 255), 2, cv.LINE_AA)
-    
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
+
     return
 
 
@@ -227,3 +309,228 @@ def measure_distance_(longest_contour,second_longest_contour,frame_contours):
     cv.putText(frame_contours,("Thickness : "+ str(thickness)) , (400,575), cv.FONT_HERSHEY_PLAIN, 1.5 , (255, 255, 255), 2, cv.LINE_AA)
     cv.putText(frame_contours,("Tolerance : "+str(tolerance)+"%") , (400,600), cv.FONT_HERSHEY_PLAIN, 1.5 , (255, 255, 255), 2, cv.LINE_AA)
     return
+
+
+
+def measure_distance_optimized(longest_contour, second_longest_contour, frame_contours):
+    start_time = time.time()  # Start time
+    
+    tolerance = 0.25
+    defective = False
+    
+    # Convert contours to NumPy arrays for efficient computation
+    longest_contour = np.array(longest_contour)
+    second_longest_contour = np.array(second_longest_contour)
+    
+    # Initialize the minimum distance with the first point calculation
+    min_dist = np.linalg.norm(longest_contour[0][0] - second_longest_contour[0][0])
+    
+    # Find the starting reference index for the shortest distance
+    dist_array = np.linalg.norm(longest_contour[:, 0] - second_longest_contour[0][0], axis=1)
+    ref_index = np.argmin(dist_array)
+    thickness = dist_array[ref_index]
+
+    # Variables for tracking
+    min_index = ref_index
+    itr_count = 0
+    sum_distances = 0
+    gap = 50
+
+    # Variables for text display coordinates
+    x_out_display, y_out_display = 0, 0
+    x_in_display, y_in_display = 0, 0
+    
+    for inner_coordinates in second_longest_contour:
+        # Calculate the distances for a range around the reference index
+        test_indices = (np.arange(ref_index-10, ref_index+10) % len(longest_contour))
+        test_points = longest_contour[test_indices][:, 0]
+        dists = np.linalg.norm(test_points - inner_coordinates[0], axis=1)
+        
+        min_dist = np.min(dists)
+        min_index = test_indices[np.argmin(dists)]
+        
+        ref_index = min_index
+        itr_count += 1
+        sum_distances += min_dist
+        
+        if itr_count > gap:
+            avg_dist = sum_distances / itr_count
+            sum_distances = 0
+            itr_count = 0
+            
+            if ((avg_dist > thickness * (1 + tolerance)) or (avg_dist < thickness * (1 - tolerance))):
+                defective = True
+                color = (0, 0, 255)
+            else:
+                color = (0, 0, 0)
+            
+            cv.putText(frame_contours, str(round(avg_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 2, color, 2, cv.LINE_AA)
+            cv.line(frame_contours, (x_out_display, y_out_display), (x_in_display, y_in_display), color, 2)
+        
+        elif itr_count == gap // 2:
+            x_out_display, y_out_display = longest_contour[min_index][0]
+            x_in_display, y_in_display = inner_coordinates[0]
+
+    if defective:
+        cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+    else:
+        cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
+    
+    cv.putText(frame_contours, "Thickness : " + str(thickness), (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
+
+    return
+
+
+
+def measure_distance_compare_mean(longest_contour, second_longest_contour, frame_contours):
+    start_time = time.time()  # Start time
+    
+    tolerance = 0.25
+    defective = False
+    
+    # Convert contours to NumPy arrays for efficient computation
+    longest_contour = np.array(longest_contour)
+    second_longest_contour = np.array(second_longest_contour)
+    
+    # Calculate distances from all points in the second_longest_contour to all points in the longest_contour
+    distances = np.zeros((len(second_longest_contour), len(longest_contour)))
+    for i, inner_coordinates in enumerate(second_longest_contour):
+        distances[i] = np.linalg.norm(longest_contour[:, 0] - inner_coordinates[0], axis=1)
+    
+    # Find the minimum distance for each point in the second_longest_contour
+    min_distances = np.min(distances, axis=1)
+    
+    # Calculate the average of these minimum distances
+    avg_dist = np.mean(min_distances)
+    
+    # Initial thickness is based on the average minimum distance
+    thickness = avg_dist
+
+    # Variables for tracking
+    itr_count = 0
+    sum_distances = 0
+    gap = 50
+
+    # Variables for text display coordinates
+    x_out_display, y_out_display = 0, 0
+    x_in_display, y_in_display = 0, 0
+    
+    for i, inner_coordinates in enumerate(second_longest_contour):
+        min_dist = min_distances[i]
+        
+        sum_distances += min_dist
+        itr_count += 1
+        
+        if itr_count > gap:
+            avg_segment_dist = sum_distances / itr_count
+            sum_distances = 0
+            itr_count = 0
+            
+            if ((avg_segment_dist > thickness * (1 + tolerance)) or (avg_segment_dist < thickness * (1 - tolerance))):
+                defective = True
+                color = (0, 0, 255)
+            else:
+                color = (0, 0, 0)
+            
+            cv.putText(frame_contours, str(round(avg_segment_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 2, color, 2, cv.LINE_AA)
+            cv.line(frame_contours, (x_out_display, y_out_display), (x_in_display, y_in_display), color, 2)
+        
+        elif itr_count == gap // 2:
+            nearest_point_index = np.argmin(distances[i])
+            x_out_display, y_out_display = longest_contour[nearest_point_index][0]
+            x_in_display, y_in_display = inner_coordinates[0]
+
+    if defective:
+        cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+    else:
+        cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
+    
+    cv.putText(frame_contours, "Thickness : " + str(thickness), (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
+
+    return
+
+
+
+def measure_distance_fast_compare_mean(longest_contour, second_longest_contour, frame_contours):
+    start_time = time.time()  # Start time
+    
+    tolerance = 0.25
+    defective = False
+    
+    # Convert contours to NumPy arrays for efficient computation
+    longest_contour = np.array(longest_contour)
+    second_longest_contour = np.array(second_longest_contour)
+    
+    # Get the coordinates from the contours
+    longest_coords = longest_contour[:, 0]
+    second_coords = second_longest_contour[:, 0]
+    
+    # Calculate the minimum distances for all points in second_longest_contour
+    dist_matrix = np.linalg.norm(longest_coords[:, np.newaxis] - second_coords, axis=2)
+    min_distances = np.min(dist_matrix, axis=0)
+    
+    # Calculate the average minimum distance
+    avg_dist = np.mean(min_distances)
+    thickness = avg_dist
+
+    # Variables for tracking
+    itr_count = 0
+    sum_distances = 0
+    gap = 50
+
+    # Variables for text display coordinates
+    x_out_display, y_out_display = 0, 0
+    x_in_display, y_in_display = 0, 0
+    
+    for i, inner_coordinates in enumerate(second_coords):
+        min_dist = min_distances[i]
+        
+        sum_distances += min_dist
+        itr_count += 1
+        
+        if itr_count > gap:
+            avg_segment_dist = sum_distances / itr_count
+            sum_distances = 0
+            itr_count = 0
+            
+            if ((avg_segment_dist > thickness * (1 + tolerance)) or (avg_segment_dist < thickness * (1 - tolerance))):
+                defective = True
+                color = (0, 0, 255)
+            else:
+                color = (0, 0, 0)
+            
+            cv.putText(frame_contours, str(round(avg_segment_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 2, color, 2, cv.LINE_AA)
+            cv.line(frame_contours, (x_out_display, y_out_display), (x_in_display, y_in_display), color, 2)
+        
+        elif itr_count == gap // 2:
+            nearest_point_index = np.argmin(dist_matrix[:, i])
+            x_out_display, y_out_display = longest_coords[nearest_point_index]
+            x_in_display, y_in_display = inner_coordinates
+
+    if defective:
+        cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
+    else:
+        cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
+    
+    cv.putText(frame_contours, "Thickness : " + str(thickness), (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
+
+    return
+
