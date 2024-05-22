@@ -9,38 +9,40 @@ import time
 #camera= cv.VideoCapture(0)
 
 # Check if the file exists
-file_path = 'gusset (5).jpg'
-if not os.path.exists(file_path):
-    print("Error: File '{}' not found.".format(file_path))
-    exit()
+file_paths = ['gusset (5).jpg','gusset (2).jpg','gusset (4).jpg','gusset_1.jpg']
 
-# Read the image
-original_frame = cv.imread(file_path)
-frame_height, frame_width, channels = original_frame.shape
-resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
-print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
-print("Resolution factor is : "+str(resolution_factor))
-
-
-original_frame = cv.resize(original_frame, (960, 1280))
-original_frame_resized = cv.resize(original_frame, (960, 1280))
-grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
-
-# Apply Gaussian Blur
-blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
-
-# Otsu's Binarization
-_, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-
-otsu_resized = cv.resize(otsu_thresholded, (960, 1280))       
-cv.imshow('otsu_thresholded', otsu_resized)
 
 threshold1=200
 threshold2=300
+c=1
 while True:
-    
-    #_,original_frame=camera.read()
-    #cv.imshow('Original Image', original_frame)
+    file_path = "in\gusset ("+str(c)+").jpg"
+    if not os.path.exists(file_path):
+        print("Error: File '{}' not found.".format(file_path))
+        exit()
+
+    # Read the image
+    original_frame = cv.imread(file_path)
+    frame_height, frame_width, channels = original_frame.shape
+    resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
+    print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
+    print("Resolution factor is : "+str(resolution_factor))
+
+
+    original_frame = cv.resize(original_frame, (960, 1280))
+    original_frame_resized = cv.resize(original_frame, (960, 1280))
+    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
+
+    # Apply Gaussian Blur
+    blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
+
+    # Otsu's Binarization
+    _, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+
+    otsu_resized = cv.resize(otsu_thresholded, (960, 1280))       
+    cv.imshow('otsu_thresholded', otsu_resized)
+        #_,original_frame=camera.read()
+        #cv.imshow('Original Image', original_frame)
 
 
     # Apply Canny edge detection
@@ -127,9 +129,9 @@ while True:
         frame_contours_resized = cv.resize(frame_contours, (960, 1280))
         cv.imshow('Edges', frame_contours_resized) 
         
-        cv.imwrite("Output.jpg",frame_contours)
-        cv.imwrite("otsu_thresholded.jpg",otsu_thresholded)
-        cv.imwrite("canny.jpg",canny)
+        cv.imwrite("out\output\Output ("+str(c)+").jpg",frame_contours)
+        cv.imwrite("out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
+        cv.imwrite("out\canny\canny ("+str(c)+").jpg",canny)
     else:
         cv.imshow('Edges', original_frame)
         print("Invalid contours")
@@ -138,5 +140,6 @@ while True:
     if key == ord('x'):
         break
 
+    c=c+1
 # Release resources
 cv.destroyAllWindows()
