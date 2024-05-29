@@ -3,6 +3,7 @@ import numpy as np
 import os
 from fillCoordinates import fill_coordinates
 from balanceOut import measure_distance_KDTree
+from contourID import identify_edges
 import time
 
 #camera= cv.VideoCapture(0)
@@ -57,44 +58,8 @@ while True:
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
     # Find the longest contour
-    max_length = 0
-    second_max_length = 0
-    longest_contour = None
-    second_longest_contour = None
-    relative_length0 = 0
-    relative_length1 = 0
+    longest_contour,second_longest_contour=identify_edges(contours)
 
-    #start_time = time.time()
-
-    for contour in contours:
-        length = cv.arcLength(contour, closed=True)
-        #print(str(length))
-        if length > max_length:
-            if max_length != 0:
-                relative_length1=(length-max_length)/max_length
-                if 0.05 < relative_length1 < 0.5:
-                    second_max_length = max_length
-                    second_longest_contour = longest_contour
-                    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))
-            else:
-                second_max_length = max_length
-                second_longest_contour = longest_contour
-            max_length = length  
-            longest_contour = contour
-
-        elif length > second_max_length:
-            if second_max_length != 0:
-                relative_length1=(max_length-length)/length
-                if 0.05 < relative_length1 < 0.5:
-                    second_max_length = length
-                    second_longest_contour = contour
-                    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))
-    #print("longest : "+str(max_length)+" second longest : "+str(second_max_length)+ " relative : "+str(relative_length1))                
-
-
-    #end_time = time.time()
-
-    #print("Execution time = "+str(1000*(end_time-start_time))+"ms")
         
     # Highlight the longest edge
     frame_contours = original_frame.copy()
