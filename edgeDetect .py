@@ -2,8 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 from fillCoordinates import fill_coordinates
-from fillCoordinates import measure_distance_KDTree
-from fillCoordinates import display
+from balanceOut import measure_distance_KDTree
 import time
 
 #camera= cv.VideoCapture(0)
@@ -14,8 +13,12 @@ file_paths = ['gusset (5).jpg','gusset (2).jpg','gusset (4).jpg','gusset_1.jpg']
 
 threshold1=100
 threshold2=200
-c=1
+c=1        
+defect_count=0
+non_defect_count=0
+
 while True:
+    start_time = time.time()  # Start time
     file_path = "in\gusset ("+str(c)+").jpg"
     if not os.path.exists(file_path):
         print("Error: File '{}' not found.".format(file_path))
@@ -38,15 +41,15 @@ while True:
 
     # Otsu's Binarization
     _, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-
-    otsu_resized = cv.resize(otsu_thresholded, (960, 1280))       
+    blurred_otsu = cv.GaussianBlur(otsu_thresholded, (5, 5), 0)
+    otsu_resized = cv.resize(blurred_otsu, (960, 1280))       
     cv.imshow('otsu_thresholded', otsu_resized)
         #_,original_frame=camera.read()
         #cv.imshow('Original Image', original_frame)
 
 
     # Apply Canny edge detection
-    canny = cv.Canny(otsu_thresholded, threshold1, threshold2)
+    canny = cv.Canny(blurred_otsu, threshold1, threshold2)
     canny_resized = cv.resize(canny, (960, 1280))
     cv.imshow('Canny Edge', canny_resized)
 
@@ -118,12 +121,14 @@ while True:
         for coordinates in second_longest_contour:
             x, y = coordinates[0]  # Extract x and y coordinates from the point
             cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
-        
-         
 
     if second_longest_contour is not None and longest_contour is not None:
         
-        measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours)
+        if measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours):
+            defect_count=defect_count+1
+        else :
+            non_defect_count=non_defect_count+1
+        
         #display(frame_contours,longest_contour)
         
         frame_contours_resized = cv.resize(frame_contours, (960, 1280))
@@ -131,7 +136,9 @@ while True:
         
         cv.imwrite("out\output\Output ("+str(c)+").jpg",frame_contours)
         cv.imwrite("out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
+        cv.imwrite("out\otsu\otsu_b ("+str(c)+").jpg",blurred_otsu)
         cv.imwrite("out\canny\canny ("+str(c)+").jpg",canny)
+        print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
         cv.imshow('Edges', original_frame)
         print("Invalid contours")
@@ -141,5 +148,9 @@ while True:
         break
 
     c=c+1
+    
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds")
 # Release resources
 cv.destroyAllWindows()
