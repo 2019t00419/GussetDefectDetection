@@ -1,98 +1,59 @@
 import numpy as np
+import time
 
 def fill_coordinates(contour_array):
-    insert_index=0
-    last_x, last_y = contour_array[len(contour_array) - 1][0]
-    new_array =contour_array
-    for coordinates in contour_array:
-        next_x,next_y=coordinates[0]
-        if(next_x-last_x < -1 or next_x-last_x > 1) and (next_y - last_y ==0):
+
+    new_points = []
+    last_x, last_y = contour_array[-1][0]
+
+    for i in range(len(contour_array)):
+        next_x, next_y = contour_array[i][0]
+        
+        # Horizontal case
+        if (next_x - last_x < -1 or next_x - last_x > 1) and (next_y - last_y == 0):
             if next_x > last_x:
-                new_x = next_x-1
-                new_y = last_y
-                count=0
-                while new_x > last_x:
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_x = new_x-1
-                    count=count+1
-                insert_index=insert_index+count    
-                if insert_index>len(new_array)-1:
-                    break                        
-                            
+                new_x = np.arange(last_x + 1, next_x)
             else:
-                new_x = next_x+1
-                new_y = next_y
-                count=0
-                while new_x < last_x:
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_x = new_x+1 
-                    count=count+1
-                insert_index=insert_index+count     
-                if insert_index>len(new_array)-1:
-                    break                                    
-        #vertical case
-        elif(next_y-last_y < -1 or next_y-last_y > 1) and (next_x - last_x == 0):
+                new_x = np.arange(last_x - 1, next_x, -1)
+            new_y = np.full_like(new_x, last_y)
+            new_points.extend(zip(new_x, new_y))
+        
+        # Vertical case
+        elif (next_y - last_y < -1 or next_y - last_y > 1) and (next_x - last_x == 0):
             if next_y > last_y:
-                new_y = next_y-1
-                new_x = last_x
-                count=0
-                while new_y > last_y:
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_y = new_y-1
-                    count=count+1
-                insert_index=insert_index+count     
-                if insert_index>len(new_array)-1:
-                    break                                
+                new_y = np.arange(last_y + 1, next_y)
             else:
-                new_x = next_x
-                new_y = next_y+1
-                count=0
-                while new_y < last_y:
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_y = new_y+1
-                    count=count+1
-                insert_index=insert_index+count  
-                if insert_index>len(new_array)-1:
-                    break                       
-                            
-        #angled case    
-        elif(next_x-last_x < -1 or next_x-last_x > 1) and (next_y-last_y < -1 or next_y-last_y > 1):
-
-            #print(str(next_x)+","+str(next_y))
-            #print(str(last_x)+","+str(last_y))
-            line_gradient = ( (next_y - last_y)/(next_x-last_x) )
-            line_intercept = ( next_y-(line_gradient*next_x))
-
+                new_y = np.arange(last_y - 1, next_y, -1)
+            new_x = np.full_like(new_y, last_x)
+            new_points.extend(zip(new_x, new_y))
+        
+        # Angled case    
+        elif (next_x - last_x < -1 or next_x - last_x > 1) and (next_y - last_y < -1 or next_y - last_y > 1):
             if next_x > last_x:
-                    
-                new_y = next_y
-                new_x = next_x-1
-                count=0
-                while new_x > last_x:
-                    new_y = (line_gradient*new_x)+line_intercept
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_x = new_x-1
-                    count=count+1
-                insert_index=insert_index+count  
-                if insert_index>len(new_array)-1:
-                    break                       
-                            
+                new_x = np.arange(last_x + 1, next_x)
             else:
-                new_x = next_x+1
-                new_y = next_y
-                count=0
-                while new_x < last_x:
-                    new_y = (line_gradient*new_x)+line_intercept
-                    new_array = np.insert(new_array, insert_index, [[new_x,new_y]], axis=0)
-                    new_x = new_x+1  
-                    count=count+1  
-                insert_index=insert_index+count 
-                if insert_index>len(new_array)-1:
-                    break                        
-        #print(str(next_x)+","+str(next_y))
-        #print(str(last_x)+","+str(last_y))
-            
-        insert_index=insert_index+1    
-        last_y = next_y
-        last_x = next_x
+                new_x = np.arange(last_x - 1, next_x, -1)
+            if next_y > last_y:
+                new_y = np.arange(last_y + 1, next_y)
+            else:
+                new_y = np.arange(last_y - 1, next_y, -1)
+
+            if len(new_x) == len(new_y):  # Ensure the arrays match in length
+                new_points.extend(zip(new_x, new_y))
+            else:
+                if len(new_x) > len(new_y):
+                    new_x = new_x[:len(new_y)]
+                else:
+                    new_y = new_y[:len(new_x)]
+                new_points.extend(zip(new_x, new_y))
+
+        new_points.append((next_x, next_y))
+        last_x, last_y = next_x, next_y
+    
+    new_array = np.array(new_points).reshape(-1, 1, 2) 
+
     return new_array
+
+# Example usage:
+# contour_array = np.array([[[0, 0]], [[0, 10]], [[10, 10]], [[10, 0]]])
+# filled_contours = fill_coordinates(contour_array)

@@ -1,6 +1,7 @@
 import cv2 as cv
 
 def identify_edges(contours):
+    
     max_length = 0
     second_max_length = 0
     longest_contour = None
@@ -30,4 +31,5 @@ def identify_edges(contours):
                     if 0.05 < relative_length1 < 0.5:
                         second_max_length = length
                         second_longest_contour = contour
+                     
     return(longest_contour,second_longest_contour)  
