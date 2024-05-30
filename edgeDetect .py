@@ -27,16 +27,14 @@ while True:
     # Read the image
     original_frame = cv.imread(file_path)
 
+    original_frame = cv.resize(original_frame, (960, 1280))
+    original_frame_resized = cv.resize(original_frame, (960, 1280))
+    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
 
     frame_height, frame_width, channels = original_frame.shape
     resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
     #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
     #print("Resolution factor is : "+str(resolution_factor))
-
-
-    original_frame = cv.resize(original_frame, (960, 1280))
-    original_frame_resized = cv.resize(original_frame, (960, 1280))
-    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
     blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
@@ -70,16 +68,24 @@ while True:
     frame_contours = original_frame.copy()
     
     if longest_contour is not None:
-        #draw contours on to the frame
-        cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+        y_limit=frame_height-300
         x_bound,y_bound,w_bound,h_bound = cv.boundingRect(longest_contour)
-        cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
-        #complete the incomplete coordinates
-        #longest_contour=fill_coordinates(longest_contour)
-        #plot the coordinates
-        for coordinates in longest_contour:
-            x, y = coordinates[0]  # Extract x and y coordinates from the point
-            cv.circle(frame_contours, (x, y), 1, (0, 0, 0), -1)
+        print("Y limit = "+str(y_limit))
+        print("Frame edge = "+str(frame_height))
+        print("Bounding box edge = "+str(y_bound+h_bound))
+        cv.line(frame_contours, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        cv.line(original_frame_resized, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        cv.line(original_frame, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        if(y_bound+h_bound < y_limit):
+            cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
+                
+            #draw contours on to the frame
+            cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+            
+            #complete the incomplete coordinates
+            #longest_contour=fill_coordinates(longest_contour)
+        else:
+            longest_contour = None
     else:
         cv.imshow('Edges', original_frame)
         print("Invalid contours")
@@ -113,13 +119,16 @@ while True:
         cv.imshow('Edges', frame_contours_resized) 
         
         cv.imwrite("out\output\Output ("+str(c)+").jpg",frame_contours)
-        cv.imwrite("out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
-        cv.imwrite("out\otsu\otsu_b ("+str(c)+").jpg",blurred_otsu)
-        cv.imwrite("out\canny\canny ("+str(c)+").jpg",canny)
         print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
-        cv.imshow('Edges', original_frame)
+        cv.imshow('Edges', original_frame_resized)
+
+        cv.imwrite("out\output\Output ("+str(c)+").jpg",original_frame)
         print("Invalid contours")
+
+    cv.imwrite("out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
+    cv.imwrite("out\otsu\otsu_b ("+str(c)+").jpg",blurred_otsu)
+    cv.imwrite("out\canny\canny ("+str(c)+").jpg",canny)
     # Wait  'x' key to exit
     key = cv.waitKey(5)
     if key == ord('x'):
