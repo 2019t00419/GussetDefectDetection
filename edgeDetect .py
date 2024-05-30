@@ -15,11 +15,12 @@ threshold2=200
 c=1        
 defect_count=0
 non_defect_count=0
+sample_path = "images\in\gusset ("+str(c)+").jpg"
 
 while True:    
     start_time = time.time()  # Start time
     
-    file_path = "in\gusset ("+str(c)+").jpg"
+    file_path = "images\in\gusset ("+str(c)+").jpg"
     if not os.path.exists(file_path):
         print("Error: File '{}' not found.".format(file_path))
         exit()
@@ -118,17 +119,17 @@ while True:
         frame_contours_resized = cv.resize(frame_contours, (960, 1280))
         cv.imshow('Edges', frame_contours_resized) 
         
-        cv.imwrite("out\output\Output ("+str(c)+").jpg",frame_contours)
+        cv.imwrite("images\out\output\Output ("+str(c)+").jpg",frame_contours)
         print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
         cv.imshow('Edges', original_frame_resized)
 
-        cv.imwrite("out\output\Output ("+str(c)+").jpg",original_frame)
+        cv.imwrite("images\out\output\Output ("+str(c)+").jpg",original_frame)
         print("Invalid contours")
 
-    cv.imwrite("out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
-    cv.imwrite("out\otsu\otsu_b ("+str(c)+").jpg",blurred_otsu)
-    cv.imwrite("out\canny\canny ("+str(c)+").jpg",canny)
+    cv.imwrite("images\out\otsu\otsu ("+str(c)+").jpg",otsu_thresholded)
+    cv.imwrite("images\out\otsu\otsu_b ("+str(c)+").jpg",blurred_otsu)
+    cv.imwrite("images\out\canny\canny ("+str(c)+").jpg",canny)
     # Wait  'x' key to exit
     key = cv.waitKey(5)
     if key == ord('x'):
