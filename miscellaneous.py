@@ -6,6 +6,7 @@ import cv2 as cv
 
 def openFile(count):
     file_path = "images\in\gusset ("+str(count)+").jpg"
+    print(file_path)
     if not os.path.exists(file_path):
         print("Error: File '{}' not found.".format(file_path))
         exit()
@@ -18,7 +19,6 @@ def camera(source):
     _,original_frame=source.read()
     cv.imshow('Original Image', original_frame)
     return original_frame
-
 
 
 

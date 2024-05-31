@@ -28,7 +28,21 @@ while True:
 
     # Find the longest contour
     longest_contour,second_longest_contour=identify_edges(contours)
+    ret = cv.matchShapes(longest_contour,second_longest_contour,1,0.0)
+    print(ret)
 
+    if(second_longest_contour is not None):
+        total_area = cv.contourArea(longest_contour)
+        fabric_area = cv.contourArea(second_longest_contour)
+        area_ratio = fabric_area/total_area
+        print(area_ratio)
+
+    if(ret>0.5) or (area_ratio < 0.5) :
+        longest_contour=None
+        print("dissimilar")
+    else:
+        print("Similar")
+        
     longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
 
     outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
@@ -46,7 +60,7 @@ while True:
     # End of time calculation
     end_time = time.time()  # End time
     elapsed_time = end_time - start_time  # Calculate elapsed time
-    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds") 
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds\n\n") 
     
 # Release resources
 cv.destroyAllWindows()
