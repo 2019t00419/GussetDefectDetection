@@ -1,35 +1,53 @@
-import os
-import tkinter as tk
-from tkinter import ttk, messagebox
+import cv2 as cv
+import numpy as np
+from balanceOut import checkBalanceOut
+from balanceOut import outputs
+from contourID import identify_edges
+from miscellaneous import openFile
+from miscellaneous import camera
+from miscellaneous import preprocess
+import time
 
-def submit_data():
-    messagebox.showinfo("Submitted Data", "Data:")
+# Check if the file exists
+c=1        
+sample_path = "images\in\sample (1).jpg"
+source= cv.VideoCapture(0)
 
-def main():
-    window = tk.Tk()
-    window.geometry("1300x1000")
-    window.title("Gusset Quality Control")
+while True:    
+    start_time = time.time()  # Start time
+    
+    #chose read image mode
+    original_frame = cv.imread(openFile(c))
+    #original_frame = camera(source)
+    
+    original_frame,original_frame_resized,blurred_otsu,canny = preprocess(original_frame)    
+    frame_contours = original_frame.copy()
+    
+    # Find contours
+    contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
-    # Apply a custom dark theme
-    style = ttk.Style(window)
-    window.tk_setPalette(background='#2E2E2E', foreground='#FFFFFF', activeBackground='#3E3E3E', activeForeground='#FFFFFF')
+    # Find the longest contour
+    longest_contour,second_longest_contour=identify_edges(contours)
 
-    style.configure('TLabel', background='#2E2E2E', foreground='#FFFFFF')
-    style.configure('TEntry', fieldbackground='#3E3E3E', foreground='#FFFFFF')
-    style.configure('TButton', background='#3E3E3E', foreground='#FFFFFF')
+    longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
 
-    # Create widgets with ttk
-    label = ttk.Label(window, text="Enter Quality Control Data:")
-    global entry
-    entry = ttk.Entry(window)
-    button = ttk.Button(window, text="Submit", command=submit_data)
+    outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
 
-    # Layout widgets
-    label.pack(pady=10)
-    entry.pack(pady=10)
-    button.pack(pady=10)
+        
+    # Highlight the longest edge
+    
+    
+    # Wait  'x' key to exit
+    key = cv.waitKey(5)
+    if key == ord('x'):
+        break
 
-    window.mainloop()
+    c=c+1
+    # End of time calculation
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print(f"Time taken to complete the function: {elapsed_time:.4f} seconds") 
+    
+# Release resources
+cv.destroyAllWindows()
 
-if __name__ == '__main__':
-    main()

@@ -73,3 +73,77 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
 
 
     return(defective)
+
+
+
+
+def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
+    frame_height, frame_width, channels = original_frame.shape
+    resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
+    #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
+    #print("Resolution factor is : "+str(resolution_factor))
+
+
+    if longest_contour is not None:
+        y_limit=frame_height-300
+        x_bound,y_bound,w_bound,h_bound = cv.boundingRect(longest_contour)
+        print("Y limit = "+str(y_limit))
+        print("Frame edge = "+str(frame_height))
+        print("Bounding box edge = "+str(y_bound+h_bound))
+        cv.line(frame_contours, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        cv.line(original_frame_resized, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        cv.line(original_frame, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
+        if(y_bound+h_bound < y_limit):
+            cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
+                
+            #draw contours on to the frame
+            cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+            
+            #complete the incomplete coordinates
+            #longest_contour=fill_coordinates(longest_contour)
+        else:
+            longest_contour = None
+    else:
+        cv.imshow('Edges', original_frame)
+        print("Invalid contours")
+
+    if second_longest_contour is not None: 
+        #draw contours on to the frame   
+        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 3)
+        #complete the incomplete coordinates
+        #second_longest_contour=fill_coordinates(second_longest_contour)
+        #plot the coordinates
+    return(longest_contour)
+
+
+        
+def outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,count):
+    if second_longest_contour is not None and longest_contour is not None:
+
+        measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours)
+        #if measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours):
+        #    defect_count=defect_count+1
+        #else :
+        #    non_defect_count=non_defect_count+1
+        
+        total_area = cv.contourArea(longest_contour)
+        fabric_area = cv.contourArea(second_longest_contour)
+        adhesive_area = total_area - fabric_area
+        cv.putText(frame_contours, "Total area : "+str(total_area), (400, 625), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Fabric_area : "+str(fabric_area), (400, 650), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
+        cv.putText(frame_contours, "Adhesive area : "+str(adhesive_area), (400, 675), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
+        #display(frame_contours,longest_contour)
+        
+        frame_contours_resized = cv.resize(frame_contours, (960, 1280))
+        cv.imshow('Edges', frame_contours_resized) 
+        
+        cv.imwrite("images\out\output\Output ("+str(count)+").jpg",frame_contours)
+        #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
+    else:
+        cv.imshow('Edges', original_frame_resized)
+
+        cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
+        print("Invalid contours")
+
+    cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
+    cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
