@@ -1,6 +1,6 @@
 import os
 import cv2 as cv
-
+from skimage.feature import local_binary_pattern
 
 
 
@@ -22,7 +22,7 @@ def camera(source):
 
 
 
-def preprocess(original_frame):
+def preprocess(original_frame,c):
     threshold1=100
     threshold2=200
 
@@ -46,4 +46,19 @@ def preprocess(original_frame):
     canny_resized = cv.resize(canny, (960, 1280))
 
     cv.imshow('Canny Edge', canny_resized)
+
+    
+    # Parameters for LBP
+    radius = 3
+    n_points = 8 * radius
+    method = 'uniform'
+
+    # Apply LBP
+    lbp = local_binary_pattern(grayscale_image, n_points, radius, method)
+
+    
+    cv.imwrite("images\lest\lest ("+str(c)+").jpg",lbp)
+    cv.imshow("blended_image",lbp)
+
+
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
