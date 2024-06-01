@@ -19,8 +19,9 @@ while True:
     #chose read image mode
     original_frame = cv.imread(openFile(c))
     #original_frame = camera(source)
+    #original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny = preprocess(original_frame)    
+    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame)    
     frame_contours = original_frame.copy()
     
     # Find contours
@@ -42,7 +43,10 @@ while True:
         print("dissimilar")
     else:
         print("Similar")
-        
+    print(cv.mean(blurred_image,blurred_otsu))
+    blended_image = cv.divide(grayscale_image,blurred_otsu,scale=256)
+    cv.imwrite("images\lest\lest ("+str(c)+").jpg",blended_image)
+    cv.imshow("blended_image",blended_image)
     longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
 
     outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)

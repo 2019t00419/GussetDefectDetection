@@ -46,4 +46,4 @@ def preprocess(original_frame):
     canny_resized = cv.resize(canny, (960, 1280))
 
     cv.imshow('Canny Edge', canny_resized)
-    return original_frame,original_frame_resized,blurred_otsu,canny
+    return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
