@@ -1,12 +1,13 @@
 import os
 import cv2 as cv
 from skimage.feature import local_binary_pattern
+import numpy as np
 
 
 
 def openFile(count):
     file_path = "images\in\gusset ("+str(count)+").jpg"
-    print(file_path)
+    #print(file_path)
     if not os.path.exists(file_path):
         print("Error: File '{}' not found.".format(file_path))
         exit()
@@ -26,9 +27,9 @@ def preprocess(original_frame,c):
     threshold1=100
     threshold2=200
 
-    original_frame = cv.resize(original_frame, (960, 1280))
+    #original_frame = cv.resize(original_frame, (960, 1280))
     original_frame_resized = cv.resize(original_frame, (960, 1280))
-    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
+    grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
     blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
@@ -45,20 +46,7 @@ def preprocess(original_frame,c):
     canny = cv.Canny(blurred_otsu, threshold1, threshold2)
     canny_resized = cv.resize(canny, (960, 1280))
 
-    cv.imshow('Canny Edge', canny_resized)
-
-    
-    # Parameters for LBP
-    radius = 3
-    n_points = 8 * radius
-    method = 'uniform'
-
-    # Apply LBP
-    lbp = local_binary_pattern(grayscale_image, n_points, radius, method)
-
-    
-    cv.imwrite("images\lest\lest ("+str(c)+").jpg",lbp)
-    cv.imshow("blended_image",lbp)
+    cv.imshow('Canny Edge', canny)
 
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image

@@ -1,35 +1,44 @@
-import os
-import tkinter as tk
-from tkinter import ttk, messagebox
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QMessageBox
+from PyQt5.QtMultimedia import QCamera, QCameraInfo
+from PyQt5.QtMultimediaWidgets import QCameraViewfinder
+from PyQt5 import uic
 
-def submit_data():
-    messagebox.showinfo("Submitted Data", "Data:")
+class GUI(QMainWindow):
+    def __init__(self):
+        super(GUI, self).__init__()
+        uic.loadUi("GUI.ui", self)
+
+        self.cameraPlaceholder = self.findChild(QWidget, "cameraPlaceholder")
+
+        available_cameras = QCameraInfo.availableCameras()
+        if not available_cameras:
+            QMessageBox.warning(self, "Error", "No cameras found")
+            sys.exit()
+
+        # Selecting the first available camera
+        self.camera = QCamera(available_cameras[0])
+
+        self.viewfinder = QCameraViewfinder(self.cameraPlaceholder)
+        self.camera.setViewfinder(self.viewfinder)
+
+        layout = QVBoxLayout(self.cameraPlaceholder)
+        layout.addWidget(self.viewfinder)
+        self.cameraPlaceholder.setLayout(layout)
+
+        self.camera.errorOccurred.connect(self.handle_camera_error)
+        self.camera.start()
+
+        self.show()
+
+    def handle_camera_error(self, error, error_string):
+        QMessageBox.warning(self, "Camera Error", f"Camera error: {error_string}")
+        self.camera.stop()
 
 def main():
-    window = tk.Tk()
-    window.geometry("1300x1000")
-    window.title("Gusset Quality Control")
-
-    # Apply a custom dark theme
-    style = ttk.Style(window)
-    window.tk_setPalette(background='#2E2E2E', foreground='#FFFFFF', activeBackground='#3E3E3E', activeForeground='#FFFFFF')
-
-    style.configure('TLabel', background='#2E2E2E', foreground='#FFFFFF')
-    style.configure('TEntry', fieldbackground='#3E3E3E', foreground='#FFFFFF')
-    style.configure('TButton', background='#3E3E3E', foreground='#FFFFFF')
-
-    # Create widgets with ttk
-    label = ttk.Label(window, text="Enter Quality Control Data:")
-    global entry
-    entry = ttk.Entry(window)
-    button = ttk.Button(window, text="Submit", command=submit_data)
-
-    # Layout widgets
-    label.pack(pady=10)
-    entry.pack(pady=10)
-    button.pack(pady=10)
-
-    window.mainloop()
+    app = QApplication(sys.argv)
+    window = GUI()
+    sys.exit(app.exec_())
 
 if __name__ == '__main__':
     main()

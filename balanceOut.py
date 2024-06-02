@@ -84,11 +84,11 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
 
 
     if longest_contour is not None:
-        y_limit=frame_height-300
+        y_limit=frame_height+900
         x_bound,y_bound,w_bound,h_bound = cv.boundingRect(longest_contour)
-        print("Y limit = "+str(y_limit))
-        print("Frame edge = "+str(frame_height))
-        print("Bounding box edge = "+str(y_bound+h_bound))
+        #print("Y limit = "+str(y_limit))
+        #print("Frame edge = "+str(frame_height))
+        #print("Bounding box edge = "+str(y_bound+h_bound))
         cv.line(frame_contours, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
         cv.line(original_frame_resized, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
         cv.line(original_frame, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
@@ -96,7 +96,7 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
             cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
                 
             #draw contours on to the frame
-            cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), 3)
+            cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), thickness=cv.FILLED)
             
             #complete the incomplete coordinates
             #longest_contour=fill_coordinates(longest_contour)
@@ -108,7 +108,7 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
 
     if second_longest_contour is not None: 
         #draw contours on to the frame   
-        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), 3)
+        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), thickness=cv.FILLED)
         #complete the incomplete coordinates
         #second_longest_contour=fill_coordinates(second_longest_contour)
         #plot the coordinates
