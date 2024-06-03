@@ -7,7 +7,7 @@ import numpy as np
 
 def openFile(count):
     file_path = "images\in\gusset ("+str(count)+").jpg"
-    #print(file_path)
+    print(file_path)
     if not os.path.exists(file_path):
         print("Error: File '{}' not found.".format(file_path))
         exit()
