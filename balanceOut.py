@@ -103,7 +103,7 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
         else:
             longest_contour = None
     else:
-        cv.imshow('Edges', original_frame)
+        #cv.imshow('Edges', original_frame)
         print("Invalid contours")
 
     if second_longest_contour is not None: 
@@ -134,15 +134,16 @@ def outputs(longest_contour,second_longest_contour,frame_contours,original_frame
         #display(frame_contours,longest_contour)
         
         frame_contours_resized = cv.resize(frame_contours, (960, 1280))
-        cv.imshow('Edges', frame_contours_resized) 
+        #cv.imshow('Edges', frame_contours_resized) 
         
         cv.imwrite("images\out\output\Output ("+str(count)+").jpg",frame_contours)
         #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
-        cv.imshow('Edges', original_frame_resized)
+        #cv.imshow('Edges', original_frame_resized)
 
         cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
         print("Invalid contours")
 
     cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
     cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
+    return frame_contours

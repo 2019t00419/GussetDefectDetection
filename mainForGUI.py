@@ -11,16 +11,16 @@ from new import new_feature
 import time
 
 # Check if the file exists
-c=1        
 sample_path = "images\sample\sample (1).jpg"
 source= cv.VideoCapture(0)
 video_source= cv.VideoCapture("images\in\sample.mp4")
 
-while True:    
-    
+
+def main(captured_frame):    
+    c=0
     start_time = time.time()  # Start timex
     #chose read image mode
-    original_frame = cv.imread(openFile(c))
+    original_frame = captured_frame
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
@@ -55,22 +55,11 @@ while True:
     
     longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
 
-    outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
+    out=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
         
-    # Highlight the longest edge
-    
-    
-    # Wait  'x' key to exit
-    key = cv.waitKey(5)
-    if key == ord('x'):
-        break
-
-    c=c+1
     # End of time calculation
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
-    
-# Release resources
-cv.destroyAllWindows()
+    return out
 
