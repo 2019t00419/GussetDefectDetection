@@ -20,9 +20,9 @@ while True:
     
     start_time = time.time()  # Start timex
     #chose read image mode
-    original_frame = cv.imread(openFile(c))
-    #original_frame = camera(source)
-    #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
+    #original_frame = cv.imread(openFile(c))
+    original_frame = camera(video_source)
+    original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
     original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,c)    
     frame_contours = original_frame_resized.copy()
