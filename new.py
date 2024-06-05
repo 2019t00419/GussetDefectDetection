@@ -30,8 +30,3 @@ def new_feature(original_frame, longest_contour, count):
     cv.imshow("Otsu cropped Image", otsu_cropped_image)
     cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", otsu_cropped_image)
 
-# Example usage:
-# original_frame = cv.imread('path_to_image.jpg')
-# longest_contour = some_contour_extracted_earlier
-# count = 1
-# new_feature(original_frame, longest_contour, count)
