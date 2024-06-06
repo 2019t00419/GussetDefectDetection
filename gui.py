@@ -3,14 +3,40 @@ import cv2 as cv
 from PIL import Image, ImageTk 
 from customtkinter import *
 from mainForGUI import main
-
-
-
+from ultralytics import YOLO
+import cvzone
+import math
+import time
+ 
+ 
 
 def open_camera(): 
     # Capture the video frame by frame 
     _, frame = vid.read() 
+
+    results = model(frame, stream=True)
+
+    for r in results:
+        boxes = r.boxes
+        for box in boxes:
+            # Bounding Box
+            x1, y1, x2, y2 = box.xyxy[0]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            # cv2.rectangle(img,(x1,y1),(x2,y2),(255,0,255),3)
+            w, h = x2 - x1, y2 - y1
+            cvzone.cornerRect(frame, (x1, y1, w, h))
+            # Confidence
+            conf = math.ceil((box.conf[0] * 100)) / 100
+            # Class Name
+            cls = int(box.cls[0])
+            if classNames[cls] == "suitcase":
+                cvzone.putTextRect(frame, f'{classNames[cls]} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=1)
+                capture()
+                print("_________________________________________________ \n\n\n\n\n _________________________________________________ ")
+                cls == ""
     
+ 
+
     frame_height, frame_width, channels = frame.shape
     if frame_height/frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
@@ -81,7 +107,29 @@ width, height = 3024, 4032
 # Set the width and height 
 vid.set(cv.CAP_PROP_FRAME_WIDTH, width) 
 vid.set(cv.CAP_PROP_FRAME_HEIGHT, height) 
-  
+
+
+#model = YOLO("best.pt")
+model = YOLO("yolov8n.pt")
+ 
+#lassNames = ["blueGusset","greyGusset","pinkGusset"]
+
+classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+              "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
+              "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
+              "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
+              "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
+              "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
+              "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
+              "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
+              "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+              "teddy bear", "hair drier", "toothbrush"
+              ]
+
+conf=0.1
+
+
+
 # Create a GUI app 
 app = CTk() 
 # Bind the app with Escape keyboard to 
