@@ -13,7 +13,7 @@ import time
 # Check if the file exists
 sample_path = "images\sample\sample (1).jpg"
 source= cv.VideoCapture(0)
-video_source= cv.VideoCapture("images\in\sample.mp4")
+#video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
 def main(captured_frame):    

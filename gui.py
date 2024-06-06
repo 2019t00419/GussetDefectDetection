@@ -41,6 +41,7 @@ def open_camera():
   
 def capture():
     _, captured_frame = vid.read() 
+
     frame_height, frame_width, channels = captured_frame.shape
     print("resolution = "+str(frame_height)+"x"+str(frame_width))
 
@@ -73,7 +74,7 @@ def capture():
 
 # Define a video capture object 
 vid = cv.VideoCapture(0) 
-  
+#vid = cv.VideoCapture("images\in\sample_long.mp4")  
 # Declare the width and height in variables 
 width, height = 3024, 4032
   
