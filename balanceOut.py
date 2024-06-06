@@ -25,7 +25,7 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
     
     # Calculate the average minimum distance
     avg_dist = np.mean(min_distances)
-    thickness = avg_dist
+    thickness = pix_to_mm(avg_dist)
 
     # Variables for tracking
     itr_count = 0
@@ -43,7 +43,7 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
         itr_count += 1
         
         if itr_count > gap:
-            avg_segment_dist = sum_distances / itr_count
+            avg_segment_dist = pix_to_mm(sum_distances / itr_count)
             sum_distances = 0
             itr_count = 0
             
@@ -147,3 +147,8 @@ def outputs(longest_contour,second_longest_contour,frame_contours,original_frame
     cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
     cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
     return frame_contours
+
+def pix_to_mm(pix):
+    convert_factor = 9
+    mm = pix/convert_factor
+    return mm

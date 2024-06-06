@@ -32,7 +32,6 @@ def open_camera():
             if classNames[cls] == "suitcase":
                 cvzone.putTextRect(frame, f'{classNames[cls]} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=1)
                 capture()
-                print("_________________________________________________ \n\n\n\n\n _________________________________________________ ")
                 cls == ""
     
  
