@@ -1,0 +1,24 @@
+2024-06-07 09:44:11.667036
+Time taken to complete the function: 234.8661 ms
+Time taken to complete the function: 71.1520 ms
+Time taken to complete the function: 72.9451 ms
+Time taken to complete the function: 76.9627 ms
+Time taken to complete the function: 72.0310 ms
+Time taken to complete the function: 82.6950 ms
+Time taken to complete the function: 89.2324 ms
+Time taken to complete the function: 84.2681 ms
+Time taken to complete the function: 87.3952 ms
+Time taken to complete the function: 107.8529 ms
+Time taken to complete the function: 74.8825 ms
+Time taken to complete the function: 75.9959 ms
+Time taken to complete the function: 83.8749 ms
+Time taken to complete the function: 89.9835 ms
+Time taken to complete the function: 73.6539 ms
+Time taken to complete the function: 83.5485 ms
+Time taken to complete the function: 76.4551 ms
+Time taken to complete the function: 75.6264 ms
+Time taken to complete the function: 77.9865 ms
+Time taken to complete the function: 82.1285 ms
+Time taken to complete the function: 72.4773 ms
+Time taken to complete the function: 84.6217 ms
+Time taken to complete the function: 81.5504 ms

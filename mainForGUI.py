@@ -9,6 +9,7 @@ from miscellaneous import preprocess
 from fabricDefects import fabric_color
 from new import new_feature
 import time
+from miscellaneous import log
 
 # Check if the file exists
 sample_path = "images\sample\sample (1).jpg"
@@ -61,5 +62,6 @@ def main(captured_frame):
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
+    log(f"Time taken to complete the function: {elapsed_time:.4f} ms\n")
     return out
 

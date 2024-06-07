@@ -50,3 +50,9 @@ def preprocess(original_frame,c):
 
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
+
+def log(log_data):
+    with open("log.txt", "a") as file:
+        # Append data to the file
+        file.write(log_data)
+

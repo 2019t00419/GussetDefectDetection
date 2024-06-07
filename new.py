@@ -8,14 +8,14 @@ def new_feature(original_frame, longest_contour, count):
     cx = int(frame_width * (M['m10'] / M['m00']) / 960)
     cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
 
-    print("Center point = (" + str(cx) + "," + str(cy) + ")")
+    #print("Center point = (" + str(cx) + "," + str(cy) + ")")
 
     # Define the coordinates
     tlx, tly = cx - 50, cy - 50  # Top-left corner
     brx, bry = cx + 50, cy + 50  # Bottom-right corner
 
-    print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
-    print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
+    #print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
+    #print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
 
     # Ensure the coordinates define a square area
     if abs(tlx - brx) != abs(tly - bry):

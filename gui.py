@@ -3,12 +3,16 @@ import cv2 as cv
 from PIL import Image, ImageTk 
 from customtkinter import *
 from mainForGUI import main
+from miscellaneous import log
 from ultralytics import YOLO
 import cvzone
 import math
 import time
- 
- 
+from datetime import datetime
+
+program_start_time = datetime.fromtimestamp(time.time())
+
+log(str(program_start_time)+"\n")
 
 def open_camera(): 
     # Capture the video frame by frame 
