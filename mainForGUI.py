@@ -6,8 +6,8 @@ from contourID import identify_edges
 from miscellaneous import openFile
 from miscellaneous import camera
 from miscellaneous import preprocess
-from fabricDefects import fabric_color
-from new import new_feature
+#from fabricDefects import fabric_color
+#from new import new_feature
 import time
 
 # Check if the file exists
@@ -34,8 +34,8 @@ def main(captured_frame):
     longest_contour,second_longest_contour=identify_edges(contours)
     ret = cv.matchShapes(longest_contour,second_longest_contour,1,0.0)
     #print(ret)
-    if(longest_contour is not None):    
-        new_feature(original_frame,longest_contour,c)
+    #if(longest_contour is not None):    
+        #new_feature(original_frame,longest_contour,c)
 
     if(second_longest_contour is not None):
         total_area = cv.contourArea(longest_contour)

@@ -87,7 +87,6 @@ def displayLive():
             cy = int(M['m01'] / M['m00'])
 
             cv.circle(display_image, (cx, cy), 5, (255, 0, 0), cv.FILLED)
-
             if cx > (frame_width / 2) and not captured:
                 captured = True
                 displayCaptured()
@@ -110,8 +109,10 @@ def displayLive():
             inner_contours, _ = cv.findContours(masked_canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
             if inner_contours:
                 largest_inner_contour = max(inner_contours, key=cv.contourArea)
-                cv.drawContours(display_image, [largest_inner_contour], -1, (255, 0, 255), 1)
-                cv.drawContours(display_image, [largest_contour], -1, (255, 0, 0), 1)
+                ret = cv.matchShapes(largest_inner_contour,largest_contour,1,0.0)
+                if ret<0.5:
+                    cv.drawContours(display_image, [largest_inner_contour], -1, (255, 0, 255), 1)
+                    cv.drawContours(display_image, [largest_contour], -1, (255, 0, 0), 1)
 
     # Update average FPS every second
     end_cpu = time.time()
