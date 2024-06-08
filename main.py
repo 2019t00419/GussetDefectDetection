@@ -20,7 +20,8 @@ while True:
     
     start_time = time.time()  # Start timex
     #chose read image mode
-    original_frame = cv.imread(openFile(c))
+    #original_frame = cv.imread(openFile(c))
+    original_frame = cv.imread("Images\in\gusset (7).jpg")
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
@@ -55,7 +56,7 @@ while True:
     
     longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
 
-    outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
+    output = outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
         
     # Highlight the longest edge
     
@@ -70,6 +71,7 @@ while True:
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
+    cv.imshow("output",output)
     
 # Release resources
 cv.destroyAllWindows()

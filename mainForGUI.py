@@ -5,7 +5,8 @@ from balanceOut import outputs
 from contourID import identify_edges
 from miscellaneous import openFile
 from miscellaneous import camera
-from miscellaneous import preprocess
+from miscellaneous import preprocess_cpu
+from miscellaneous import preprocess_gpu
 from fabricDefects import fabric_color
 from new import new_feature
 import time
@@ -16,17 +17,30 @@ sample_path = "images\sample\sample (1).jpg"
 source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
+cv.cuda.setDevice(0)
 
-def main(captured_frame):    
+gaussian_filter = cv.cuda.createGaussianFilter(0,0, (5, 5), 0) #cv.cuda.createGaussianFilter(input type,output type, kernal, 0)
+
+canny_edge_detector = cv.cuda.createCannyEdgeDetector(low_thresh=50, high_thresh=150)
+
+gpu_original_frame = cv.cuda_GpuMat()
+
+
+def main(captured_frame,gpu): 
+    
+    start_time = time.time()  # Start timex   
     c=0
-    start_time = time.time()  # Start timex
     #chose read image mode
     original_frame = captured_frame
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,c)    
-    frame_contours = original_frame_resized.copy()
+    if gpu:
+        blurred_otsu,canny = preprocess_gpu(original_frame,gpu_original_frame,gaussian_filter,canny_edge_detector,c)  
+    else:
+        blurred_otsu,canny = preprocess_cpu(original_frame,c)  
+
+    frame_contours = original_frame.copy()
     
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
@@ -54,14 +68,19 @@ def main(captured_frame):
         area_ratio=area_ratio
                
     
-    longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
+    longest_contour = checkBalanceOut(original_frame,frame_contours,longest_contour,second_longest_contour)
 
-    out=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
+    out=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c)
         
-    # End of time calculation
     end_time = time.time()  # End time
+    # End of time calculation
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
-    print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
-    log(f"Time taken to complete the function: {elapsed_time:.4f} ms\n")
+    if gpu:
+        log(f"GPU : Time taken to complete the function: {elapsed_time:.4f} ms\n")
+        print(f"GPU : Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
+    else:
+        log(f"CPU : Time taken to complete the function: {elapsed_time:.4f} ms\n")
+        print(f"CPU : Time taken to complete the function: {elapsed_time:.4f} ms\n\n")
+
     return out
 

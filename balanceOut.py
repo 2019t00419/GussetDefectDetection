@@ -76,7 +76,7 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
 
 
 
-def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
+def checkBalanceOut(original_frame,frame_contours,longest_contour,second_longest_contour):
     frame_height, frame_width, channels = original_frame.shape
     resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
     #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
@@ -90,7 +90,6 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
         #print("Frame edge = "+str(frame_height))
         #print("Bounding box edge = "+str(y_bound+h_bound))
         cv.line(frame_contours, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
-        cv.line(original_frame_resized, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
         cv.line(original_frame, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
         if(y_bound+h_bound < y_limit):
             cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
@@ -116,7 +115,7 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
 
 
         
-def outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,count):
+def outputs(longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count):
     if second_longest_contour is not None and longest_contour is not None:
 
         measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours)

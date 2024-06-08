@@ -1,24 +1,108 @@
-2024-06-07 09:44:11.667036
-Time taken to complete the function: 234.8661 ms
-Time taken to complete the function: 71.1520 ms
-Time taken to complete the function: 72.9451 ms
-Time taken to complete the function: 76.9627 ms
-Time taken to complete the function: 72.0310 ms
-Time taken to complete the function: 82.6950 ms
-Time taken to complete the function: 89.2324 ms
-Time taken to complete the function: 84.2681 ms
-Time taken to complete the function: 87.3952 ms
-Time taken to complete the function: 107.8529 ms
-Time taken to complete the function: 74.8825 ms
-Time taken to complete the function: 75.9959 ms
-Time taken to complete the function: 83.8749 ms
-Time taken to complete the function: 89.9835 ms
-Time taken to complete the function: 73.6539 ms
-Time taken to complete the function: 83.5485 ms
-Time taken to complete the function: 76.4551 ms
-Time taken to complete the function: 75.6264 ms
-Time taken to complete the function: 77.9865 ms
-Time taken to complete the function: 82.1285 ms
-Time taken to complete the function: 72.4773 ms
-Time taken to complete the function: 84.6217 ms
-Time taken to complete the function: 81.5504 ms
+2024-06-07 22:55:44.669663
+GPU : Time taken to complete the function: 26.9279 ms
+2024-06-07 22:58:17.799519
+GPU : Time taken to complete the function: 27.2708 ms
+GPU : Time taken to complete the function: 7.0601 ms
+GPU : Time taken to complete the function: 6.9823 ms
+GPU : Time taken to complete the function: 8.3280 ms
+GPU : Time taken to complete the function: 8.7614 ms
+GPU : Time taken to complete the function: 9.8135 ms
+GPU : Time taken to complete the function: 6.2790 ms
+GPU : Time taken to complete the function: 8.9021 ms
+GPU : Time taken to complete the function: 8.1370 ms
+2024-06-07 23:01:27.346451
+CPU : Time taken to complete the function: 5.2655 ms
+CPU : Time taken to complete the function: 5.3911 ms
+CPU : Time taken to complete the function: 5.8992 ms
+CPU : Time taken to complete the function: 5.7492 ms
+CPU : Time taken to complete the function: 5.5463 ms
+CPU : Time taken to complete the function: 4.5800 ms
+CPU : Time taken to complete the function: 7.1223 ms
+CPU : Time taken to complete the function: 5.4784 ms
+CPU : Time taken to complete the function: 6.8033 ms
+CPU : Time taken to complete the function: 5.0168 ms
+2024-06-07 23:08:12.407540
+CPU : Time taken to complete the function: 61.8935 ms
+CPU : Time taken to complete the function: 36.9375 ms
+CPU : Time taken to complete the function: 36.9184 ms
+CPU : Time taken to complete the function: 55.5139 ms
+CPU : Time taken to complete the function: 48.9659 ms
+CPU : Time taken to complete the function: 35.4042 ms
+CPU : Time taken to complete the function: 37.1971 ms
+CPU : Time taken to complete the function: 63.0739 ms
+CPU : Time taken to complete the function: 35.6934 ms
+CPU : Time taken to complete the function: 49.2685 ms
+CPU : Time taken to complete the function: 55.1713 ms
+CPU : Time taken to complete the function: 58.3644 ms
+CPU : Time taken to complete the function: 55.6166 ms
+CPU : Time taken to complete the function: 54.0090 ms
+CPU : Time taken to complete the function: 43.8485 ms
+CPU : Time taken to complete the function: 36.3646 ms
+CPU : Time taken to complete the function: 35.5706 ms
+CPU : Time taken to complete the function: 55.6579 ms
+CPU : Time taken to complete the function: 92.5834 ms
+CPU : Time taken to complete the function: 62.6237 ms
+CPU : Time taken to complete the function: 67.0059 ms
+CPU : Time taken to complete the function: 65.0799 ms
+2024-06-07 23:12:21.764588
+GPU : Time taken to complete the function: 77.7006 ms
+GPU : Time taken to complete the function: 53.5438 ms
+GPU : Time taken to complete the function: 49.5739 ms
+GPU : Time taken to complete the function: 37.1444 ms
+GPU : Time taken to complete the function: 44.1787 ms
+GPU : Time taken to complete the function: 53.7579 ms
+GPU : Time taken to complete the function: 61.1870 ms
+GPU : Time taken to complete the function: 54.1396 ms
+GPU : Time taken to complete the function: 68.5713 ms
+GPU : Time taken to complete the function: 58.2435 ms
+GPU : Time taken to complete the function: 48.7664 ms
+GPU : Time taken to complete the function: 56.2887 ms
+GPU : Time taken to complete the function: 53.3934 ms
+GPU : Time taken to complete the function: 39.6841 ms
+GPU : Time taken to complete the function: 50.7157 ms
+2024-06-07 23:22:00.455698
+2024-06-07 23:24:43.580204
+GPU : Time taken to complete the function: 76.1118 ms
+GPU : Time taken to complete the function: 40.5297 ms
+GPU : Time taken to complete the function: 55.6414 ms
+GPU : Time taken to complete the function: 61.0855 ms
+GPU : Time taken to complete the function: 53.1199 ms
+GPU : Time taken to complete the function: 70.5199 ms
+GPU : Time taken to complete the function: 47.3387 ms
+GPU : Time taken to complete the function: 54.8787 ms
+GPU : Time taken to complete the function: 36.0944 ms
+2024-06-07 23:28:59.549919
+CPU : Time taken to complete the function: 53.9637 ms
+CPU : Time taken to complete the function: 82.5069 ms
+CPU : Time taken to complete the function: 36.4251 ms
+CPU : Time taken to complete the function: 60.9951 ms
+CPU : Time taken to complete the function: 35.4688 ms
+CPU : Time taken to complete the function: 46.3648 ms
+CPU : Time taken to complete the function: 53.1359 ms
+CPU : Time taken to complete the function: 52.5403 ms
+CPU : Time taken to complete the function: 51.2409 ms
+CPU : Time taken to complete the function: 52.8584 ms
+CPU : Time taken to complete the function: 42.9463 ms
+CPU : Time taken to complete the function: 46.4041 ms
+CPU : Time taken to complete the function: 53.6621 ms
+CPU : Time taken to complete the function: 57.0824 ms
+2024-06-08 07:58:23.905086
+CPU : Time taken to complete the function: 83.4141 ms
+CPU : Time taken to complete the function: 73.5860 ms
+CPU : Time taken to complete the function: 56.8173 ms
+CPU : Time taken to complete the function: 70.6019 ms
+CPU : Time taken to complete the function: 107.0445 ms
+CPU : Time taken to complete the function: 64.6729 ms
+CPU : Time taken to complete the function: 53.5395 ms
+CPU : Time taken to complete the function: 55.0697 ms
+2024-06-08 08:02:07.839659
+GPU : Time taken to complete the function: 122.9658 ms
+GPU : Time taken to complete the function: 63.9758 ms
+GPU : Time taken to complete the function: 51.9567 ms
+GPU : Time taken to complete the function: 46.3343 ms
+GPU : Time taken to complete the function: 82.9012 ms
+GPU : Time taken to complete the function: 59.8578 ms
+GPU : Time taken to complete the function: 58.8906 ms
+GPU : Time taken to complete the function: 53.7574 ms
+GPU : Time taken to complete the function: 56.3240 ms
+GPU : Time taken to complete the function: 51.0881 ms

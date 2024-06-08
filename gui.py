@@ -78,7 +78,7 @@ def capture():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
     cv.imwrite("images\in\captured\Captured ("+str(0)+").jpg",captured_frame)
 
-    processed_frame = main(captured_frame)
+    processed_frame = main(captured_frame,gpu=True)
     if processed_frame is None:
         print("Error: File not found.")
     else:     
