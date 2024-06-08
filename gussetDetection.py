@@ -11,6 +11,7 @@ cpu_times = []
 last_update_time = time.time()
 update_interval = 1  # Update FPS every second
 avg_cpu_fps = 0  # Initialize average CPU FPS
+captured=False
 
 while True:
     frame_start_time = time.time()
@@ -42,8 +43,14 @@ while True:
     contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
     if contours:
         largest_contour = max(contours, key=cv.contourArea)
-        x, y, w, h = cv.boundingRect(largest_contour)
-        cv.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        #x, y, w, h = cv.boundingRect(largest_contour)
+        #cv.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        rect = cv.minAreaRect(largest_contour)
+        box = cv.boxPoints(rect)
+        box = np.int0(box)
+        cv.drawContours(image,[box],0,(0,0,255),2)
+        (x,y),(MA,ma),angle = cv.fitEllipse(largest_contour)
+        cv.putText(image, ("Major axis length : "+str(int(MA))+"    Minor axis length : "+str(int(ma))), ((10, 40)),cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
         
         # Create a mask for the largest contour
         mask = np.zeros_like(grayscale_image)
@@ -58,8 +65,8 @@ while True:
         largest_inner_contour = None
         if inner_contours:
             largest_inner_contour = max(inner_contours, key=cv.contourArea)
-            x_inner, y_inner, w_inner, h_inner = cv.boundingRect(largest_inner_contour)
-            cv.rectangle(image, (x_inner, y_inner), (x_inner + w_inner, y_inner + h_inner), (255, 0, 0), 2)
+            #x_inner, y_inner, w_inner, h_inner = cv.boundingRect(largest_inner_contour)
+            #cv.rectangle(image, (x_inner, y_inner), (x_inner + w_inner, y_inner + h_inner), (255, 0, 0), 2)
 
             # Create a mask for the largest inner contour
             mask_inner = np.zeros_like(grayscale_image)
@@ -71,8 +78,7 @@ while True:
             print(f"Average color inside the largest inner contour: {avg_color_inner}")
 
             # Draw the average color on the image
-            cv.putText(image, f"Avg Color: {avg_color_inner}", (x_inner, y_inner - 10), 
-                       cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv.LINE_AA)
+            #cv.putText(image, f"Avg Color: {avg_color_inner}", (x_inner, y_inner - 10),cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv.LINE_AA)
 
     # Update average FPS every second
     current_time = time.time()
@@ -85,12 +91,26 @@ while True:
         last_update_time = current_time
 
     # Display original image with bounding box, average FPS, and average color
-    display_image = cv.putText(image.copy(), f"CPU FPS: {avg_cpu_fps:.2f}",(10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv.LINE_AA)
+    display_image = cv.putText(image.copy(), f"CPU FPS: {avg_cpu_fps:.2f}",(10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
     cv.drawContours(display_image, [largest_contour], -1, (255,0,0), 1)
+    
+    frame_height, frame_width, channels = image.shape
+    cv.line(display_image, (int(frame_width/2),0), (int(frame_width/2), int(frame_height)), (0,255,0), 2)
     if largest_inner_contour is not None:
         cv.drawContours(display_image, [largest_inner_contour], -1, (255,0,255), 1)
+        
+        M = cv.moments(largest_contour)
 
-    cv.imshow("Output Image", display_image)
+
+        cx = int((M['m10'] / M['m00']))
+        cy = int((M['m01'] / M['m00']))
+
+        cv.circle(display_image, (cx, cy), 5, (255, 0, 0), cv.FILLED)
+
+        cv.imshow("Output Image", display_image)  
+        if(cx>(frame_width/2) and not captured):  
+            cv.imwrite("Output Image.jpg", display_image)
+
 
     key = cv.waitKey(1)
     if key & 0xFF == ord('x'):
