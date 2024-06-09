@@ -6,7 +6,7 @@ from ultralytics import YOLO
 import numpy as np
 import time
 
-cap = cv.VideoCapture(0)  # Use the webcam
+cam = cv.VideoCapture(0)  # Use the webcam
 
 cpu_times = []
 last_update_time = time.time()
@@ -37,7 +37,7 @@ def displayLive():
     
     start_cpu = time.time()
     start_open = time.time()
-    success, image = cap.read()
+    success, image = cam.read()
     display_image = image.copy() if success else None
     if not success:
         print("Failed to load video")
@@ -178,7 +178,7 @@ def displayCaptured():
     if not display_live_running:
         return
 
-    ret, captured_frame = cap.read()
+    ret, captured_frame = cam.read()
     if ret:
         cv.imwrite(f"Images/captured/captured ({count}).jpg", captured_frame)
     else:
