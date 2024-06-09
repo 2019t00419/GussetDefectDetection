@@ -1,7 +1,6 @@
-from tkinter import *
+from customtkinter import *
 import cv2 as cv
 from PIL import Image, ImageTk 
-from customtkinter import *
 from mainForGUI import main
 from ultralytics import YOLO
 import numpy as np
@@ -19,10 +18,13 @@ detection_height = 460
 
 count = 0
  
+initial_image = cv.imread("resources/loading.jpg")
 
-initial_image = cv.imread("resources\loading.jpg")
+display_live_running = False  # Flag to track the running state
 
 def displayLive():
+    if not display_live_running:
+        return
     
     global captured
     global count
@@ -109,7 +111,7 @@ def displayLive():
             inner_contours, _ = cv.findContours(masked_canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
             if inner_contours:
                 largest_inner_contour = max(inner_contours, key=cv.contourArea)
-                ret = cv.matchShapes(largest_inner_contour,largest_contour,1,0.0)
+                ret = cv.matchShapes(largest_contour,sample_contour,1,0.0)
                 if ret<0.5:
                     cv.drawContours(display_image, [largest_inner_contour], -1, (255, 0, 255), 1)
                     cv.drawContours(display_image, [largest_contour], -1, (255, 0, 0), 1)
@@ -131,7 +133,6 @@ def displayLive():
     # Display original image with bounding box, average FPS, and average color
     cv.putText(display_image, f"CPU FPS: {avg_cpu_fps:.2f}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
     cv.line(display_image, (int(frame_width/2), 0), (int(frame_width/2), int(frame_height)), (0, 255, 0), 2)
-
 
     frame = display_image.copy()
 
@@ -163,9 +164,9 @@ def displayLive():
     # Repeat the same process after every 10 seconds 
     cameraView.after(10, displayLive) 
 
-
-  
 def displayCaptured():
+    if not display_live_running:
+        return
 
     ret, captured_frame = cap.read()
     if ret:
@@ -181,7 +182,7 @@ def displayCaptured():
 
     if frame_height/frame_width < 1:
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
-    cv.imwrite("images\in\captured\Captured ("+str(0)+").jpg",captured_frame)
+    cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
     processed_frame = main(captured_frame)
     if processed_frame is None:
@@ -206,39 +207,88 @@ def displayCaptured():
         # Configure image in the label 
         captureView.configure(image=processed_photo_image) 
 
-# Define a video capture object 
-vid = cv.VideoCapture(0) 
-#vid = cv.VideoCapture("images\in\sample_long.mp4")  
-# Declare the width and height in variables 
-width, height = 3024, 4032
-  
-# Set the width and height 
-vid.set(cv.CAP_PROP_FRAME_WIDTH, width) 
-vid.set(cv.CAP_PROP_FRAME_HEIGHT, height) 
+def sampleContour():
+    image = cv.imread("Images/sample/sample (0).jpg")
+    
+    
+    grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+    blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
+
+    _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
+    canny = cv.Canny(blurred_otsu, 100, 200)
+    
+    # Find contours and draw the bounding box of the largest contour
+    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    if contours:
+        sample_contour = max(contours, key=cv.contourArea)
+        return sample_contour
+
+def toggle_display():
+    global display_live_running
+    display_live_running = not display_live_running
+    if display_live_running:
+        displayLive()
+        displayCaptured()
+        startButton.configure(text="Stop")
+    else:
+        startButton.configure(text="Start")
 
 
-# Create a GUI app 
-app = CTk() 
-# Bind the app with Escape keyboard to 
-# quit app whenever pressed 
-app.bind('<Escape>', lambda e: app.quit()) 
-  
-# Create a label and display it on app 
+# Create a GUI app
+app = CTk()
+# Bind the app with Escape keyboard to
+# quit app whenever pressed
+app.bind('<Escape>', lambda e: app.quit())
 
-captureView = Label(app) 
-cameraView = Label(app) 
+# Create frames to simulate borders for image views
+captureFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
+cameraFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 
-captureView.grid(row=0, column=0, padx=(10, 5))
-cameraView.grid(row=0, column=1, padx=(0, 10))
+# Set specific sizes for image views
+captureView = CTkLabel(captureFrame, width=480, height=640)
+cameraView = CTkLabel(cameraFrame, width=480, height=640)
 
-# Create a function to open camera and 
-# display it in the label_widget on app 
-  
-# Create a button to open the camera in GUI app 
-button1 = CTkButton(app, text="Capture", command=displayCaptured) 
+captureView.pack(padx=5, pady=5)
+cameraView.pack(padx=5, pady=5)
 
-button1.grid(row=1, column=1, padx=(0, 10))
-displayLive()
-displayCaptured() 
-# Create an infinite loop for displaying app on screen 
-app.mainloop() 
+# Apply rowspan to both image views
+captureFrame.grid(row=1, column=1, rowspan=6, padx=(10, 5), pady=(10, 5))
+cameraFrame.grid(row=1, column=0, rowspan=6, padx=(0, 10), pady=(10, 5))
+
+# Create a button to open the camera in GUI app
+startButton = CTkButton(app, text="Start", command=toggle_display)
+startButton.grid(row=4, column=3,padx=(10, 5), pady=(10, 5))
+
+# Add Labels
+liveViewLabel = CTkLabel(app, text="Live Camera View")
+liveViewLabel.grid(row=0, column=0, padx=(10, 5), pady=(10, 5))
+
+capturedViewLabel = CTkLabel(app, text="Captured View")
+capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
+
+
+settingsLabel = CTkLabel(app, text="Settings")
+settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
+
+
+thicknessLabel = CTkLabel(app, text="Thickness")
+thicknessLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+
+styleLabel = CTkLabel(app, text="Style")
+styleLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+styleentry1 = CTkEntry(app)
+styleentry1.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
+
+# Add dropdown menu
+dropdown_var = StringVar(value="4mm")
+dropdown_menu = CTkOptionMenu(app, variable=dropdown_var, values=["4mm", "6mm"])
+dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+
+#actions
+
+sample_contour = sampleContour()
+
+# Create an infinite loop for displaying app on screen
+app.mainloop()
