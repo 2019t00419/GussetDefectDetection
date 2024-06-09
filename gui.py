@@ -23,6 +23,7 @@ initial_image = cv.imread("resources/loading.jpg")
 display_live_running = False  # Flag to track the running state
 
 def displayLive():
+    MA, ma = None,None
     if not display_live_running:
         return
     
@@ -97,7 +98,7 @@ def displayLive():
             cv.drawContours(display_image, [box], 0, (0, 0, 255), 2)
 
             (x, y), (MA, ma), angle = cv.fitEllipse(largest_contour)
-            cv.putText(display_image, f"Major axis length: {int(MA)}    Minor axis length: {int(ma)}", (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
+            #cv.putText(display_image, f"Major axis length: {int(MA)}    Minor axis length: {int(ma)}", (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
             
             # Create a mask for the largest contour
             mask = np.zeros_like(grayscale_image)
@@ -131,7 +132,7 @@ def displayLive():
         last_update_time = current_time
 
     # Display original image with bounding box, average FPS, and average color
-    cv.putText(display_image, f"CPU FPS: {avg_cpu_fps:.2f}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
+    #cv.putText(display_image, f"CPU FPS: {avg_cpu_fps:.2f}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
     cv.line(display_image, (int(frame_width/2), 0), (int(frame_width/2), int(frame_height)), (0, 255, 0), 2)
 
     frame = display_image.copy()
@@ -160,9 +161,18 @@ def displayLive():
   
     # Configure image in the label 
     cameraView.configure(image=photo_image) 
+
+    if ma is not None:
+        statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)} \n \nGusset detected\nMajor axis length: {int(ma)}    Minor axis length: {int(MA)}")
+    else  :
+        statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)}")
+            
   
     # Repeat the same process after every 10 seconds 
     cameraView.after(10, displayLive) 
+
+
+
 
 def displayCaptured():
     if not display_live_running:
@@ -247,8 +257,8 @@ captureFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="
 cameraFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 
 # Set specific sizes for image views
-captureView = CTkLabel(captureFrame, width=480, height=640)
-cameraView = CTkLabel(cameraFrame, width=480, height=640)
+captureView = CTkLabel(captureFrame,text="", width=480, height=640)
+cameraView = CTkLabel(cameraFrame,text="", width=480, height=640)
 
 captureView.pack(padx=5, pady=5)
 cameraView.pack(padx=5, pady=5)
@@ -259,7 +269,7 @@ cameraFrame.grid(row=1, column=0, rowspan=6, padx=(0, 10), pady=(10, 5))
 
 # Create a button to open the camera in GUI app
 startButton = CTkButton(app, text="Start", command=toggle_display)
-startButton.grid(row=4, column=3,padx=(10, 5), pady=(10, 5))
+startButton.grid(row=3, column=3,padx=(10, 5), pady=(10, 5))
 
 # Add Labels
 liveViewLabel = CTkLabel(app, text="Live Camera View")
@@ -285,6 +295,21 @@ styleentry1.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
 dropdown_var = StringVar(value="4mm")
 dropdown_menu = CTkOptionMenu(app, variable=dropdown_var, values=["4mm", "6mm"])
 dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+
+
+statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
+statusFrame.grid(row=4, column=2, columnspan=2, rowspan=3, padx=(10, 5), pady=(10, 5), sticky="nsew")
+# Ensure the rows and columns expand proportionally
+app.grid_rowconfigure(4, weight=1)
+app.grid_columnconfigure(2, weight=1)
+app.grid_rowconfigure(5, weight=1)
+app.grid_columnconfigure(3, weight=1)
+
+statusLabel = CTkLabel(statusFrame, text="Status")
+statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5) )
+
+statusLabelText = CTkLabel(statusFrame, text="Status will appear here")
+statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
 
 #actions
 
