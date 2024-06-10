@@ -2,11 +2,13 @@ from customtkinter import *
 import cv2 as cv
 from PIL import Image, ImageTk 
 from mainForGUI import main
-from ultralytics import YOLO
 import numpy as np
 import time
 
 cam = cv.VideoCapture(0)  # Use the webcam
+
+cam.set(cv.CAP_PROP_FRAME_WIDTH, 480)
+cam.set(cv.CAP_PROP_FRAME_HEIGHT, 640)
 
 cpu_times = []
 last_update_time = time.time()
