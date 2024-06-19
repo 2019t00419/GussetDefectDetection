@@ -17,6 +17,7 @@ captured = False
 detection_length = 600
 detection_height = 460
 
+
 # Data
 x_times = []
 y_times = []
@@ -77,16 +78,20 @@ def displayLive():
     
     # Find contours and draw the bounding box of the largest contour
     contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-    if contours:
-        largest_contour = max(contours, key=cv.contourArea)
 
-        x, y, w, h = cv.boundingRect(largest_contour)
+
+
+    if contours:
+        
+        longest_contour,second_longest_contour=identify_edges(contours)
+
+        x, y, w, h = cv.boundingRect(longest_contour)
         cv.rectangle(display_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         if (x < x_margins) or (y < y_margins) or ((x+w) > (frame_width-x_margins)) or ((y+h) > (frame_height-y_margins)):
             captured = False
         else:
-            rect = cv.minAreaRect(largest_contour)
+            rect = cv.minAreaRect(longest_contour)
             box = cv.boxPoints(rect)
             box = np.int0(box)
 
@@ -102,25 +107,19 @@ def displayLive():
 
             cv.drawContours(display_image, [box], 0, (0, 0, 255), 2)
 
-            (x, y), (MA, ma), angle = cv.fitEllipse(largest_contour)
+            (x, y), (MA, ma), angle = cv.fitEllipse(longest_contour)
             #cv.putText(display_image, f"Major axis length: {int(MA)}    Minor axis length: {int(ma)}", (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
             
             # Create a mask for the largest contour
             mask = np.zeros_like(grayscale_image)
-            cv.drawContours(mask, [largest_contour], -1, 255, thickness=cv.FILLED)
-            cv.drawContours(canny, [largest_contour], -1, 0, 2)
+            cv.drawContours(mask, [longest_contour], -1, 255, thickness=cv.FILLED)
+            cv.drawContours(canny, [longest_contour], -1, 0, 2)
+            ret = cv.matchShapes(longest_contour,sample_contour,1,0.0)
 
-            # Mask the Canny image
-            masked_canny = cv.bitwise_and(canny, canny, mask=mask)
-
-            # Find contours inside the masked canny image
-            inner_contours, _ = cv.findContours(masked_canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-            if inner_contours:
-                largest_inner_contour = max(inner_contours, key=cv.contourArea)
-                ret = cv.matchShapes(largest_contour,sample_contour,1,0.0)
-                if ret<0.5:
-                    cv.drawContours(display_image, [largest_inner_contour], -1, (255, 0, 255), 1)
-                    cv.drawContours(display_image, [largest_contour], -1, (255, 0, 0), 1)
+            if ret<0.5:
+                if second_longest_contour is not None:
+                    cv.drawContours(display_image, [second_longest_contour], -1, (255, 0, 255), 1)
+                    cv.drawContours(display_image, [longest_contour], -1, (255, 0, 0), 1)
 
     # Update average FPS every second
     end_cpu = time.time()
@@ -177,7 +176,7 @@ def displayLive():
             
   
     # Repeat the same process after every 10 seconds 
-    cameraView.after(10, displayLive)  
+    cameraView.after(10, displayLive) 
     
     if c>0:
         # Plotting
@@ -330,6 +329,7 @@ statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
 #actions
 
 sample_contour = sampleContour()
+
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()

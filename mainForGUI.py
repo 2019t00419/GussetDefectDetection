@@ -3,8 +3,6 @@ import numpy as np
 from balanceOut import checkBalanceOut
 from balanceOut import outputs
 from contourID import identify_edges
-from miscellaneous import openFile
-from miscellaneous import camera
 from miscellaneous import preprocess
 #from fabricDefects import fabric_color
 #from new import new_feature
