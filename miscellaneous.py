@@ -39,14 +39,14 @@ def preprocess(original_frame,c):
     blurred_otsu = cv.GaussianBlur(otsu_thresholded, (5, 5), 0)
     otsu_resized = cv.resize(blurred_otsu, (960, 1280))    
     
-    cv.imshow('otsu_thresholded', otsu_resized)
+    #cv.imshow('otsu_thresholded', otsu_resized)
 
 
     # Apply Canny edge detection
     canny = cv.Canny(blurred_otsu, threshold1, threshold2)
     canny_resized = cv.resize(canny, (960, 1280))
 
-    cv.imshow('Canny Edge', canny)
+    #cv.imshow('Canny Edge', canny)
 
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image

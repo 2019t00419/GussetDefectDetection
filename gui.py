@@ -7,9 +7,6 @@ import time
 
 cam = cv.VideoCapture(0)  # Use the webcam
 
-cam.set(cv.CAP_PROP_FRAME_WIDTH, 480)
-cam.set(cv.CAP_PROP_FRAME_HEIGHT, 640)
-
 cpu_times = []
 last_update_time = time.time()
 update_interval = 1  # Update FPS every second
@@ -34,11 +31,15 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-
-    frame_start_time = time.time()
     
     start_cpu = time.time()
     start_open = time.time()
+
+
+    
+    cam.set(cv.CAP_PROP_FRAME_WIDTH, 480)
+    cam.set(cv.CAP_PROP_FRAME_HEIGHT, 640)
+
     success, image = cam.read()
     display_image = image.copy() if success else None
     if not success:
@@ -148,7 +149,8 @@ def displayLive():
         frame_resized = cv.resize(frame, (480, 640))
     else:
         frame_resized = cv.resize(frame, (640, 480))
-  
+
+    cv.imwrite("images\out\output\lowRes.jpg",frame)   
     # Convert image from one color space to other 
     camera_frame = cv.cvtColor(frame_resized, cv.COLOR_BGR2RGBA)
   
@@ -180,6 +182,9 @@ def displayCaptured():
     if not display_live_running:
         return
 
+    cam.set(cv.CAP_PROP_FRAME_WIDTH, 1080)
+    cam.set(cv.CAP_PROP_FRAME_HEIGHT, 1920)
+
     ret, captured_frame = cam.read()
     if ret:
         cv.imwrite(f"Images/captured/captured ({count}).jpg", captured_frame)
@@ -199,7 +204,8 @@ def displayCaptured():
     processed_frame = main(captured_frame)
     if processed_frame is None:
         print("Error: File not found.")
-    else:     
+    else:  
+        cv.imwrite("images\out\output\highResProcessed.jpg",processed_frame)   
                 
         # Set the width and height 
         processed_frame_resized = cv.resize(processed_frame, (480, 640))
