@@ -5,6 +5,7 @@ from mainForGUI import main
 import numpy as np
 import time
 from contourID import identify_edges
+import matplotlib.pyplot as plt
 
 cam = cv.VideoCapture(0)  # Use the webcam
 
@@ -16,7 +17,13 @@ captured = False
 detection_length = 600
 detection_height = 460
 
+
+# Data
+x_times = []
+y_times = []
+
 count = 0
+c=0
  
 initial_image = cv.imread("resources/loading.jpg")
 
@@ -29,6 +36,7 @@ def displayLive():
     
     global captured
     global count
+    global c
     global cpu_times
     global avg_cpu_fps
     global last_update_time
@@ -122,6 +130,9 @@ def displayLive():
     if current_time - last_update_time >= update_interval:
         avg_cpu_time = np.mean(cpu_times)
         avg_cpu_fps = 1000 / avg_cpu_time if avg_cpu_time > 0 else 0
+        y_times.append(avg_cpu_fps)
+        x_times.append(c)
+        c+=1
 
         print("Average CPU FPS : " + str(avg_cpu_fps))
         cpu_times = []
@@ -166,6 +177,14 @@ def displayLive():
   
     # Repeat the same process after every 10 seconds 
     cameraView.after(10, displayLive) 
+    
+    if c>0:
+        # Plotting
+        plt.plot(x_times, y_times)
+        plt.title('Line Plot')
+        plt.xlabel('x-axis')
+        plt.ylabel('y-axis')
+        plt.show()
 
 
 
@@ -310,6 +329,7 @@ statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
 #actions
 
 sample_contour = sampleContour()
+
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()
