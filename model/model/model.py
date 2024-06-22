@@ -38,14 +38,35 @@ def get_predictions(A2):
 
 def gradient_descent(X, Y, alpha, iterations):
     W1, b1, W2, b2 = init_params()
+    
+    # Initialize lists to store iteration number and accuracy
+    iteration_list = []
+    accuracy_list = []
+    
     for i in range(iterations):
         Z1, A1, Z2, A2 = forward_prop(W1, b1, W2, b2, X)
         dW1, db1, dW2, db2 = backward_prop(Z1, A1, Z2, A2, W1, W2, X, Y)
         W1, b1, W2, b2 = update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
+        
         if i % 10 == 0:
             print("Iteration: ", i)
             predictions = get_predictions(A2)
-            print(get_accuracy(predictions, Y))
+            accuracy = get_accuracy(predictions, Y)
+            print(accuracy)
+            
+            # Append iteration number and accuracy to lists
+            iteration_list.append(i)
+            accuracy_list.append(accuracy)
+            
+            # Plot the accuracy
+            plt.plot(iteration_list, accuracy_list, label="Accuracy")
+            plt.xlabel('Iterations')
+            plt.ylabel('Accuracy')
+            plt.title('Accuracy vs Iterations')
+            plt.grid(True)
+            plt.pause(0.05)  # Pause to update the plot
+            
+    plt.show()
     return W1, b1, W2, b2
 
 def make_predictions(X, W1, b1, W2, b2):

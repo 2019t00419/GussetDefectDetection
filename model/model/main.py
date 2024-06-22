@@ -3,37 +3,46 @@ import numpy as np
 from model import gradient_descent, make_predictions, init_params, get_accuracy, test_prediction
 from utils import generate_dataset_from_images
 
-def shuffle_data(X, Y):
-    """
-    Shuffle X and Y arrays in unison.
-    """
-    assert len(X) == len(Y)
+def shuffle_data(X):
+
     p = np.random.permutation(len(X))
-    return X[p], Y[p]
+
+    return X[p]
 
 def main():
     # Replace with your folder containing class-separated images
     root_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images'
 
     # Generate dataset from images
-    X_train, Y_train = generate_dataset_from_images(root_folder)
+    dataset= generate_dataset_from_images(root_folder)
 
     # Shuffle dataset
-    X_train, Y_train = shuffle_data(X_train, Y_train)
-
-    # Normalize pixel values
-    X_train = X_train / 255.
+    dataset= shuffle_data(dataset)
 
     # Reshape X_train to (num_features, num_samples)
-    num_samples, img_height, img_width = X_train.shape
-    X_train = X_train.reshape(num_samples, img_height * img_width).T
+    no_samples, no_pixels = dataset.shape
 
     # Split into training and validation sets
     train_ratio = 0.8
-    split_index = int(train_ratio * len(X_train))
+    split_index = int(train_ratio * no_samples)
 
-    X_train_data, X_val_data = X_train[:, :split_index], X_train[:, split_index:]
-    Y_train_data, Y_val_data = Y_train[:split_index], Y_train[split_index:]
+
+    train_data = (dataset[0:split_index].T)
+    X_train_data = train_data[1:no_pixels]/255
+    train_labels = train_data[0]
+
+    val_data = (dataset[0:split_index].T)
+    X_val_data = val_data[1:no_pixels]/255
+    val_labels = val_data[0]
+
+    
+    print(f"X_train_data are :  {X_train_data}")
+    print(f"train_labels are :  {train_labels}")
+    
+    print(f"X_val_data are :  {X_val_data}")
+    print(f"val_labels are :  {val_labels}")
+
+    
 
     # Initialize parameters
     W1, b1, W2, b2 = init_params()
@@ -41,11 +50,12 @@ def main():
     # Train the model
     alpha = 0.10  # Learning rate
     iterations = 500
-    W1, b1, W2, b2 = gradient_descent(X_train_data, Y_train_data, alpha, iterations)
+    W1, b1, W2, b2 = gradient_descent(X_train_data, train_labels, alpha, iterations)
+
 
     # Test predictions
     for i in range(4):
-        test_prediction(i, W1, b1, W2, b2, X_train_data, Y_train_data)
+        test_prediction(i, W1, b1, W2, b2, X_val_data, val_labels)
 
 if __name__ == "__main__":
     main()
