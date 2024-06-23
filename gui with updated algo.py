@@ -7,14 +7,14 @@ import time
 from contourID import identify_edges
 
 cam = cv.VideoCapture(0)  # Use the webcam
+cam.set(cv.CAP_PROP_FRAME_WIDTH, 5000)
+cam.set(cv.CAP_PROP_FRAME_HEIGHT, 5000)
 
 cpu_times = []
 last_update_time = time.time()
 update_interval = 1  # Update FPS every second
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
-detection_length = 600
-detection_height = 460
 
 count = 0
  
@@ -43,12 +43,14 @@ def displayLive():
 
     end_open = time.time()
     open_time = (end_open - start_open) * 1000
-    print("Open time : " + str(open_time) + "ms")
+    #print("Open time : " + str(open_time) + "ms")
     
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     detection_mask = np.zeros_like(grayscale_image)
 
     frame_height, frame_width = grayscale_image.shape
+    detection_length = int(frame_width*0.95)
+    detection_height = int(frame_height*0.95)
     x_margins = int((frame_width - detection_length) / 2)
     y_margins = int((frame_height - detection_height) / 2)
 
@@ -117,7 +119,7 @@ def displayLive():
     end_cpu = time.time()
     cpu_time = (end_cpu - start_cpu) * 1000
     cpu_times.append(cpu_time)
-    print("CPU time : " + str(cpu_time) + "ms")
+    #print("CPU time : " + str(cpu_time) + "ms")
     current_time = time.time()
     if current_time - last_update_time >= update_interval:
         avg_cpu_time = np.mean(cpu_times)
@@ -173,9 +175,9 @@ def displayLive():
 def displayCaptured():
     if not display_live_running:
         return
-
     ret, captured_frame = cam.read()
     if ret:
+        print(f"captured resolution is:{captured_frame.shape}")
         cv.imwrite(f"Images/captured/captured ({count}).jpg", captured_frame)
     else:
         print("Failed to capture image")

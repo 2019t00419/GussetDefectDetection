@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from model import gradient_descent, make_predictions, init_params, get_accuracy, test_prediction
-from utils import generate_dataset_from_images
+from SMDUtils import generate_dataset_from_images
 
 def shuffle_data(X):
 
@@ -9,10 +9,10 @@ def shuffle_data(X):
 
     return X[p]
 
-def main(mode):
+def detectSide(mode):
     if(mode=="train"):
         # Replace with your folder containing class-separated images
-        train_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images/train'
+        train_folder = 'model/data/images/train'
 
         # Generate dataset from images
         train_dataset= generate_dataset_from_images(train_folder)
@@ -46,10 +46,10 @@ def main(mode):
         np.save('model/W2.npy', W2)
         np.save('model/b2.npy', b2)
 
-    elif(mode=="test"):
+    elif(mode=="check"):
 
         
-        valid_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images/valid'
+        valid_folder = 'model/data/images/valid'
         
         valid_dataset= generate_dataset_from_images(valid_folder)
         
@@ -80,4 +80,4 @@ def main(mode):
 
 
 if __name__ == "__main__":
-    main("test")
+    detectSide(mode="check")

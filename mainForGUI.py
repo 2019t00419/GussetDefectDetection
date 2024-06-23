@@ -5,7 +5,7 @@ from balanceOut import outputs
 from contourID import identify_edges
 from miscellaneous import preprocess
 #from fabricDefects import fabric_color
-#from new import new_feature
+from SMDModel import crop_image
 import time
 
 # Check if the file exists
@@ -32,8 +32,6 @@ def main(captured_frame):
     longest_contour,second_longest_contour=identify_edges(contours)
     ret = cv.matchShapes(longest_contour,second_longest_contour,1,0.0)
     #print(ret)
-    #if(longest_contour is not None):    
-        #new_feature(original_frame,longest_contour,c)
 
     if(second_longest_contour is not None):
         total_area = cv.contourArea(longest_contour)
@@ -52,6 +50,8 @@ def main(captured_frame):
                
     
     longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
+    crop_image(original_frame, longest_contour, 0)
+
 
     out=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
         
