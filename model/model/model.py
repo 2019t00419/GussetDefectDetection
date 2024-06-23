@@ -1,11 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+image_width = 100
+
 def init_params():
-    W1 = np.random.rand(10, 784) - 0.5
+    W1 = np.random.rand(10, (image_width**2)) - 0.5
     b1 = np.random.rand(10, 1) - 0.5
-    W2 = np.random.rand(10, 10) - 0.5
-    b2 = np.random.rand(10, 1) - 0.5
+    W2 = np.random.rand(2, 10) - 0.5
+    b2 = np.random.rand(2, 1) - 0.5
     return W1, b1, W2, b2
 
 def forward_prop(W1, b1, W2, b2, X):
@@ -108,7 +110,8 @@ def test_prediction(index, W1, b1, W2, b2, X_train, Y_train):
     print("Prediction: ", prediction)
     print("Label: ", label)
     
-    current_image = current_image.reshape((28, 28)) * 255
+    current_image = current_image.reshape((100, 100)) * 255
     plt.gray()
     plt.imshow(current_image, interpolation='nearest')
     plt.show()
+    return prediction

@@ -7,8 +7,8 @@ def load_images_from_folder(folder, class_label):
     for filename in os.listdir(folder):
         img = Image.open(os.path.join(folder, filename))
         if img is not None:
-            # Convert to grayscale and resize to 28x28
-            img = img.convert('L').resize((28, 28))
+            # Convert to grayscale and resize to 100 x 100
+            img = img.convert('L').resize((100, 100))
             # Flatten the image to 1D array
             flattened_img = np.array(img).flatten()
             # Prepend the class label to the flattened image array

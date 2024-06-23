@@ -52,10 +52,12 @@ def main():
     iterations = 500
     W1, b1, W2, b2 = gradient_descent(X_train_data, train_labels, alpha, iterations)
 
+    val_predictions = []
 
     # Test predictions
-    for i in range(4):
-        test_prediction(i, W1, b1, W2, b2, X_val_data, val_labels)
+    for i in range(len(val_labels)):
+        val_predictions.append(test_prediction(i, W1, b1, W2, b2, X_val_data, val_labels))
 
+    print(f"Validation Accuracy is : {get_accuracy(val_predictions,val_labels)}")
 if __name__ == "__main__":
     main()
