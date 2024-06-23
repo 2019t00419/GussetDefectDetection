@@ -9,55 +9,75 @@ def shuffle_data(X):
 
     return X[p]
 
-def main():
-    # Replace with your folder containing class-separated images
-    root_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images'
+def main(mode):
+    if(mode=="train"):
+        # Replace with your folder containing class-separated images
+        train_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images/train'
 
-    # Generate dataset from images
-    dataset= generate_dataset_from_images(root_folder)
+        # Generate dataset from images
+        train_dataset= generate_dataset_from_images(train_folder)
 
-    # Shuffle dataset
-    dataset= shuffle_data(dataset)
+        # Shuffle dataset
+        train_dataset= shuffle_data(train_dataset)
 
-    # Reshape X_train to (num_features, num_samples)
-    no_samples, no_pixels = dataset.shape
+        # Reshape X_train to (num_features, num_samples)
+        no_samples, no_pixels = train_dataset.shape
 
-    # Split into training and validation sets
-    train_ratio = 0.8
-    split_index = int(train_ratio * no_samples)
+        #train_data = (dataset[0:split_index].T)
+        train_data = train_dataset.T
+        X_train_data = train_data[1:no_pixels]/255
+        train_labels = train_data[0]
+
+        
+        print(f"X_train_data are :  {X_train_data}")
+        print(f"train_labels are :  {train_labels}")
+
+        
+
+        # Initialize parameters
+        W1, b1, W2, b2 = init_params()
+
+        # Train the model
+        alpha = 0.10  # Learning rate
+        iterations = 500
+        W1, b1, W2, b2 = gradient_descent(X_train_data, train_labels, alpha, iterations)
+        np.save('model/W1.npy', W1)
+        np.save('model/b1.npy', b1)
+        np.save('model/W2.npy', W2)
+        np.save('model/b2.npy', b2)
+
+    elif(mode=="test"):
+
+        
+        valid_folder = 'F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/model/data/images/valid'
+        
+        valid_dataset= generate_dataset_from_images(valid_folder)
+        
+        valid_dataset= shuffle_data(valid_dataset)
+
+        
+        no_samples, no_pixels = valid_dataset.shape
+
+        
+
+        val_data = (valid_dataset.T)
+        X_val_data = val_data[1:no_pixels]/255
+        val_labels = val_data[0]
+
+        
+        
+        print(f"X_val_data are :  {X_val_data}")
+        print(f"val_labels are :  {val_labels}")
+
+        # Test predictions
+        W1 = np.load('model/W1.npy', allow_pickle=True)
+        b1 = np.load('model/b1.npy', allow_pickle=True)
+        W2 = np.load('model/W2.npy', allow_pickle=True)
+        b2 = np.load('model/b2.npy', allow_pickle=True)
+
+        for i in range(len(val_labels)):
+            test_prediction(i, W1, b1, W2, b2, X_val_data, val_labels)
 
 
-    train_data = (dataset[0:split_index].T)
-    X_train_data = train_data[1:no_pixels]/255
-    train_labels = train_data[0]
-
-    val_data = (dataset[0:split_index].T)
-    X_val_data = val_data[1:no_pixels]/255
-    val_labels = val_data[0]
-
-    
-    print(f"X_train_data are :  {X_train_data}")
-    print(f"train_labels are :  {train_labels}")
-    
-    print(f"X_val_data are :  {X_val_data}")
-    print(f"val_labels are :  {val_labels}")
-
-    
-
-    # Initialize parameters
-    W1, b1, W2, b2 = init_params()
-
-    # Train the model
-    alpha = 0.10  # Learning rate
-    iterations = 500
-    W1, b1, W2, b2 = gradient_descent(X_train_data, train_labels, alpha, iterations)
-
-    val_predictions = []
-
-    # Test predictions
-    for i in range(len(val_labels)):
-        val_predictions.append(test_prediction(i, W1, b1, W2, b2, X_val_data, val_labels))
-
-    print(f"Validation Accuracy is : {get_accuracy(val_predictions,val_labels)}")
 if __name__ == "__main__":
-    main()
+    main("test")

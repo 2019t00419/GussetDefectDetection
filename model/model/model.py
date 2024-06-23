@@ -2,12 +2,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 image_width = 100
+no_of_neurons = 10
+classes = ["Front","Back"]
 
 def init_params():
-    W1 = np.random.rand(10, (image_width**2)) - 0.5
-    b1 = np.random.rand(10, 1) - 0.5
-    W2 = np.random.rand(2, 10) - 0.5
-    b2 = np.random.rand(2, 1) - 0.5
+    W1 = np.random.rand(no_of_neurons, (image_width**2)) - 0.5
+    b1 = np.random.rand(no_of_neurons, 1) - 0.5
+    W2 = np.random.rand(len(classes), no_of_neurons) - 0.5
+    b2 = np.random.rand(len(classes), 1) - 0.5
     return W1, b1, W2, b2
 
 def forward_prop(W1, b1, W2, b2, X):
@@ -107,8 +109,8 @@ def test_prediction(index, W1, b1, W2, b2, X_train, Y_train):
     current_image = X_train[:, index, None]
     prediction = make_predictions(X_train[:, index, None], W1, b1, W2, b2)
     label = Y_train[index]
-    print("Prediction: ", prediction)
-    print("Label: ", label)
+    print(f"Prediction: {classes[prediction[0]]}")
+    print(f"Label: {classes[label]}")
     
     current_image = current_image.reshape((100, 100)) * 255
     plt.gray()
