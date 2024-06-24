@@ -38,6 +38,8 @@ cap = initialize_webcam(display_width, display_height)
 
 
 def displayLive():
+
+    #Actions initialization and setting
     MA, ma = None,None
     if not display_live_running:
         return
@@ -59,7 +61,7 @@ def displayLive():
     end_open = time.time()
     open_time = (end_open - start_open) * 1000
     #print("Open time : " + str(open_time) + "ms")
-    print(image.shape)
+    #print(image.shape)
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     detection_mask = np.zeros_like(grayscale_image)
 
@@ -68,6 +70,7 @@ def displayLive():
     detection_height = int(frame_height*0.95)
     x_margins = int((frame_width - detection_length) / 2)
     y_margins = int((frame_height - detection_height) / 2)
+
 
     # Create a rectangular mask
     cv.rectangle(detection_mask, (x_margins, y_margins), (frame_width - x_margins, frame_height - y_margins), 255, cv.FILLED)
@@ -134,7 +137,7 @@ def displayLive():
     end_cpu = time.time()
     cpu_time = (end_cpu - start_cpu) * 1000
     cpu_times.append(cpu_time)
-    print("CPU time : " + str(cpu_time) + "ms")
+    #print("CPU time : " + str(cpu_time) + "ms")
     current_time = time.time()
     if current_time - last_update_time >= update_interval:
         avg_cpu_time = np.mean(cpu_times)
@@ -188,6 +191,9 @@ def displayLive():
 
 
 def displayCaptured():
+    
+    ThicknessValue = dropdown_var.get()
+    print(f"The thickness value is {ThicknessValue}")
     if not display_live_running:
         return
     cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
