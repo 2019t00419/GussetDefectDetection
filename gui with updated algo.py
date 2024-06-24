@@ -6,10 +6,6 @@ import numpy as np
 import time
 from contourID import identify_edges
 
-cam = cv.VideoCapture(0)  # Use the webcam
-cam.set(cv.CAP_PROP_FRAME_WIDTH, 5000)
-cam.set(cv.CAP_PROP_FRAME_HEIGHT, 5000)
-
 cpu_times = []
 last_update_time = time.time()
 update_interval = 1  # Update FPS every second
@@ -21,6 +17,25 @@ count = 0
 initial_image = cv.imread("resources/loading.jpg")
 
 display_live_running = False  # Flag to track the running state
+
+# Set resolutions
+display_width, display_height = 640, 480
+capture_width, capture_height = 3840, 2160
+
+# Function to initialize webcam with given resolution
+def initialize_webcam(width, height, backend=cv.CAP_DSHOW):
+    cap = cv.VideoCapture(0, backend)
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
+    return cap
+
+# Open the webcam with low resolution using DirectShow backend
+cap = initialize_webcam(display_width, display_height)
+
+
+
+
+
 
 def displayLive():
     MA, ma = None,None
@@ -35,7 +50,7 @@ def displayLive():
     
     start_cpu = time.time()
     start_open = time.time()
-    success, image = cam.read()
+    success, image = cap.read()
     display_image = image.copy() if success else None
     if not success:
         print("Failed to load video")
@@ -43,8 +58,8 @@ def displayLive():
 
     end_open = time.time()
     open_time = (end_open - start_open) * 1000
-    print("Open time : " + str(open_time) + "ms")
-    
+    #print("Open time : " + str(open_time) + "ms")
+    print(image.shape)
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     detection_mask = np.zeros_like(grayscale_image)
 
@@ -119,7 +134,7 @@ def displayLive():
     end_cpu = time.time()
     cpu_time = (end_cpu - start_cpu) * 1000
     cpu_times.append(cpu_time)
-    #print("CPU time : " + str(cpu_time) + "ms")
+    print("CPU time : " + str(cpu_time) + "ms")
     current_time = time.time()
     if current_time - last_update_time >= update_interval:
         avg_cpu_time = np.mean(cpu_times)
@@ -175,10 +190,17 @@ def displayLive():
 def displayCaptured():
     if not display_live_running:
         return
-    ret, captured_frame = cam.read()
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, capture_height)
+    time.sleep(0.01)  # Allow the camera to adjust
+    
+    ret, captured_frame = cap.read()
     if ret:
         print(f"captured resolution is:{captured_frame.shape}")
         cv.imwrite(f"Images/captured/captured ({count}).jpg", captured_frame)
+        cap.set(cv.CAP_PROP_FRAME_WIDTH, display_width)
+        cap.set(cv.CAP_PROP_FRAME_HEIGHT, display_height)
+        time.sleep(0.01)  # Allow the camera to adjust
     else:
         print("Failed to capture image")
 
