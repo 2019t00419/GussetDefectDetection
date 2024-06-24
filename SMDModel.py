@@ -138,9 +138,9 @@ def detect_side(image_cropped):
     print(f"Prediction: {classes[prediction[0]]}")
     
     reverted_image = reshaped_img.reshape((100, 100)) * 255
-    plt.gray()
-    plt.imshow(reverted_image, interpolation='nearest')
-    plt.show()
+    #plt.gray()
+    #plt.imshow(reverted_image, interpolation='nearest')
+    #plt.show()
 
     return prediction
 

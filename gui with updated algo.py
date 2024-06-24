@@ -43,7 +43,7 @@ def displayLive():
 
     end_open = time.time()
     open_time = (end_open - start_open) * 1000
-    #print("Open time : " + str(open_time) + "ms")
+    print("Open time : " + str(open_time) + "ms")
     
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     detection_mask = np.zeros_like(grayscale_image)
