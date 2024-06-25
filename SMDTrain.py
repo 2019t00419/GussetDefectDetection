@@ -1,11 +1,11 @@
 import os
 import numpy as np
-from SMDModel import gradient_descent, make_predictions, init_params, get_accuracy, test_prediction,detectSide
+from SMDModel import gradient_descent, make_predictions, init_params, get_accuracy, test_prediction
 from SMDUtils import generate_dataset_from_images,shuffle_data
 
 
 def trainSMDModel():
-    # Replace with your folder containing class-separated images
+    #Replace with your folder containing class-separated images
     train_folder = 'SMDModel/data/images/train'
 
     # Generate dataset from images
@@ -33,14 +33,21 @@ def trainSMDModel():
 
     # Train the model
     alpha = 0.10  # Learning rate
-    iterations = 500
+    iterations = 1000
 
     W1, b1, W2, b2 = gradient_descent(X_train_data, train_labels, alpha, iterations)
     np.save('SMDModel/W1.npy', W1)
     np.save('SMDModel/b1.npy', b1)
     np.save('SMDModel/W2.npy', W2)
     np.save('SMDModel/b2.npy', b2)
-        
+
+def validateSMDModel():
+
+    W1 = np.load('SMDModel/W1.npy', allow_pickle=True)
+    b1 = np.load('SMDModel/b1.npy', allow_pickle=True)
+    W2 = np.load('SMDModel/W2.npy', allow_pickle=True)
+    b2 = np.load('SMDModel/b2.npy', allow_pickle=True)
+
     valid_folder = 'SMDModel/data/images/valid'
     
     valid_dataset= generate_dataset_from_images(valid_folder)
@@ -56,8 +63,8 @@ def trainSMDModel():
     X_val_data = val_data[1:no_pixels]/255
     val_labels = val_data[0]
 
-    
-    
+
+
     print(f"X_val_data are :  {X_val_data}")
     print(f"val_labels are :  {val_labels}")
 
@@ -67,3 +74,4 @@ def trainSMDModel():
 
 if __name__ == "__main__":
     trainSMDModel()
+    validateSMDModel()

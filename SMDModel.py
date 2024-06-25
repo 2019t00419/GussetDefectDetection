@@ -4,7 +4,7 @@ from SMDUtils import generate_dataset_from_images,shuffle_data
 import cv2 as cv
 
 image_width = 100
-no_of_neurons = 10
+no_of_neurons = 100
 classes = ["Front","Back"]
 
 def init_params():
@@ -141,8 +141,9 @@ def detect_side(image_cropped):
     #plt.gray()
     #plt.imshow(reverted_image, interpolation='nearest')
     #plt.show()
+    fabric_side = classes[prediction[0]]
 
-    return prediction
+    return fabric_side
 
 
 def detect_side_image_source(image_path):
@@ -193,6 +194,7 @@ def crop_image(original_frame, longest_contour, count):
         return None 
     else:
         frame_height, frame_width, channels = original_frame.shape
+        print(original_frame.shape)
         cx = int(frame_width * (M['m10'] / M['m00']) / 960)
         cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
 
@@ -215,8 +217,8 @@ def crop_image(original_frame, longest_contour, count):
         _, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
         # Display the cropped image
-        #cv.imshow("Otsu cropped Image", otsu_cropped_image)
+        cv.imshow("Otsu cropped Image", otsu_cropped_image)
         cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", otsu_cropped_image)
-        detect_side(otsu_cropped_image)
-    return otsu_cropped_image
+        fabric_side = detect_side(otsu_cropped_image)
+    return fabric_side
 

@@ -4,10 +4,11 @@ from scipy.spatial import KDTree
 
 
 
-def measure_distance_KDTree(longest_contour, second_longest_contour, frame_contours):
-    
-    tolerance = 0.25
-    defective = False
+def checkBalanceOut(longest_contour, second_longest_contour, frame_contours):
+
+    thickness = 4    
+    tolerance = 1
+    balance_out = False
     
     # Convert contours to NumPy arrays for efficient computation
     longest_contour = np.array(longest_contour)
@@ -24,8 +25,8 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
     min_distances, nearest_indices = kdtree.query(second_coords)
     
     # Calculate the average minimum distance
-    avg_dist = np.mean(min_distances)
-    thickness = pix_to_mm(avg_dist)
+    #avg_dist = np.mean(min_distances)
+    #thickness = pix_to_mm(avg_dist)
 
     # Variables for tracking
     itr_count = 0
@@ -47,8 +48,8 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
             sum_distances = 0
             itr_count = 0
             
-            if ((avg_segment_dist > thickness * (1 + tolerance)) or (avg_segment_dist < thickness * (1 - tolerance))):
-                defective = True
+            if ((avg_segment_dist > (thickness + tolerance)) or (avg_segment_dist < (thickness - tolerance))):
+                balance_out = True
                 color = (0, 0, 255)
             else:
                 color = (0, 0, 0)
@@ -61,7 +62,7 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
             x_out_display, y_out_display = longest_coords[nearest_point_index]
             x_in_display, y_in_display = inner_coordinates
 
-    if defective:
+    if balance_out:
         cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
         cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
     else:
@@ -71,12 +72,12 @@ def measure_distance_KDTree(longest_contour, second_longest_contour, frame_conto
     cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
 
 
-    return(defective)
+    return(balance_out)
 
 
 
 
-def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
+def checkContours(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
     frame_height, frame_width, channels = original_frame.shape
     resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
     #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
@@ -114,39 +115,6 @@ def checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest
         #plot the coordinates
     return(longest_contour)
 
-
-        
-def outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,count):
-    if second_longest_contour is not None and longest_contour is not None:
-
-        measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours)
-        #if measure_distance_KDTree(longest_contour,second_longest_contour,frame_contours):
-        #    defect_count=defect_count+1
-        #else :
-        #    non_defect_count=non_defect_count+1
-        
-        total_area = cv.contourArea(longest_contour)
-        fabric_area = cv.contourArea(second_longest_contour)
-        adhesive_area = total_area - fabric_area
-        cv.putText(frame_contours, "Total area : "+str(total_area), (400, 625), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
-        cv.putText(frame_contours, "Fabric_area : "+str(fabric_area), (400, 650), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
-        cv.putText(frame_contours, "Adhesive area : "+str(adhesive_area), (400, 675), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
-        #display(frame_contours,longest_contour)
-        
-        frame_contours_resized = cv.resize(frame_contours, (960, 1280))
-        #cv.imshow('Edges', frame_contours_resized) 
-        
-        cv.imwrite("images\out\output\Output ("+str(count)+").jpg",frame_contours)
-        #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
-    else:
-        #cv.imshow('Edges', original_frame_resized)
-
-        cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
-        print("Invalid contours")
-
-    cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
-    cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
-    return frame_contours
 
 def pix_to_mm(pix):
     convert_factor = 9

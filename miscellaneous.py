@@ -82,7 +82,7 @@ def preprocess_for_detection(image):
     _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
     canny = cv.Canny(blurred_otsu, 100, 200)
-    cv.imshow("canny",canny)
+    #cv.imshow("canny",canny)
     
     # Find contours and draw the bounding box of the largest contour
     contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
@@ -91,7 +91,7 @@ def preprocess_for_detection(image):
 
 
 def calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time):
-    update_interval = 1000  # Update FPS every second
+    update_interval = 1  # Update FPS every second
     cpu_time = (end_cpu - start_cpu) * 1000
     cpu_times.append(cpu_time)
     #print("CPU time : " + str(cpu_time) + "ms")
@@ -100,7 +100,7 @@ def calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time):
         avg_cpu_time = np.mean(cpu_times)
         avg_cpu_fps = 1000 / avg_cpu_time if avg_cpu_time > 0 else 0
 
-        print("Average CPU FPS : " + str(avg_cpu_fps))
+        #print("Average CPU FPS : " + str(avg_cpu_fps))
         cpu_times = []
         last_update_time = current_time
     return avg_cpu_fps

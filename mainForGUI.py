@@ -1,9 +1,10 @@
 import cv2 as cv
 import numpy as np
-from balanceOut import checkBalanceOut,outputs
+from balanceOut import checkContours,checkBalanceOut
 from contourID import identify_edges
 from miscellaneous import preprocess
 from SMDModel import crop_image
+from display_items import outputs
 import time
 
 # Check if the file exists
@@ -12,7 +13,7 @@ source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def main(captured_frame):    
+def generateOutputFrame(captured_frame):    
     c=0
     start_time = time.time()  # Start timex
     #chose read image mode
@@ -47,15 +48,17 @@ def main(captured_frame):
         area_ratio=area_ratio
                
     
-    longest_contour = checkBalanceOut(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
-    crop_image(original_frame, longest_contour, 0)
+    longest_contour = checkContours(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
+
+    balance_out = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
+    fabric_side = crop_image(original_frame, longest_contour, 0)
 
 
-    out=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
+    processed_frame=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
         
     # End of time calculation
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
-    return out
+    return processed_frame,balance_out,fabric_side
 

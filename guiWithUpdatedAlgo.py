@@ -1,7 +1,7 @@
 from customtkinter import *
 import cv2 as cv
 from PIL import Image, ImageTk 
-from mainForGUI import main
+from mainForGUI import generateOutputFrame
 import numpy as np
 import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
@@ -62,7 +62,7 @@ def displayLive():
         ma,MA=rem(cx,cy,box,longest_contour,second_longest_contour,display_image,grayscale_image,canny)
     
             
-    print(captured)
+    #print(captured)
     # Update average FPS every second
     end_cpu = time.time()
 
@@ -84,7 +84,10 @@ def displayLive():
         frame_resized = cv.resize(frame, (480, 640))
     else:
         frame_resized = cv.resize(frame, (640, 480))
-  
+    
+    cv.putText(frame_resized, str(display_image.shape), (10, 10), cv.FONT_HERSHEY_PLAIN, 0.8, (255,255,255), 1, cv.LINE_AA)
+            
+    
     # Convert image from one color space to other 
     camera_frame = cv.cvtColor(frame_resized, cv.COLOR_BGR2RGBA)
   
@@ -146,7 +149,11 @@ def displayCaptured():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
-    processed_frame = main(captured_frame)
+
+    processed_frame,balance_out,fabric_side = generateOutputFrame(captured_frame)
+
+
+    cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
     if processed_frame is None:
         print("Error: File not found.")
     else:     
@@ -171,6 +178,13 @@ def displayCaptured():
     
         # Configure image in the label 
         captureView.configure(image=processed_photo_image) 
+
+        if balance_out:
+            balanceOutText.configure(text=f"Adhesive tape : Balance out")
+        else  :
+            balanceOutText.configure(text=f"Adhesive tape : No Issues")
+
+        sideMixupText.configure(text=f"Fabric side : {fabric_side}")
 
 
 
@@ -249,6 +263,12 @@ statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5) )
 
 statusLabelText = CTkLabel(statusFrame, text="Status will appear here")
 statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
+
+balanceOutText = CTkLabel(statusFrame, text="Balance out detection status will appear here")
+balanceOutText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5) )
+
+sideMixupText = CTkLabel(statusFrame, text="Side mixup detection status will appear here")
+sideMixupText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5) )
 
 #actions
 
