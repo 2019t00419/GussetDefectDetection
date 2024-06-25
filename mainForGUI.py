@@ -1,10 +1,8 @@
 import cv2 as cv
 import numpy as np
-from balanceOut import checkBalanceOut
-from balanceOut import outputs
+from balanceOut import checkBalanceOut,outputs
 from contourID import identify_edges
 from miscellaneous import preprocess
-#from fabricDefects import fabric_color
 from SMDModel import crop_image
 import time
 

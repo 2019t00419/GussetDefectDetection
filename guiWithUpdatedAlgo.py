@@ -4,11 +4,11 @@ from PIL import Image, ImageTk
 from mainForGUI import main
 import numpy as np
 import time
-from contourID import identify_edges
+from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
+from gussetDetection import detect_gusset,rem
 
 cpu_times = []
 last_update_time = time.time()
-update_interval = 1  # Update FPS every second
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
 
@@ -22,19 +22,10 @@ display_live_running = False  # Flag to track the running state
 display_width, display_height = 640, 480
 capture_width, capture_height = 3840, 2160
 
-# Function to initialize webcam with given resolution
-def initialize_webcam(width, height, backend=cv.CAP_DSHOW):
-    cap = cv.VideoCapture(0, backend)
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
-    return cap
+
 
 # Open the webcam with low resolution using DirectShow backend
-cap = initialize_webcam(display_width, display_height)
-
-
-
-
+cap = initialize_cam(display_width, display_height)
 
 
 def displayLive():
@@ -53,7 +44,6 @@ def displayLive():
     start_cpu = time.time()
     start_open = time.time()
     success, image = cap.read()
-    display_image = image.copy() if success else None
     if not success:
         print("Failed to load video")
         return None
@@ -62,90 +52,22 @@ def displayLive():
     open_time = (end_open - start_open) * 1000
     #print("Open time : " + str(open_time) + "ms")
     #print(image.shape)
-    grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    detection_mask = np.zeros_like(grayscale_image)
-
-    frame_height, frame_width = grayscale_image.shape
-    detection_length = int(frame_width*0.95)
-    detection_height = int(frame_height*0.95)
-    x_margins = int((frame_width - detection_length) / 2)
-    y_margins = int((frame_height - detection_height) / 2)
-
-
-    # Create a rectangular mask
-    cv.rectangle(detection_mask, (x_margins, y_margins), (frame_width - x_margins, frame_height - y_margins), 255, cv.FILLED)
-
-    # Draw the rectangle on the display image for visualization
-    cv.rectangle(display_image, (x_margins, y_margins), (frame_width - x_margins, frame_height - y_margins), (255, 255, 255), 2)
-
-    # Apply the mask to the grayscale image
-    masked_grayscale_image = cv.bitwise_and(grayscale_image, grayscale_image, mask=detection_mask)
-
-    # Show the masked grayscale image
-    # CPU operations
-    blurred_image = cv.GaussianBlur(masked_grayscale_image, (5, 5), 0)
-    _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
-    canny = cv.Canny(blurred_otsu, 100, 200)
+    contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,canny = preprocess_for_detection(image)
+    gussetIdentified,cx,cy,box,longest_contour,second_longest_contour,display_image,grayscale_image,captured = detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,captured)
+    if gussetIdentified :
+        if cx > (frame_width / 2) and not captured:
+            captured = True
+            displayCaptured()
+            count += 1
+        ma,MA=rem(cx,cy,box,longest_contour,second_longest_contour,display_image,grayscale_image,canny)
     
-    # Find contours and draw the bounding box of the largest contour
-    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-
-
-
-    if contours:
-        
-        longest_contour,second_longest_contour=identify_edges(contours)
-
-        x, y, w, h = cv.boundingRect(longest_contour)
-        cv.rectangle(display_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        if (x < x_margins) or (y < y_margins) or ((x+w) > (frame_width-x_margins)) or ((y+h) > (frame_height-y_margins)):
-            captured = False
-        else:
-            rect = cv.minAreaRect(longest_contour)
-            box = cv.boxPoints(rect)
-            box = np.int0(box)
-
-            M = cv.moments(box)
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-
-            cv.circle(display_image, (cx, cy), 5, (255, 0, 0), cv.FILLED)
-            if cx > (frame_width / 2) and not captured:
-                captured = True
-                displayCaptured()
-                count += 1
-
-            cv.drawContours(display_image, [box], 0, (0, 0, 255), 2)
-
-            (x, y), (MA, ma), angle = cv.fitEllipse(longest_contour)
-            #cv.putText(display_image, f"Major axis length: {int(MA)}    Minor axis length: {int(ma)}", (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
             
-            # Create a mask for the largest contour
-            mask = np.zeros_like(grayscale_image)
-            cv.drawContours(mask, [longest_contour], -1, 255, thickness=cv.FILLED)
-            cv.drawContours(canny, [longest_contour], -1, 0, 2)
-            ret = cv.matchShapes(longest_contour,sample_contour,1,0.0)
-
-            if ret<0.5:
-                if second_longest_contour is not None:
-                    cv.drawContours(display_image, [second_longest_contour], -1, (255, 0, 255), 1)
-                    cv.drawContours(display_image, [longest_contour], -1, (255, 0, 0), 1)
-
+    print(captured)
     # Update average FPS every second
     end_cpu = time.time()
-    cpu_time = (end_cpu - start_cpu) * 1000
-    cpu_times.append(cpu_time)
-    #print("CPU time : " + str(cpu_time) + "ms")
-    current_time = time.time()
-    if current_time - last_update_time >= update_interval:
-        avg_cpu_time = np.mean(cpu_times)
-        avg_cpu_fps = 1000 / avg_cpu_time if avg_cpu_time > 0 else 0
 
-        print("Average CPU FPS : " + str(avg_cpu_fps))
-        cpu_times = []
-        last_update_time = current_time
+    avg_cpu_fps = calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time)
+    
 
     # Display original image with bounding box, average FPS, and average color
     #cv.putText(display_image, f"CPU FPS: {avg_cpu_fps:.2f}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
@@ -170,7 +92,11 @@ def displayLive():
     captured_image = Image.fromarray(camera_frame) 
   
     # Convert captured image to photoimage 
-    photo_image = ImageTk.PhotoImage(image=captured_image) 
+    #photo_image = ImageTk.PhotoImage(image=captured_image) 
+
+    # Convert captured image to CTkImage
+    photo_image = CTkImage(light_image=captured_image, size=(cameraView.winfo_width(), cameraView.winfo_height()))
+
   
     # Displaying photoimage in the label 
     cameraView.photo_image = photo_image 
@@ -235,7 +161,10 @@ def displayCaptured():
         processed_frame_resized_image = Image.fromarray(processed_frame_resized) 
     
         # Convert captured image to photoimage 
-        processed_photo_image = ImageTk.PhotoImage(image=processed_frame_resized_image) 
+        #processed_photo_image = ImageTk.PhotoImage(image=processed_frame_resized_image) 
+        
+        processed_photo_image = CTkImage(light_image=processed_frame_resized_image, size=(cameraView.winfo_width(), cameraView.winfo_height()))
+
     
         # Displaying photoimage in the label 
         captureView.photo_image = processed_photo_image
@@ -243,23 +172,7 @@ def displayCaptured():
         # Configure image in the label 
         captureView.configure(image=processed_photo_image) 
 
-def sampleContour():
-    image = cv.imread("Images/sample/sample (0).jpg")
-    
-    
-    grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
-    blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
-
-    _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
-    canny = cv.Canny(blurred_otsu, 100, 200)
-    
-    # Find contours and draw the bounding box of the largest contour
-    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-    if contours:
-        sample_contour = max(contours, key=cv.contourArea)
-        return sample_contour
 
 def toggle_display():
     global display_live_running
@@ -338,8 +251,6 @@ statusLabelText = CTkLabel(statusFrame, text="Status will appear here")
 statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
 
 #actions
-
-sample_contour = sampleContour()
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()

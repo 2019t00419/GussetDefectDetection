@@ -189,31 +189,34 @@ def detect_side_image_source(image_path):
 
 def crop_image(original_frame, longest_contour, count):
     M = cv.moments(longest_contour)
+    if M['m00'] == 0:
+        return None 
+    else:
+        frame_height, frame_width, channels = original_frame.shape
+        cx = int(frame_width * (M['m10'] / M['m00']) / 960)
+        cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
 
-    frame_height, frame_width, channels = original_frame.shape
-    cx = int(frame_width * (M['m10'] / M['m00']) / 960)
-    cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
+        print("Center point = (" + str(cx) + "," + str(cy) + ")")
 
-    print("Center point = (" + str(cx) + "," + str(cy) + ")")
+        # Define the coordinates
+        tlx, tly = cx - 50, cy - 50  # Top-left corner
+        brx, bry = cx + 50, cy + 50  # Bottom-right corner
 
-    # Define the coordinates
-    tlx, tly = cx - 50, cy - 50  # Top-left corner
-    brx, bry = cx + 50, cy + 50  # Bottom-right corner
+        print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
+        print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
 
-    print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
-    print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
+        # Ensure the coordinates define a square area
+        if abs(tlx - brx) != abs(tly - bry):
+            raise ValueError("The provided coordinates do not define a square area.")
 
-    # Ensure the coordinates define a square area
-    if abs(tlx - brx) != abs(tly - bry):
-        raise ValueError("The provided coordinates do not define a square area.")
+        # Crop the image
+        cropped_image = original_frame[tly:bry, tlx:brx]
+        grayscale_cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+        _, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-    # Crop the image
-    cropped_image = original_frame[tly:bry, tlx:brx]
-    grayscale_cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-    _, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-
-    # Display the cropped image
-    #cv.imshow("Otsu cropped Image", otsu_cropped_image)
-    cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", otsu_cropped_image)
-    detect_side(otsu_cropped_image)
+        # Display the cropped image
+        #cv.imshow("Otsu cropped Image", otsu_cropped_image)
+        cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", otsu_cropped_image)
+        detect_side(otsu_cropped_image)
+    return otsu_cropped_image
 

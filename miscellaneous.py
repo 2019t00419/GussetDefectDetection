@@ -1,7 +1,8 @@
 import os
 import cv2 as cv
-from skimage.feature import local_binary_pattern
 import numpy as np
+import time
+
 
 
 
@@ -16,10 +17,12 @@ def openFile(count):
 
 
 
-def camera(source):
-    _,original_frame=source.read()
-    #cv.imshow('Original Image', original_frame)
-    return original_frame
+# Function to initialize webcam with given resolution
+def initialize_cam(width, height, backend=cv.CAP_DSHOW):
+    cap = cv.VideoCapture(0, backend)
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
+    return cap
 
 
 
@@ -50,3 +53,54 @@ def preprocess(original_frame,c):
 
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
+
+def preprocess_for_detection(image):
+    
+    display_image = image.copy()
+    grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    detection_mask = np.zeros_like(grayscale_image)
+
+    frame_height, frame_width = grayscale_image.shape
+    detection_length = int(frame_width*0.95)
+    detection_height = int(frame_height*0.95)
+    x_margins = int((frame_width - detection_length) / 2)
+    y_margins = int((frame_height - detection_height) / 2)
+
+
+    # Create a rectangular mask
+    cv.rectangle(detection_mask, (x_margins, y_margins), (frame_width - x_margins, frame_height - y_margins), 255, cv.FILLED)
+
+    # Draw the rectangle on the display image for visualization
+    cv.rectangle(display_image, (x_margins, y_margins), (frame_width - x_margins, frame_height - y_margins), (255, 255, 255), 2)
+
+    # Apply the mask to the grayscale image
+    masked_grayscale_image = cv.bitwise_and(grayscale_image, grayscale_image, mask=detection_mask)
+
+    # Show the masked grayscale image
+    # CPU operations
+    blurred_image = cv.GaussianBlur(masked_grayscale_image, (5, 5), 0)
+    _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
+    canny = cv.Canny(blurred_otsu, 100, 200)
+    cv.imshow("canny",canny)
+    
+    # Find contours and draw the bounding box of the largest contour
+    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+
+    return contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,canny
+
+
+def calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time):
+    update_interval = 1000  # Update FPS every second
+    cpu_time = (end_cpu - start_cpu) * 1000
+    cpu_times.append(cpu_time)
+    #print("CPU time : " + str(cpu_time) + "ms")
+    current_time = time.time()
+    if current_time - last_update_time >= update_interval:
+        avg_cpu_time = np.mean(cpu_times)
+        avg_cpu_fps = 1000 / avg_cpu_time if avg_cpu_time > 0 else 0
+
+        print("Average CPU FPS : " + str(avg_cpu_fps))
+        cpu_times = []
+        last_update_time = current_time
+    return avg_cpu_fps
