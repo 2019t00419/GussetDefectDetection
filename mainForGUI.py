@@ -3,7 +3,7 @@ import numpy as np
 from balanceOut import checkContours,checkBalanceOut
 from contourID import identify_edges
 from miscellaneous import preprocess
-from SMDModel import crop_image
+from SMDYOLO import crop_image
 from display_items import outputs
 import time
 
@@ -49,14 +49,16 @@ def generateOutputFrame(captured_frame):
                
     
     longest_contour = checkContours(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
-
-    balance_out = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
-    fabric_side = crop_image(original_frame, longest_contour, 0)
-
+    if longest_contour is not None:
+        balance_out = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
+        fabric_side = crop_image(original_frame, longest_contour, 0)
+    else:
+        balance_out="error"
+        fabric_side = "error"
 
     processed_frame=outputs(longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,c)
-        
-    # End of time calculation
+            
+        # End of time calculation
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 

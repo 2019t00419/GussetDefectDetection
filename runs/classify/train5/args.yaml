@@ -2,7 +2,7 @@ task: classify
 mode: train
 model: yolov8n-cls.pt
 data: F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/data
-epochs: 1
+epochs: 20
 time: null
 patience: 100
 batch: 16

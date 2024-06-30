@@ -5,7 +5,7 @@ from mainForGUI import generateOutputFrame
 import numpy as np
 import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
-from gussetDetection import detect_gusset,rem
+from gussetDetection import detect_gusset,rem,sampleContour
 
 cpu_times = []
 last_update_time = time.time()
@@ -26,15 +26,9 @@ capture_width, capture_height = 3840, 2160
 
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)
-
+sampleContour()
 
 def displayLive():
-
-    #Actions initialization and setting
-    MA, ma = None,None
-    if not display_live_running:
-        return
-    
     global captured
     global count
     global cpu_times
@@ -42,81 +36,52 @@ def displayLive():
     global last_update_time
     
     start_cpu = time.time()
-    start_open = time.time()
     success, image = cap.read()
     if not success:
         print("Failed to load video")
         return None
 
-    end_open = time.time()
-    open_time = (end_open - start_open) * 1000
-    #print("Open time : " + str(open_time) + "ms")
-    #print(image.shape)
-    contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,canny = preprocess_for_detection(image)
-    gussetIdentified,cx,cy,box,longest_contour,second_longest_contour,display_image,grayscale_image,captured = detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,captured)
-    if gussetIdentified :
+    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
+    gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA = detect_gusset(
+        contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
+
+    if gussetIdentified:
         if cx > (frame_width / 2) and not captured:
             captured = True
             displayCaptured()
             count += 1
-        ma,MA=rem(cx,cy,box,longest_contour,second_longest_contour,display_image,grayscale_image,canny)
-    
-            
-    #print(captured)
-    # Update average FPS every second
+
     end_cpu = time.time()
-
-    avg_cpu_fps = calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time)
     
+    avg_cpu_fps, last_update_time, cpu_times = calculateFPS(cpu_times, end_cpu, start_cpu, last_update_time, avg_cpu_fps)
 
-    # Display original image with bounding box, average FPS, and average color
-    #cv.putText(display_image, f"CPU FPS: {avg_cpu_fps:.2f}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv.LINE_AA)
-    cv.line(display_image, (int(frame_width/2), 0), (int(frame_width/2), int(frame_height)), (0, 255, 0), 2)
+    cv.line(display_image, (int(frame_width / 2), 0), (int(frame_width / 2), int(frame_height)), (0, 255, 0), 2)
 
     frame = display_image.copy()
-
     if frame is None:
         frame = initial_image
 
     frame_height, frame_width, channels = frame.shape
-    if frame_height/frame_width < 1:
+    if frame_height / frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         frame_resized = cv.resize(frame, (480, 640))
     else:
         frame_resized = cv.resize(frame, (640, 480))
-    
-    cv.putText(frame_resized, str(display_image.shape), (10, 10), cv.FONT_HERSHEY_PLAIN, 0.8, (255,255,255), 1, cv.LINE_AA)
-            
-    
-    # Convert image from one color space to other 
+
+    cv.putText(frame_resized, str(display_image.shape), (10, 10), cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), 1, cv.LINE_AA)
+
     camera_frame = cv.cvtColor(frame_resized, cv.COLOR_BGR2RGBA)
-  
-    # Capture the latest frame and transform to image 
-    captured_image = Image.fromarray(camera_frame) 
-  
-    # Convert captured image to photoimage 
-    #photo_image = ImageTk.PhotoImage(image=captured_image) 
-
-    # Convert captured image to CTkImage
+    captured_image = Image.fromarray(camera_frame)
     photo_image = CTkImage(light_image=captured_image, size=(cameraView.winfo_width(), cameraView.winfo_height()))
-
-  
-    # Displaying photoimage in the label 
-    cameraView.photo_image = photo_image 
-  
-    # Configure image in the label 
-    cameraView.configure(image=photo_image) 
+    cameraView.photo_image = photo_image
+    cameraView.configure(image=photo_image)
 
     if ma is not None:
         statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)} \n \nGusset detected\nMajor axis length: {int(ma)}    Minor axis length: {int(MA)}")
-    else  :
+    else:
         statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)}")
-            
-  
-    # Repeat the same process after every 10 seconds 
-    cameraView.after(10, displayLive) 
 
-
+    cameraView.after(10, displayLive)
 
 
 def displayCaptured():
@@ -199,19 +164,29 @@ def toggle_display():
         startButton.configure(text="Start")
 
 
-# Create a GUI app
+
+# Create the main application window
 app = CTk()
-# Bind the app with Escape keyboard to
-# quit app whenever pressed
+
+# Bind the app with Escape keyboard to quit app whenever pressed
 app.bind('<Escape>', lambda e: app.quit())
 
 # Create frames to simulate borders for image views
 captureFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 cameraFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 
+cameraViewWidth = 480
+cameraViewHeight = 640
+
+# Load initial images
+initial_image_path = "resources/sample.png"  # Replace with your image path
+initial_image = Image.open(initial_image_path)
+#initial_image_tk = ImageTk.PhotoImage(initial_image)
+initial_image_tk = CTkImage(light_image=initial_image, size=(cameraViewWidth, cameraViewHeight))
+
 # Set specific sizes for image views
-captureView = CTkLabel(captureFrame,text="", width=480, height=640)
-cameraView = CTkLabel(cameraFrame,text="", width=480, height=640)
+captureView = CTkLabel(captureFrame, text="", width=cameraViewWidth, height=cameraViewHeight, image=initial_image_tk)
+cameraView = CTkLabel(cameraFrame, text="", width=cameraViewWidth, height=cameraViewHeight, image=initial_image_tk)
 
 captureView.pack(padx=5, pady=5)
 cameraView.pack(padx=5, pady=5)
@@ -222,7 +197,7 @@ cameraFrame.grid(row=1, column=0, rowspan=6, padx=(0, 10), pady=(10, 5))
 
 # Create a button to open the camera in GUI app
 startButton = CTkButton(app, text="Start", command=toggle_display)
-startButton.grid(row=3, column=3,padx=(10, 5), pady=(10, 5))
+startButton.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
 
 # Add Labels
 liveViewLabel = CTkLabel(app, text="Live Camera View")
@@ -231,10 +206,8 @@ liveViewLabel.grid(row=0, column=0, padx=(10, 5), pady=(10, 5))
 capturedViewLabel = CTkLabel(app, text="Captured View")
 capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
 
-
 settingsLabel = CTkLabel(app, text="Settings")
 settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
-
 
 thicknessLabel = CTkLabel(app, text="Thickness")
 thicknessLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
@@ -249,9 +222,9 @@ dropdown_var = StringVar(value="4mm")
 dropdown_menu = CTkOptionMenu(app, variable=dropdown_var, values=["4mm", "6mm"])
 dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
 
-
 statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
 statusFrame.grid(row=4, column=2, columnspan=2, rowspan=3, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
 # Ensure the rows and columns expand proportionally
 app.grid_rowconfigure(4, weight=1)
 app.grid_columnconfigure(2, weight=1)
@@ -259,18 +232,16 @@ app.grid_rowconfigure(5, weight=1)
 app.grid_columnconfigure(3, weight=1)
 
 statusLabel = CTkLabel(statusFrame, text="Status")
-statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5) )
+statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
 
 statusLabelText = CTkLabel(statusFrame, text="Status will appear here")
-statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5) )
+statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 
 balanceOutText = CTkLabel(statusFrame, text="Balance out detection status will appear here")
-balanceOutText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5) )
+balanceOutText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
 
 sideMixupText = CTkLabel(statusFrame, text="Side mixup detection status will appear here")
-sideMixupText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5) )
-
-#actions
+sideMixupText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5))
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()

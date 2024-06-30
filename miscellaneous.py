@@ -89,18 +89,16 @@ def preprocess_for_detection(image):
 
     return contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,canny
 
-
-def calculateFPS(cpu_times,end_cpu,start_cpu,last_update_time):
+def calculateFPS(cpu_times, end_cpu, start_cpu, last_update_time, avg_cpu_fps):
     update_interval = 1  # Update FPS every second
     cpu_time = (end_cpu - start_cpu) * 1000
     cpu_times.append(cpu_time)
-    #print("CPU time : " + str(cpu_time) + "ms")
     current_time = time.time()
+    
     if current_time - last_update_time >= update_interval:
         avg_cpu_time = np.mean(cpu_times)
         avg_cpu_fps = 1000 / avg_cpu_time if avg_cpu_time > 0 else 0
-
-        #print("Average CPU FPS : " + str(avg_cpu_fps))
-        cpu_times = []
+        cpu_times.clear()  # Clear the list for the next interval
         last_update_time = current_time
-    return avg_cpu_fps
+    
+    return avg_cpu_fps, last_update_time, cpu_times
