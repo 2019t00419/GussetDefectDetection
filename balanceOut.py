@@ -75,47 +75,6 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours):
     return(balance_out)
 
 
-
-
-def checkContours(original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
-    frame_height, frame_width, channels = original_frame.shape
-    resolution_factor = int(((frame_height ** 2) + (frame_width ** 2)) ** 0.5)
-    #print("Resolution of the image is : "+str((frame_height*frame_width)/1000000)+"MP")
-    #print("Resolution factor is : "+str(resolution_factor))
-
-
-    if longest_contour is not None:
-        y_limit=frame_height+900
-        x_bound,y_bound,w_bound,h_bound = cv.boundingRect(longest_contour)
-        #print("Y limit = "+str(y_limit))
-        #print("Frame edge = "+str(frame_height))
-        #print("Bounding box edge = "+str(y_bound+h_bound))
-        cv.line(frame_contours, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
-        cv.line(original_frame_resized, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
-        cv.line(original_frame, (0, y_limit), (frame_width, y_limit), (0,0,255), 2)
-        if(y_bound+h_bound < y_limit):
-            cv.rectangle(frame_contours,(x_bound,y_bound),(x_bound+w_bound,y_bound+h_bound),(0,255,0),2)
-                
-            #draw contours on to the frame
-            cv.drawContours(frame_contours, [longest_contour], -1, (0, 255, 0), thickness=3)
-            
-            #complete the incomplete coordinates
-            #longest_contour=fill_coordinates(longest_contour)
-        else:
-            longest_contour = None
-    else:
-        #cv.imshow('Edges', original_frame)
-        print("Invalid contours")
-
-    if second_longest_contour is not None: 
-        #draw contours on to the frame   
-        cv.drawContours(frame_contours, [second_longest_contour], -1, (0, 0, 255), thickness=3)
-        #complete the incomplete coordinates
-        #second_longest_contour=fill_coordinates(second_longest_contour)
-        #plot the coordinates
-    return(longest_contour)
-
-
 def pix_to_mm(pix):
     convert_factor = 9
     mm = pix/convert_factor

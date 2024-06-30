@@ -5,7 +5,7 @@ from mainForGUI import generateOutputFrame
 import numpy as np
 import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
-from gussetDetection import detect_gusset,rem,sampleContour
+from gussetDetection import detect_gusset,sampleContour
 
 cpu_times = []
 last_update_time = time.time()
@@ -42,15 +42,18 @@ def displayLive():
         return None
 
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
-    gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA = detect_gusset(
-        contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
+    gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
 
     if gussetIdentified:
         if cx > (frame_width / 2) and not captured:
             captured = True
             displayCaptured()
             count += 1
-
+        statusLabelText.configure(text=f"Gusset detected")
+        confidenceText.configure(text=f"{int(confidence)}% Confidence")
+    else :
+        statusLabelText.configure(text=f"Searching")
+        confidenceText.configure(text=f"")
     end_cpu = time.time()
     
     avg_cpu_fps, last_update_time, cpu_times = calculateFPS(cpu_times, end_cpu, start_cpu, last_update_time, avg_cpu_fps)
@@ -76,10 +79,7 @@ def displayLive():
     cameraView.photo_image = photo_image
     cameraView.configure(image=photo_image)
 
-    if ma is not None:
-        statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)} \n \nGusset detected\nMajor axis length: {int(ma)}    Minor axis length: {int(MA)}")
-    else:
-        statusLabelText.configure(text=f"FPS : {int(avg_cpu_fps)}")
+    fpsText.configure(text=f"FPS : {int(avg_cpu_fps)}")
 
     cameraView.after(10, displayLive)
 
@@ -115,7 +115,7 @@ def displayCaptured():
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
-    processed_frame,balance_out,fabric_side = generateOutputFrame(captured_frame)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame)
 
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
@@ -144,12 +144,13 @@ def displayCaptured():
         # Configure image in the label 
         captureView.configure(image=processed_photo_image) 
 
-        if balance_out:
-            balanceOutText.configure(text=f"Adhesive tape : Balance out")
-        else  :
-            balanceOutText.configure(text=f"Adhesive tape : No Issues")
-
+        
+        gussetSideText.configure(text=f"Gusset side : {gusset_side}")
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
+        if gusset_side == "Front":
+            balanceOutText.configure(text=f"")
+        elif gusset_side == "Back":
+            balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
 
 
 
@@ -214,6 +215,7 @@ thicknessLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
 
 styleLabel = CTkLabel(app, text="Style")
 styleLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+
 styleentry1 = CTkEntry(app)
 styleentry1.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
 
@@ -223,7 +225,10 @@ dropdown_menu = CTkOptionMenu(app, variable=dropdown_var, values=["4mm", "6mm"])
 dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
 
 statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
-statusFrame.grid(row=4, column=2, columnspan=2, rowspan=3, padx=(10, 5), pady=(10, 5), sticky="nsew")
+statusFrame.grid(row=4, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
+defectsFrame.grid(row=5, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 # Ensure the rows and columns expand proportionally
 app.grid_rowconfigure(4, weight=1)
@@ -231,17 +236,26 @@ app.grid_columnconfigure(2, weight=1)
 app.grid_rowconfigure(5, weight=1)
 app.grid_columnconfigure(3, weight=1)
 
-statusLabel = CTkLabel(statusFrame, text="Status")
+statusLabel = CTkLabel(statusFrame, text="Program Status")
 statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
 
-statusLabelText = CTkLabel(statusFrame, text="Status will appear here")
+fpsText = CTkLabel(statusFrame, text="")
+fpsText.grid(row=0, column=1, padx=(10, 10), pady=(10, 5))
+
+statusLabelText = CTkLabel(statusFrame, text="")
 statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 
-balanceOutText = CTkLabel(statusFrame, text="Balance out detection status will appear here")
-balanceOutText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
+confidenceText = CTkLabel(statusFrame, text="")
+confidenceText.grid(row=1, column=1, padx=(10, 10), pady=(10, 5))
 
-sideMixupText = CTkLabel(statusFrame, text="Side mixup detection status will appear here")
-sideMixupText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5))
+gussetSideText = CTkLabel(defectsFrame, text="")
+gussetSideText.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+
+balanceOutText = CTkLabel(defectsFrame, text="")
+balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
+
+sideMixupText = CTkLabel(defectsFrame, text="")
+sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()
