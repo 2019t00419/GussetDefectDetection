@@ -27,7 +27,7 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
             confidence = (1-ret)*100
             if confidence <= 0:
                 confidence = 0
-            print(f"Gusset detection confidence is {confidence}%")
+            #print(f"Gusset detection confidence is {confidence}%")
                     
             if ret<0.2:
                 if second_longest_contour is not None:

@@ -2,6 +2,7 @@ import os
 import cv2 as cv
 import numpy as np
 import time
+from contourID import identify_edges
 
 
 
@@ -26,7 +27,7 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 
 
 
-def preprocess(original_frame,c):
+def preprocess(original_frame,style):
     threshold1=100
     threshold2=200
 
@@ -47,19 +48,35 @@ def preprocess(original_frame,c):
 
     # Apply Canny edge detection
     canny = cv.Canny(blurred_otsu, threshold1, threshold2)
-    canny_resized = cv.resize(canny, (960, 1280))
 
     #cv.imshow('Canny Edge', canny)
+    if style == "Light":
+        light_gusset_fabric(original_frame_resized,canny)
 
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
 
+def light_gusset_fabric(original_frame,canny):
+    hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
+
+    # Extract the saturatin channel
+    s_channel = hsv[:, :, 1]
+
+    # process the saturation channel for edge detection
+    blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
+    _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    blurred_otsu_s_channel = cv.GaussianBlur(thresholded_s_channel, (5, 5), 0)
+    canny_s_channel = cv.Canny(blurred_otsu_s_channel, 100, 200)
+    s_channel_contours, _ = cv.findContours(canny_s_channel, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    
+    longest_contour,_=identify_edges(s_channel_contours)
+    cv.drawContours(canny, [longest_contour], -1, 255, 1)
 
 
-
-def preprocess_for_detection(image):
+def preprocess_for_detection(image,style):
     
     display_image = image.copy()
+    light_image = image.copy()
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     detection_mask = np.zeros_like(grayscale_image)
 
@@ -85,6 +102,10 @@ def preprocess_for_detection(image):
     _, cpu_thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
     canny = cv.Canny(blurred_otsu, 100, 200)
+
+    if style == "Light":
+        light_gusset_fabric(light_image,canny)
+        
     #cv.imshow("canny",canny)
     
     # Find contours and draw the bounding box of the largest contour

@@ -14,7 +14,7 @@ source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def generateOutputFrame(captured_frame):    
+def generateOutputFrame(captured_frame,style):    
     c=0
     gusset_identified = False
     gusset_side = "Not identified"
@@ -28,16 +28,20 @@ def generateOutputFrame(captured_frame):
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,c)    
+    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style)    
     frame_contours = original_frame_resized.copy()
     
     processed_frame = original_frame_resized.copy()
     
+    
+    canny_resized = cv.resize(canny, (480, 640))
+    cv.imshow("canny",canny_resized)
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     # Find the longest contour
     longest_contour,second_longest_contour=identify_edges(contours)
+    print(second_longest_contour)
     sample_Contour = sampleContour()
     
     if longest_contour is not None:
@@ -52,7 +56,8 @@ def generateOutputFrame(captured_frame):
                 total_area = cv.contourArea(longest_contour)
                 fabric_area = cv.contourArea(second_longest_contour)
                 area_ratio = fabric_area/total_area
-                if match_fabric_shape < 0.2 and area_ratio > 0.5:
+                print (match_fabric_shape)
+                if match_fabric_shape < 0.25 and area_ratio > 0.5:
                     gusset_side = "Back"
                 else :
                     gusset_side = "Front"
@@ -88,7 +93,7 @@ def generateOutputFrame(captured_frame):
 
 
 
-def generateOutputFrame_(captured_frame):    
+def generateOutputFrame_(captured_frame,style):    
     c=0
     start_time = time.time()  # Start timex
     #chose read image mode
@@ -96,7 +101,7 @@ def generateOutputFrame_(captured_frame):
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,c)    
+    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style)    
     frame_contours = original_frame_resized.copy()
     
     # Find contours

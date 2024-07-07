@@ -11,6 +11,7 @@ cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
+style =  "Light"
 
 count = 0
  
@@ -51,7 +52,7 @@ def displayLive():
         return None
 
     #preprocessing the low res images for gusset detection process
-    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
+    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,style)
     #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
 
@@ -136,7 +137,7 @@ def displayCaptured():
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style)
 
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
