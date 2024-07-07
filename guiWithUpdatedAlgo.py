@@ -26,40 +26,61 @@ capture_width, capture_height = 3840, 2160
 
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)
+#run sampleContour one time at the start of the program
 sampleContour()
 
+
+#define the live diplay function for displaying live eed from the camera
 def displayLive():
+    #define global variables
     global captured
     global count
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-    
+
+    #track computation time for framerate calculation
     start_cpu = time.time()
+
+    #Read the current frame from the low res camera instance "cap"
     success, image = cap.read()
+
+    #Error handing for failing to load current frame
     if not success:
         print("Failed to load video")
         return None
 
+    #preprocessing the low res images for gusset detection process
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
+    #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
 
+    #process handling for status of gusset identification
     if gussetIdentified:
+        #check if the center of the gusset is passed the center line of the frame and if the current gusset is captured before
         if cx > (frame_width / 2) and not captured:
+            #set the captured status to true and display the captured image.
             captured = True
             displayCaptured()
             count += 1
+        #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
         confidenceText.configure(text=f"{int(confidence)}% Confidence")
     else :
+        #update the status label as searching
         statusLabelText.configure(text=f"Searching")
         confidenceText.configure(text=f"")
+    #end the time tracking    
     end_cpu = time.time()
     
+    #calcuate the average fps during 1 seceond
     avg_cpu_fps, last_update_time, cpu_times = calculateFPS(cpu_times, end_cpu, start_cpu, last_update_time, avg_cpu_fps)
 
+    #display the center line on the live feed
     cv.line(display_image, (int(frame_width / 2), 0), (int(frame_width / 2), int(frame_height)), (0, 255, 0), 2)
 
+    #modifying the resultant frame for displaying on live feed
+    #display_image was replaced using canny for experimental purpose.
     frame = canny.copy()
     if frame is None:
         frame = initial_image
