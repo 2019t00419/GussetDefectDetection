@@ -18,6 +18,10 @@ def generateOutputFrame(captured_frame):
     c=0
     gusset_identified = False
     gusset_side = "Not identified"
+    processed_frame = None
+    balance_out = "Error"
+    fabric_side = "error"
+
     start_time = time.time()  # Start timex
     #chose read image mode
     original_frame = captured_frame
@@ -26,6 +30,8 @@ def generateOutputFrame(captured_frame):
     
     original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,c)    
     frame_contours = original_frame_resized.copy()
+    
+    processed_frame = original_frame_resized.copy()
     
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)

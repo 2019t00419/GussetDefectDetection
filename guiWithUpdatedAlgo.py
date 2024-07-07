@@ -60,11 +60,11 @@ def displayLive():
 
     cv.line(display_image, (int(frame_width / 2), 0), (int(frame_width / 2), int(frame_height)), (0, 255, 0), 2)
 
-    frame = display_image.copy()
+    frame = canny.copy()
     if frame is None:
         frame = initial_image
 
-    frame_height, frame_width, channels = frame.shape
+    frame_height, frame_width= frame.shape
     if frame_height / frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         frame_resized = cv.resize(frame, (480, 640))

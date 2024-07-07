@@ -54,6 +54,9 @@ def preprocess(original_frame,c):
 
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
 
+
+
+
 def preprocess_for_detection(image):
     
     display_image = image.copy()

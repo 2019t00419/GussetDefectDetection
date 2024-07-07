@@ -22,9 +22,6 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
             #cv.putText(display_image, f"Major axis length: {int(MA)}    Minor axis length: {int(ma)}", (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
             
             # Create a mask for the largest contour
-            mask = np.zeros_like(grayscale_image)
-            cv.drawContours(mask, [longest_contour], -1, 255, thickness=cv.FILLED)
-            cv.drawContours(canny, [longest_contour], -1, 0, 2)
             ret = cv.matchShapes(longest_contour,sampleContour(),1,0.0)
 
             confidence = (1-ret)*100
@@ -78,7 +75,7 @@ def sampleContour():
     
     # Find contours and draw the bounding box of the largest contour
     contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-    cv.imshow("canny",canny)
+    #cv.imshow("canny",canny)
 
     if contours:
         sample_contour = max(contours, key=cv.contourArea)
