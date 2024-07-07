@@ -3,7 +3,6 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 from miscellaneous import initialize_cam
-from contourID import identify_edges
 import cv2 as cv
 
 image_width = 64

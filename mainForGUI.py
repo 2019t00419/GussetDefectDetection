@@ -5,7 +5,6 @@ from contourID import identify_edges
 from miscellaneous import preprocess
 from SMDYOLO import crop_image
 from display_items import outputs
-from gussetDetection import sampleContour
 import time
 
 # Check if the file exists
@@ -14,7 +13,7 @@ source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def generateOutputFrame(captured_frame,style):    
+def generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour):    
     c=0
     gusset_identified = False
     gusset_side = "Not identified"
@@ -28,31 +27,31 @@ def generateOutputFrame(captured_frame,style):
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style)    
+    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style,sample_longest_contour,sample_second_longest_contour)    
     frame_contours = original_frame_resized.copy()
     
     processed_frame = original_frame_resized.copy()
     
     
     canny_resized = cv.resize(canny, (480, 640))
-    cv.imshow("canny",canny_resized)
+
+    
+    cv.imshow("canny_resized",canny_resized)
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     # Find the longest contour
-    longest_contour,second_longest_contour=identify_edges(contours)
-    print(second_longest_contour)
-    sample_Contour = sampleContour()
+    _,longest_contour,second_longest_contour=identify_edges(contours,sample_longest_contour,sample_second_longest_contour)
     
     if longest_contour is not None:
-        match_gusset_shape = cv.matchShapes(longest_contour,sample_Contour,1,0.0)
+        match_gusset_shape = cv.matchShapes(longest_contour,sample_longest_contour,1,0.0)
         if match_gusset_shape < 0.2:
             gusset_identified = False
             longest_contour = None
         else :
             gusset_identified = True
             if second_longest_contour is not None:
-                match_fabric_shape = cv.matchShapes(second_longest_contour,sample_Contour,1,0.0)
+                match_fabric_shape = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
                 total_area = cv.contourArea(longest_contour)
                 fabric_area = cv.contourArea(second_longest_contour)
                 area_ratio = fabric_area/total_area
@@ -108,7 +107,7 @@ def generateOutputFrame_(captured_frame,style):
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     # Find the longest contour
-    longest_contour,second_longest_contour=identify_edges(contours)
+    _,longest_contour,second_longest_contour=identify_edges(contours)
     ret = cv.matchShapes(longest_contour,second_longest_contour,1,0.0)
     #print(ret)
 

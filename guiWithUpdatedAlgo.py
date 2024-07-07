@@ -5,7 +5,8 @@ from mainForGUI import generateOutputFrame
 import numpy as np
 import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
-from gussetDetection import detect_gusset,sampleContour
+from gussetDetection import detect_gusset
+from contourID import sampleContours
 
 cpu_times = []
 last_update_time = time.time()
@@ -26,9 +27,9 @@ capture_width, capture_height = 3840, 2160
 
 
 # Open the webcam with low resolution using DirectShow backend
-cap = initialize_cam(display_width, display_height)
-#run sampleContour one time at the start of the program
-sampleContour()
+cap = initialize_cam(display_width, display_height)            
+sample_longest_contour,sample_second_longest_contour=sampleContours()
+
 
 
 #define the live diplay function for displaying live eed from the camera
@@ -52,9 +53,9 @@ def displayLive():
         return None
 
     #preprocessing the low res images for gusset detection process
-    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,style)
+    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour)
     #gusset detection using the contours identified
-    gussetIdentified, cx, cy, box, longest_contour, second_longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny)
+    gussetIdentified, cx, cy, box, longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny,sample_longest_contour,sample_second_longest_contour)
 
     #process handling for status of gusset identification
     if gussetIdentified:
@@ -137,7 +138,7 @@ def displayCaptured():
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour)
 
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)

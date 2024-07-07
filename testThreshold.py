@@ -46,8 +46,8 @@ canny1 = cv.Canny(blurred_otsu1, threshold1, threshold2)
 contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 contours1, _ = cv.findContours(canny1, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
-outer_edge, _ = identify_edges(contours)  # Assuming this function correctly identifies the outer edge
-outer_edge1, _ = identify_edges(contours1)  # Assuming this function correctly identifies the outer edge
+_,outer_edge, _ = identify_edges(contours)  # Assuming this function correctly identifies the outer edge
+_,outer_edge1, _ = identify_edges(contours1)  # Assuming this function correctly identifies the outer edge
 
 
 cv.drawContours(original_frame_resized, [outer_edge], -1, val, 3)

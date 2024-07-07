@@ -2,7 +2,7 @@ import os
 import cv2 as cv
 import numpy as np
 import time
-from contourID import identify_edges
+from contourID import identify_inner_edge
 
 
 
@@ -27,7 +27,7 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 
 
 
-def preprocess(original_frame,style):
+def preprocess(original_frame,style,sample_longest_contour,sample_second_longest_contour):
     threshold1=100
     threshold2=200
 
@@ -51,29 +51,28 @@ def preprocess(original_frame,style):
 
     #cv.imshow('Canny Edge', canny)
     if style == "Light":
-        light_gusset_fabric(original_frame_resized,canny)
+        original_frame_for_hsv = cv.resize(original_frame, (720, 1280))
+        hsv = cv.cvtColor(original_frame_for_hsv, cv.COLOR_BGR2HSV)
 
+        # Extract the saturatin channel
+        s_channel = hsv[:, :, 1]
+        
+        # process the saturation channel for edge detection
+        blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
+        _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+        blurred_otsu_s_channel = cv.GaussianBlur(thresholded_s_channel, (5, 5), 0)
+        canny_s_channel = cv.Canny(blurred_otsu_s_channel, 100, 200)
+        s_channel_contours, _ = cv.findContours(canny_s_channel, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+        
+        longest_contour= identify_inner_edge(s_channel_contours,sample_second_longest_contour)
 
+        if longest_contour is not None:
+            cv.drawContours(canny, [longest_contour], -1, 255, 1)
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
 
-def light_gusset_fabric(original_frame,canny):
-    hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
-
-    # Extract the saturatin channel
-    s_channel = hsv[:, :, 1]
-
-    # process the saturation channel for edge detection
-    blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
-    _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    blurred_otsu_s_channel = cv.GaussianBlur(thresholded_s_channel, (5, 5), 0)
-    canny_s_channel = cv.Canny(blurred_otsu_s_channel, 100, 200)
-    s_channel_contours, _ = cv.findContours(canny_s_channel, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-    
-    longest_contour,_=identify_edges(s_channel_contours)
-    cv.drawContours(canny, [longest_contour], -1, 255, 1)
 
 
-def preprocess_for_detection(image,style):
+def preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour):
     
     display_image = image.copy()
     light_image = image.copy()
@@ -103,15 +102,38 @@ def preprocess_for_detection(image,style):
     blurred_otsu = cv.GaussianBlur(cpu_thresholded_image, (5, 5), 0)
     canny = cv.Canny(blurred_otsu, 100, 200)
 
-    if style == "Light":
-        light_gusset_fabric(light_image,canny)
+    #if style == "Light":
+        #canny = light_gusset_fabric(light_image,canny,sample_second_longest_contour)
         
-    #cv.imshow("canny",canny)
     
     # Find contours and draw the bounding box of the largest contour
-    contours, _ = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     return contours,display_image,grayscale_image,x_margins,y_margins,frame_width,frame_height,canny
+
+
+
+def light_gusset_fabric(original_frame,canny,sample_second_longest_contour):
+    hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
+
+    # Extract the saturatin channel
+    s_channel = hsv[:, :, 1]
+    
+    # process the saturation channel for edge detection
+    blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
+    _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    blurred_otsu_s_channel = cv.GaussianBlur(thresholded_s_channel, (5, 5), 0)
+    canny_s_channel = cv.Canny(blurred_otsu_s_channel, 100, 200)
+    s_channel_contours, _ = cv.findContours(canny_s_channel, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+    
+    longest_contour= identify_inner_edge(s_channel_contours,sample_second_longest_contour)
+
+    if longest_contour is not None:
+        cv.drawContours(canny, [longest_contour], -1, 255, 1)
+        cv.drawContours(canny, [sample_second_longest_contour], -1, 255, 1)
+    return canny
+
+
 
 def calculateFPS(cpu_times, end_cpu, start_cpu, last_update_time, avg_cpu_fps):
     update_interval = 1  # Update FPS every second
