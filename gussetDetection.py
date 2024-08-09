@@ -12,7 +12,6 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
     gusset_detected = False
     captured = capturedIn
     confidence = 0
-    
     if contours:
         longest_contour=identify_outer_edge(contours,sample_longest_contour)
 

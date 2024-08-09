@@ -31,8 +31,8 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
     threshold1=100
     threshold2=200
 
-    #original_frame = cv.resize(original_frame, (960, 1280))
-    original_frame_resized = cv.resize(original_frame, (960, 1280))
+    #original_frame = cv.resize(original_frame, (720, 1280))
+    original_frame_resized = cv.resize(original_frame, (720, 1280))
     grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
@@ -41,7 +41,7 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
     # Otsu's Binarization
     _, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     blurred_otsu = cv.GaussianBlur(otsu_thresholded, (5, 5), 0)
-    otsu_resized = cv.resize(blurred_otsu, (960, 1280))    
+    otsu_resized = cv.resize(blurred_otsu, (720, 1280))    
     
     #cv.imshow('otsu_thresholded', otsu_resized)
 

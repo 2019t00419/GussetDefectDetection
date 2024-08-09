@@ -7,28 +7,28 @@ import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
 from gussetDetection import detect_gusset
 from contourID import sampleContours
-
 cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
-style =  "Light"
+style =  "Light" #Light or Dark
 
 count = 0
  
+sample_path = "images\sample\sample (1).jpg"
 initial_image = cv.imread("resources/loading.jpg")
 
 display_live_running = False  # Flag to track the running state
 
 # Set resolutions
-display_width, display_height = 640, 480
+display_width, display_height = 640, 360
 capture_width, capture_height = 3840, 2160
 
 
 
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)            
-sample_longest_contour,sample_second_longest_contour=sampleContours()
+sample_longest_contour,sample_second_longest_contour=sampleContours(sample_path)
 
 
 
@@ -83,16 +83,21 @@ def displayLive():
 
     #modifying the resultant frame for displaying on live feed
     #display_image was replaced using canny for experimental purpose.
-    frame = canny.copy()
+    
+    canny_resized = cv.resize(canny, (640, 360))
+    canny_resized = cv.rotate(canny_resized, cv.ROTATE_90_CLOCKWISE)
+    cv.imshow('Canny Edge', canny_resized)
+    frame = display_image.copy()
     if frame is None:
         frame = initial_image
 
-    frame_height, frame_width= frame.shape
+    frame_height, frame_width,_= frame.shape
+
     if frame_height / frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
-        frame_resized = cv.resize(frame, (480, 640))
+        frame_resized = cv.resize(frame, (360, 640))
     else:
-        frame_resized = cv.resize(frame, (640, 480))
+        frame_resized = cv.resize(frame, (640, 360))
 
     cv.putText(frame_resized, str(display_image.shape), (10, 10), cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), 1, cv.LINE_AA)
 
@@ -147,7 +152,7 @@ def displayCaptured():
     else:     
                 
         # Set the width and height 
-        processed_frame_resized = cv.resize(processed_frame, (480, 640))
+        processed_frame_resized = cv.resize(processed_frame, (360, 640))
 
         # Convert image from one color space to other 
         processed_frame_resized = cv.cvtColor(processed_frame_resized, cv.COLOR_BGR2RGBA) 
@@ -199,7 +204,7 @@ app.bind('<Escape>', lambda e: app.quit())
 captureFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 cameraFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
 
-cameraViewWidth = 480
+cameraViewWidth = 360
 cameraViewHeight = 640
 
 # Load initial images

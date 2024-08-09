@@ -36,7 +36,7 @@ def identify_edges(contours,sample_longest_contour,sample_second_longest_contour
         if longest_contour_uncertainity < 0.2:
             gusset_side = "Front"
             if second_longest_contour is not None:
-                second_longest_contour_uncertainity = cv.matchShapes(longest_contour,sample_second_longest_contour,1,0.0)
+                second_longest_contour_uncertainity = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
                 if second_longest_contour_uncertainity < 0.2:
                     gusset_side = "Back"
                 else:
@@ -48,7 +48,6 @@ def identify_edges(contours,sample_longest_contour,sample_second_longest_contour
         else:
             gusset_side = None
             longest_contour = None
-
     return(gusset_side,longest_contour,second_longest_contour)  
 
 def identify_inner_edge(contours,sample_second_longest_contour):
@@ -91,14 +90,14 @@ def identify_outer_edge(contours,sample_longest_contour):
     
 
 
-def sampleContours():
+def sampleContours(sample_path):
     max_length = 0
     second_max_length = 0
     longest_contour = None
     second_longest_contour = None
     relative_length1 = 0
 
-    image = cv.imread("Images/sample/sample (0).jpg")
+    image = cv.imread(sample_path)
     
     
     grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -140,7 +139,7 @@ def sampleContours():
     cv.drawContours(detection_mask, [second_longest_contour], -1, 255, 1)
     cv.drawContours(detection_mask, [longest_contour],  -1, 255, 1)
     
-    detection_mask = cv.resize(detection_mask, (480,640)) 
+    detection_mask = cv.resize(detection_mask, (360,640)) 
     cv.imshow("sample image",detection_mask)
 
     if longest_contour is not None and second_longest_contour is not None:
