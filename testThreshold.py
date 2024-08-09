@@ -1,26 +1,35 @@
-import cv2
+import matplotlib.pyplot as plt
 import numpy as np
-from skimage.feature import greycomatrix, greycoprops
+from skimage.io import imread
+from skimage.util import img_as_ubyte
+from skimage.filters.rank import entropy
+from skimage.morphology import disk
 
-# Load the image
-image = cv2.imread('image.jpg', cv2.IMREAD_GRAYSCALE)
+# Replace 'your_image_path.jpg' with the path to your image
+image_path = 'a.jpg'
 
-# Compute GLCM
-glcm = greycomatrix(image, [1], [0], 256, symmetric=True, normed=True)
+# Load your image
+image = imread(image_path, as_gray=True)
 
-# Extract texture features
-contrast = greycoprops(glcm, 'contrast')
-dissimilarity = greycoprops(glcm, 'dissimilarity')
-homogeneity = greycoprops(glcm, 'homogeneity')
-energy = greycoprops(glcm, 'energy')
-correlation = greycoprops(glcm, 'correlation')
+# If the image is not in 8-bit, convert it
+if image.dtype != np.uint8:
+    image = img_as_ubyte(image)
 
-# Use features for segmentation (e.g., thresholding, clustering, etc.)
-# Example: Simple thresholding on the 'contrast' feature
-_, segmented_image = cv2.threshold(contrast, 0.5, 255, cv2.THRESH_BINARY)
+# Calculate entropy on your image
+entr_img = entropy(image, disk(10))
 
-# Save or display the segmented image
-cv2.imwrite('segmented_image.jpg', segmented_image)
-cv2.imshow('Segmented Image', segmented_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# Plotting the results
+fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(12, 6), sharex=True, sharey=True)
+
+ax0.imshow(image, cmap=plt.cm.gray)
+ax0.set_title("Image")
+ax0.axis("off")
+fig.colorbar(ax0.imshow(image, cmap=plt.cm.gray), ax=ax0)
+
+ax1.imshow(entr_img, cmap='viridis')
+ax1.set_title("Local Entropy")
+ax1.axis("off")
+fig.colorbar(ax1.imshow(entr_img, cmap='viridis'), ax=ax1)
+
+fig.tight_layout()
+plt.show()
