@@ -16,4 +16,3 @@ def entropy_analysis(image):
     img_8bit = img_as_ubyte(entr_img)
 
     return img_8bit
-
