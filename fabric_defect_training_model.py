@@ -7,7 +7,6 @@ from filter_generation import filter_generation
 import os
 
 
-
 image_dataset = pd.DataFrame()  #Dataframe to capture image features
 
 img_path = "test/Train_images/"
@@ -18,6 +17,7 @@ for image in os.listdir(img_path):  #iterate through each file
     #Reset dataframe to blank after each loop.
     
     input_img = cv.imread(img_path + image)  #Read images
+    #input_img = cv.GaussianBlur(input_img, (9, 9), 0)
     
     #Check if the input image is RGB or grey and convert to grey if RGB
     if input_img.ndim == 3 and input_img.shape[-1] == 3:
@@ -36,7 +36,8 @@ for image in os.listdir(img_path):  #iterate through each file
     
     print (df)
 
-    df = filter_generation(img,df)
+    #
+    df = filter_generation(img,df,input_img)
 
     
 ######################################                    
@@ -76,6 +77,7 @@ for mask in os.listdir(mask_path):  #iterate through each file to perform some a
     df2['Label_Value'] = label_values
     df2['Mask_Name'] = mask
     
+    
     mask_dataset = pd.concat([mask_dataset, df2], ignore_index=True)
   #Update mask dataframe with all the info from each mask
 
@@ -83,78 +85,85 @@ for mask in os.listdir(mask_path):  #iterate through each file to perform some a
  #  STEP 3: GET DATA READY FOR RANDOM FOREST (or other classifier)
     # COMBINE BOTH DATAFRAMES INTO A SINGLE DATASET
 ###############################################################
-dataset = pd.concat([image_dataset, mask_dataset], axis=1)    #Concatenate both image and mask datasets
-print(dataset.shape)
-#If you expect image and mask names to be the same this is where we can perform sanity check
-#dataset['Image_Name'].equals(dataset['Mask_Name'])   
-##
-##If we do not want to include pixels with value 0 
-##e.g. Sometimes unlabeled pixels may be given a value 0.
-dataset = dataset[dataset.Label_Value != 0]
+dataset = pd.concat([image_dataset, mask_dataset], axis=1) 
 
-#Assign training features to X and labels to Y
-#Drop columns that are not relevant for training (non-features)
-X = dataset.drop(labels = ["Image_Name", "Mask_Name", "Label_Value"], axis=1) 
+print(dataset['Image_Name'])
+print(dataset['Mask_Name'])
+if (dataset['Image_Name'].equals(dataset['Mask_Name'])):
+    print(dataset['Image_Name'])
+    print(dataset['Mask_Name'])
+    print("Train and Mask file names match")
+    ##
+    ##If we do not want to include pixels with value 0 
+    ##e.g. Sometimes unlabeled pixels may be given a value 0.
+    dataset = dataset[dataset.Label_Value != 0]
 
-#Assign label values to Y (our prediction)
-Y = dataset["Label_Value"].values 
+    #Assign training features to X and labels to Y
+    #Drop columns that are not relevant for training (non-features)
+    X = dataset.drop(labels = ["Image_Name", "Mask_Name", "Label_Value"], axis=1) 
 
-#Encode Y values to 0, 1, 2, 3, .... (NOt necessary but makes it easy to use other tools like ROC plots)
-from sklearn.preprocessing import LabelEncoder
-Y = LabelEncoder().fit_transform(Y)
+    #Assign label values to Y (our prediction)
+    Y = dataset["Label_Value"].values 
+
+    #Encode Y values to 0, 1, 2, 3, .... (NOt necessary but makes it easy to use other tools like ROC plots)
+    from sklearn.preprocessing import LabelEncoder
+    Y = LabelEncoder().fit_transform(Y)
 
 
-##Split data into train and test to verify accuracy after fitting the model. 
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=20)
+    ##Split data into train and test to verify accuracy after fitting the model. 
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=20)
 
-####################################################################
-# STEP 4: Define the classifier and fit a model with our training data
-###################################################################
+    ####################################################################
+    # STEP 4: Define the classifier and fit a model with our training data
+    ###################################################################
 
-#Import training classifier
-from sklearn.ensemble import RandomForestClassifier
-## Instantiate model with n number of decision trees
-model = RandomForestClassifier(n_estimators = 50, random_state = 42)
+    #Import training classifier
+    from sklearn.ensemble import RandomForestClassifier
+    ## Instantiate model with n number of decision trees
+    model = RandomForestClassifier(n_estimators = 50, random_state = 42)
 
-## Train the model on training data
-model.fit(X_train, y_train)
+    ## Train the model on training data
+    model.fit(X_train, y_train)
 
-#print the importance of each generated features
-feature_list = list(X.columns)
-feature_imp = pd.Series(model.feature_importances_,index=feature_list).sort_values(ascending=False)
-print(feature_imp)
+    #print the importance of each generated features
+    feature_list = list(X.columns)
+    feature_imp = pd.Series(model.feature_importances_, index=feature_list).sort_values(ascending=False)
 
-#######################################################
-# STEP 5: Accuracy check
-#########################################################
+    # Print the top 10 features
+    print(feature_imp.head(10))
 
-from sklearn import metrics
-prediction_test = model.predict(X_test)
-##Check accuracy on test dataset. 
-print ("Accuracy = ", metrics.accuracy_score(y_test, prediction_test))
+    #######################################################
+    # STEP 5: Accuracy check
+    #########################################################
 
-from yellowbrick.classifier import ROCAUC
-print("Classes in the image are: ", np.unique(Y))
+    from sklearn import metrics
+    prediction_test = model.predict(X_test)
+    ##Check accuracy on test dataset. 
+    print ("Accuracy = ", metrics.accuracy_score(y_test, prediction_test))
 
-#ROC curve for RF
-roc_auc=ROCAUC(model, classes=[0, 1, 2, 3])  #Create object
-roc_auc.fit(X_train, y_train)
-roc_auc.score(X_test, y_test)
-roc_auc.show()
+    from yellowbrick.classifier import ROCAUC
+    print("Classes in the image are: ", np.unique(Y))
 
-##########################################################
-#STEP 6: SAVE MODEL FOR FUTURE USE
-###########################################################
-##You can store the model for future use. In fact, this is how you do machine elarning
-##Train on training images, validate on test images and deploy the model on unknown images. 
-#
-#
-##Save the trained model as pickle string to disk for future use
-model_name = "fabric_defect_model_multi_image"
-pickle.dump(model, open(model_name, 'wb'))
-#
-##To test the model on future datasets
-#loaded_model = pickle.load(open(model_name, 'rb'))
+    #ROC curve for RF
+    roc_auc=ROCAUC(model, classes=[0, 1, 2, 3])  #Create object
+    roc_auc.fit(X_train, y_train)
+    roc_auc.score(X_test, y_test)
+    roc_auc.show()
 
+    ##########################################################
+    #STEP 6: SAVE MODEL FOR FUTURE USE
+    ###########################################################
+    ##You can store the model for future use. In fact, this is how you do machine elarning
+    ##Train on training images, validate on test images and deploy the model on unknown images. 
+    #
+    #
+    ##Save the trained model as pickle string to disk for future use
+    model_name = "fabric_defect_model_multi_image"
+    pickle.dump(model, open(model_name, 'wb'))
+    #
+    ##To test the model on future datasets
+    #loaded_model = pickle.load(open(model_name, 'rb'))
+else :
+    print("Train and Mask file names do not match")
 
