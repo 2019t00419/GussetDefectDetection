@@ -6,7 +6,7 @@ import pickle
 from filter_generation import filter_generation
 import os
 
-
+resize_factor = 4.5
 image_dataset = pd.DataFrame()  #Dataframe to capture image features
 
 img_path = "test/Train_images/"
@@ -17,6 +17,13 @@ for image in os.listdir(img_path):  #iterate through each file
     #Reset dataframe to blank after each loop.
     
     input_img = cv.imread(img_path + image)  #Read images
+
+    input_image_height,input_image_width,_ =input_img.shape
+    print (input_image_height,',',input_image_width)
+    print (input_image_height/resize_factor,',',(input_image_width/input_image_height)*(input_image_height/resize_factor))
+    
+    
+    input_img = cv.resize(input_img, (int(input_image_height/resize_factor),int((input_image_width/input_image_height)*(input_image_height/resize_factor))))
     #input_img = cv.GaussianBlur(input_img, (9, 9), 0)
     
     #Check if the input image is RGB or grey and convert to grey if RGB
@@ -57,7 +64,13 @@ for mask in os.listdir(mask_path):  #iterate through each file to perform some a
     
     df2 = pd.DataFrame()  #Temporary dataframe to capture info for each mask in the loop
     input_mask = cv.imread(mask_path + mask)
+    input_mask_height,input_mask_width,_ =input_mask.shape
+    print (input_mask_height,',',input_mask_width)
+    print (input_mask_height/resize_factor,',',(input_mask_width/input_mask_height)*(input_mask_height/resize_factor))
+    
    
+    input_mask = cv.resize(input_mask, (int(input_mask_height/resize_factor),int((input_mask_width/input_mask_height)*(input_mask_height/resize_factor))))
+
     #create an empty numpy array for the output image with the same dimensions as the input
     output_image = np.zeros((input_mask.shape[0], input_mask.shape[1]), dtype=np.uint8)
 
