@@ -27,10 +27,10 @@ def generateOutputFrame(captured_frame,style,sample_longest_contour,sample_secon
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
     original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style,sample_longest_contour,sample_second_longest_contour)    
-    frame_contours = original_frame_resized.copy()
-    
-    processed_frame = original_frame_resized.copy()
-    
+    frame_contours = original_frame.copy()
+    #frame_contours = original_frame_resized.copy()
+    processed_frame = original_frame.copy()
+    #processed_frame = original_frame_resized.copy()
 
     
     # Find contours
@@ -65,11 +65,16 @@ def generateOutputFrame(captured_frame,style,sample_longest_contour,sample_secon
                 balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
                 #Adding texture analysis
 
-                fabric_mask = np.zeros_like(grayscale_image)
+                fabric_mask_colour = np.ones_like(original_frame)
+                fabric_mask = np.zeros_like(original_frame)
+                fabric_mask = cv.cvtColor(fabric_mask, cv.COLOR_BGR2GRAY)
+
                 cv.drawContours(fabric_mask, [second_longest_contour], -1, 255, cv.FILLED)
-                masked_image_for_texture = cv.bitwise_and(original_frame, grayscale_image, mask=fabric_mask)
-                stain_marks = detect_stains(masked_image_for_texture)
+
                 
+                masked_image_for_texture = cv.bitwise_and(original_frame, fabric_mask_colour, mask=fabric_mask)
+                #stain_marks = detect_stains(masked_image_for_texture)
+                stain_marks = True
                 if stain_marks :
                     print("Stain marks are avilable")
                 else:

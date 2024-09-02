@@ -13,18 +13,18 @@ cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
-style =  "Dark" #Light or Dark
+style =  "Light" #Light or Dark
 count = 0
  
 initial_image = cv.imread("resources/loading.jpg")
+sample_longest_contour = 0
+sample_second_longest_contour = 0
+
 display_live_running = False  # Flag to track the running state
 
 # Set resolutions
 display_width, display_height = 640, 360
 capture_width, capture_height = 3840, 2160
-
-sample_longest_contour = None
-sample_second_longest_contour = None
 
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)     
@@ -38,8 +38,6 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-    global sample_longest_contour
-    global sample_second_longest_contour
 
     #track computation time for framerate calculation
     start_cpu = time.time()
@@ -51,7 +49,6 @@ def displayLive():
     if not success:
         print("Failed to load video")
         return None
-
     #preprocessing the low res images for gusset detection process
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour)
     #gusset detection using the contours identified
@@ -192,10 +189,17 @@ def toggle_display():
         startButton.configure(text="Start")
 
 def update_thumbnail():
+    global sample_longest_contour
+    global sample_second_longest_contour
     
     styleValue = style_var.get()
     thickness = thickness_var.get()
     colour = colour_var.get()
+
+    if(styleValue != "Select Style" and thickness != "Select Adhesive Thickness" and colour != "Select Fabric Colour"):
+        startButton.configure(state="enabled")
+    else:
+        startButton.configure(state="disabled")
 
     print(f"The style is {styleValue}")
     print(f"The thickness value is {thickness}")
@@ -219,6 +223,7 @@ def update_thumbnail():
     # Configure image in the label 
     thumbnailView.configure(image=thumbnail_Img_photo_image) 
     
+    return sample_longest_contour,sample_second_longest_contour
 
 # Create the main application window
 app = CTk()
@@ -313,7 +318,7 @@ dropdown_menu.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
 colour_var.trace("w", lambda *args: update_thumbnail())
 
 # Create a button to open the camera in GUI app
-startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200)
+startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200,state="disabled")
 startButton.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")
@@ -337,7 +342,7 @@ balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 sideMixupText = CTkLabel(defectsFrame, text="")
 sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
 
-
-
+if (sample_longest_contour != 0  & sample_second_longest_contour != 0):
+    sample_longest_contour,sample_second_longest_contour = update_thumbnail()
 # Create an infinite loop for displaying app on screen
 app.mainloop()

@@ -31,9 +31,9 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
     threshold1=100
     threshold2=200
 
-    #original_frame = cv.resize(original_frame, (720, 1280))
     original_frame_resized = cv.resize(original_frame, (720, 1280))
-    grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
+    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
+    #grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
     blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
@@ -72,10 +72,15 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
 
 
 def preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour):
-    
+    hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+
     display_image = image.copy()
-    light_image = image.copy()
-    grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+    #grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    #grayscale_image = image[:, :, 1] #Green channel
+    #grayscale_image = image[:, :, 0] #Blue channel
+    grayscale_image = hsv_image[:, :, 1]
+    cv.imshow("grayscale_image",grayscale_image)
     detection_mask = np.zeros_like(grayscale_image)
 
     frame_height, frame_width = grayscale_image.shape
