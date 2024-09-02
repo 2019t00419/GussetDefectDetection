@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
         
 def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,count):
     if gusset_identified:
@@ -37,3 +38,43 @@ def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour
     cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
     cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
     return frame_contours
+
+
+
+
+def thumbnail_ganeration(sample_longest_contour,sample_second_longest_contour,sample_image,colour,thickness):
+
+    if (colour == "Bianco"):
+        colourValue = (220,220,220)
+    elif(colour == "Nero"):        
+        colourValue = (0,0,0)
+    elif(colour == "Skin"):        
+        colourValue = (150,200,250)
+    else:    
+        colourValue = (0,0,255)
+
+    if(thickness == "4mm"):
+        thicknessValue = 4
+    elif(thickness == "6mm"):
+        thicknessValue = 6
+    else:
+        thicknessValue = 0
+
+    display_image = np.zeros_like(sample_image)
+    if(thicknessValue == 4):
+        cv.drawContours(display_image, [sample_longest_contour], -1, (255,255,255),  cv.FILLED)
+        cv.drawContours(display_image, [sample_second_longest_contour], -1, colourValue, cv.FILLED)
+    if(thicknessValue == 6):
+        cv.drawContours(display_image, [sample_longest_contour],  -1, (255,255,255), cv.FILLED)
+        cv.drawContours(display_image, [sample_second_longest_contour], -1, colourValue, cv.FILLED)
+        cv.drawContours(display_image, [sample_second_longest_contour], -1, (255,255,255), 20)
+    elif(thicknessValue == 0):
+        cv.drawContours(display_image, [sample_longest_contour],  -1, (0,0,255), cv.FILLED)
+        cv.drawContours(display_image, [sample_second_longest_contour], -1, colourValue, cv.FILLED)
+
+    input_image_width,input_image_height,_=display_image.shape
+    resize_factor = input_image_width/360
+    
+    display_thumbnail = cv.resize(display_image, (int(input_image_height/resize_factor),int((input_image_width/input_image_height)*(input_image_height/resize_factor))))
+    
+    return display_thumbnail

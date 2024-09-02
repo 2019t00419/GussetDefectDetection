@@ -34,8 +34,8 @@ def detect_stains(image):
     resize_factor = 4.5
     input_image_width,input_image_height,_ =image.shape
     
-    print (input_image_height,',',input_image_width)
-    print (input_image_height/resize_factor,',',(input_image_width/input_image_height)*(input_image_height/resize_factor))
+    #print (input_image_height,',',input_image_width)
+    #print (input_image_height/resize_factor,',',(input_image_width/input_image_height)*(input_image_height/resize_factor))
    
     image = cv.resize(image, (int(input_image_height/resize_factor),int((input_image_width/input_image_height)*(input_image_height/resize_factor))))
 
@@ -76,8 +76,8 @@ def detect_stains(image):
     return stain_marks
 
 
-image_path = 'test/Test_images/train_image (7).jpg'
-image = cv.imread(image_path)
+#image_path = 'test/Test_images/train_image (7).jpg'
+#image = cv.imread(image_path)
 
-stain_marks = detect_stains(image)
-print("Stain marks status : " ,stain_marks)
+#stain_marks = detect_stains(image)
+#print("Stain marks status : " ,stain_marks)

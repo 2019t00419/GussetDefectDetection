@@ -140,11 +140,11 @@ def sampleContours(sample_path):
     cv.drawContours(detection_mask, [longest_contour],  -1, 255, 1)
     
     detection_mask = cv.resize(detection_mask, (360,640)) 
-    cv.imshow("sample image",detection_mask)
+    #cv.imshow("sample image",detection_mask)
 
     if longest_contour is not None and second_longest_contour is not None:
         print("\n\n\n\nSample image is successfull\n\n\n\n")
     else:
         print("\n\n\n\nSample image failed\n\n\n\n")
-    return(longest_contour,second_longest_contour)
+    return(longest_contour,second_longest_contour,image)
                      

@@ -3,7 +3,6 @@ import cv2 as cv
 import numpy as np
 import time
 from contourID import identify_inner_edge
-from textureAnalysis import entropy_analysis
 
 
 
@@ -44,8 +43,6 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
     blurred_otsu = cv.GaussianBlur(otsu_thresholded, (5, 5), 0)
     otsu_resized = cv.resize(blurred_otsu, (720, 1280))    
     
-    #cv.imshow('otsu_thresholded', otsu_resized)
-    cv.imshow('otsu_thresholded', entropy_analysis(grayscale_image))
 
 
     # Apply Canny edge detection

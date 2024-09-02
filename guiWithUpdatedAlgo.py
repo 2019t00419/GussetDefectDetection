@@ -7,29 +7,27 @@ import time
 from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
 from gussetDetection import detect_gusset
 from contourID import sampleContours
+from display_items import thumbnail_ganeration
+
 cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
-style =  "Light" #Light or Dark
-
+style =  "Dark" #Light or Dark
 count = 0
  
-sample_path = "images\sample\sample (1).jpg"
 initial_image = cv.imread("resources/loading.jpg")
-
 display_live_running = False  # Flag to track the running state
 
 # Set resolutions
 display_width, display_height = 640, 360
 capture_width, capture_height = 3840, 2160
 
-
+sample_longest_contour = None
+sample_second_longest_contour = None
 
 # Open the webcam with low resolution using DirectShow backend
-cap = initialize_cam(display_width, display_height)            
-sample_longest_contour,sample_second_longest_contour=sampleContours(sample_path)
-
+cap = initialize_cam(display_width, display_height)     
 
 
 #define the live diplay function for displaying live eed from the camera
@@ -40,6 +38,8 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
+    global sample_longest_contour
+    global sample_second_longest_contour
 
     #track computation time for framerate calculation
     start_cpu = time.time()
@@ -93,6 +93,7 @@ def displayLive():
 
     frame_height, frame_width,_= frame.shape
 
+
     if frame_height / frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         frame_resized = cv.resize(frame, (360, 640))
@@ -114,8 +115,6 @@ def displayLive():
 
 def displayCaptured():
     
-    ThicknessValue = dropdown_var.get()
-    print(f"The thickness value is {ThicknessValue}")
     if not display_live_running:
         return
     cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
@@ -143,7 +142,7 @@ def displayCaptured():
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour,)
 
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
@@ -192,7 +191,34 @@ def toggle_display():
     else:
         startButton.configure(text="Start")
 
+def update_thumbnail():
+    
+    styleValue = style_var.get()
+    thickness = thickness_var.get()
+    colour = colour_var.get()
 
+    print(f"The style is {styleValue}")
+    print(f"The thickness value is {thickness}")
+    print(f"The colour is {colour}")
+    
+    sample_path = f"images\sample\{styleValue}.jpg"
+    sample_longest_contour,sample_second_longest_contour,sample_image=sampleContours(sample_path)
+    thumbnail = thumbnail_ganeration(sample_longest_contour,sample_second_longest_contour,sample_image,colour,thickness)
+    # Convert image from one color space to other 
+    thumbnail = cv.cvtColor(thumbnail, cv.COLOR_BGR2RGBA) 
+
+    # Capture the latest frame and transform to image 
+    thumbnail_Img = Image.fromarray(thumbnail) 
+
+    thumbnail_Img_photo_image = CTkImage(light_image=thumbnail_Img, size=(thumbnailView.winfo_width(), thumbnailView.winfo_height()))
+
+
+    # Displaying photoimage in the label 
+    thumbnailView.photo_image = thumbnail_Img_photo_image
+
+    # Configure image in the label 
+    thumbnailView.configure(image=thumbnail_Img_photo_image) 
+    
 
 # Create the main application window
 app = CTk()
@@ -224,10 +250,6 @@ cameraView.pack(padx=5, pady=5)
 captureFrame.grid(row=1, column=1, rowspan=6, padx=(10, 5), pady=(10, 5))
 cameraFrame.grid(row=1, column=0, rowspan=6, padx=(0, 10), pady=(10, 5))
 
-# Create a button to open the camera in GUI app
-startButton = CTkButton(app, text="Start", command=toggle_display)
-startButton.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
-
 # Add Labels
 liveViewLabel = CTkLabel(app, text="Live Camera View")
 liveViewLabel.grid(row=0, column=0, padx=(10, 5), pady=(10, 5))
@@ -238,31 +260,61 @@ capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
 settingsLabel = CTkLabel(app, text="Settings")
 settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
 
-thicknessLabel = CTkLabel(app, text="Thickness")
-thicknessLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+settingsFrame = CTkFrame(app, corner_radius=10)
+settingsFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
-styleLabel = CTkLabel(app, text="Style")
-styleLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
-
-styleentry1 = CTkEntry(app)
-styleentry1.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
-
-# Add dropdown menu
-dropdown_var = StringVar(value="4mm")
-dropdown_menu = CTkOptionMenu(app, variable=dropdown_var, values=["4mm", "6mm"])
-dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
+previewFrame.grid(row=2, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
-statusFrame.grid(row=4, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+statusFrame.grid(row=3, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
-defectsFrame.grid(row=5, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+defectsFrame.grid(row=4, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+thumbnailViewWidth, thumbnailViewHeight = 100,150 # Replace with your actual dimensions
+# Convert the PIL Image to a CTkImage
+thumbnailView = CTkLabel(previewFrame, text="", width=thumbnailViewWidth, height=thumbnailViewHeight)
+thumbnailView.pack(padx=5, pady=5)
+
 
 # Ensure the rows and columns expand proportionally
 app.grid_rowconfigure(4, weight=1)
 app.grid_columnconfigure(2, weight=1)
 app.grid_rowconfigure(5, weight=1)
 app.grid_columnconfigure(3, weight=1)
+
+# Add style selector
+styleLabel = CTkLabel(settingsFrame, text="Style")
+styleLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+
+style_var = StringVar(value="Select Style")
+dropdown_menu = CTkOptionMenu(settingsFrame, variable=style_var, values=["CSI70", "SB70"],width=200)
+dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+style_var.trace("w", lambda *args: update_thumbnail())
+
+
+# Add thickness selector
+thicknessLabel = CTkLabel(settingsFrame, text="Thickness")
+thicknessLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+
+thickness_var = StringVar(value="Select Adhesive Thickness")
+dropdown_menu = CTkOptionMenu(settingsFrame, variable=thickness_var, values=["4mm", "6mm"],width=200)
+dropdown_menu.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
+thickness_var.trace("w", lambda *args: update_thumbnail())
+
+# Add colour selector
+styleLabel = CTkLabel(settingsFrame, text="Colour")
+styleLabel.grid(row=3, column=2, padx=(10, 5), pady=(10, 5))
+
+colour_var = StringVar(value="Select Fabric Colour")
+dropdown_menu = CTkOptionMenu(settingsFrame, variable=colour_var, values=["Nero", "Skin","Bianco"],width=200)
+dropdown_menu.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
+colour_var.trace("w", lambda *args: update_thumbnail())
+
+# Create a button to open the camera in GUI app
+startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200)
+startButton.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")
 statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
@@ -284,6 +336,8 @@ balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 
 sideMixupText = CTkLabel(defectsFrame, text="")
 sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
+
+
 
 # Create an infinite loop for displaying app on screen
 app.mainloop()
