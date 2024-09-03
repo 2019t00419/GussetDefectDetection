@@ -115,6 +115,9 @@ def displayCaptured():
         return
     cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, capture_height)
+    cap.set(cv.CAP_PROP_EXPOSURE, -5.0)
+    cap.set(cv.CAP_PROP_WHITE_BALANCE_BLUE_U, -1.0)
+    cap.set(cv.CAP_PROP_ISO_SPEED, -1.0)
     time.sleep(0.01)  # Allow the camera to adjust
     
     ret, captured_frame = cap.read()
@@ -124,6 +127,15 @@ def displayCaptured():
         cap.set(cv.CAP_PROP_FRAME_WIDTH, display_width)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, display_height)
         time.sleep(0.01)  # Allow the camera to adjust
+
+        exposure = cap.get(cv.CAP_PROP_EXPOSURE)
+        white_balance = cap.get(cv.CAP_PROP_WHITE_BALANCE_BLUE_U)
+        iso = cap.get(cv.CAP_PROP_ISO_SPEED)
+
+        print(f"Exposure: {exposure}")
+        print(f"White Balance: {white_balance}")
+        print(f"ISO: {iso}")
+
     else:
         print("Failed to capture image")
 

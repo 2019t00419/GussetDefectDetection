@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import time
 from contourID import identify_inner_edge
+from detectionAssist import detection_support
 
 
 
@@ -30,9 +31,9 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 def preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
     threshold1=100
     threshold2=200
-
+    grayscale_image = detection_support(original_frame)
     original_frame_resized = cv.resize(original_frame, (720, 1280))
-    grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
+    #grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
     #grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
@@ -56,7 +57,6 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
 
         # Extract the saturatin channel
         s_channel = hsv[:, :, 1]
-        cv.imshow("s_channel",s_channel)
         # process the saturation channel for edge detection
         blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
         _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
@@ -68,6 +68,7 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
 
         if longest_contour is not None:
             cv.drawContours(canny, [longest_contour], -1, 255, 1)
+            cv.imshow("canny+NEW",canny)
     return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
 
 

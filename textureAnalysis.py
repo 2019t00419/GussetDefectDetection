@@ -60,8 +60,8 @@ def detect_stains(image):
     segmented_bgr_image = np.zeros((segmented_8u.shape[0], segmented_8u.shape[1], 3), dtype=np.uint8)
 
     # Convert values back to BGR
-    image[segmented_8u == 0] = [0, 0, 255]  # Red
-    #segmented_bgr_image[segmented_8u == 1] = [0, 255, 0]  # Green
+    #image[segmented_8u == 0] = [0, 0, 255]  # Red
+    image[segmented_8u == 1] = [0, 255, 0]  # Green
     #segmented_bgr_image[segmented_8u == 2] = [255, 0, 0]  # Blue
 
     cv.imshow("segmented_bgr_image", image)
@@ -76,7 +76,7 @@ def detect_stains(image):
     return stain_marks
 
 
-#image_path = 'test/Test_images/train_image (7).jpg'
+#image_path = 'test/Test_images/T (20).jpg'
 #image = cv.imread(image_path)
 
 #stain_marks = detect_stains(image)
