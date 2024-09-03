@@ -13,7 +13,6 @@ cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
-style =  "Light" #Light or Dark
 count = 0
  
 initial_image = cv.imread("resources/loading.jpg")
@@ -38,7 +37,7 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-
+    print (f"this is {styleValue}")
     #track computation time for framerate calculation
     start_cpu = time.time()
 
@@ -50,7 +49,7 @@ def displayLive():
         print("Failed to load video")
         return None
     #preprocessing the low res images for gusset detection process
-    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour)
+    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
     #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny,sample_longest_contour,sample_second_longest_contour)
 
@@ -139,7 +138,7 @@ def displayCaptured():
     cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour,)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
 
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
@@ -191,6 +190,9 @@ def toggle_display():
 def update_thumbnail():
     global sample_longest_contour
     global sample_second_longest_contour
+    global styleValue
+    global thickness
+    global colour
     
     styleValue = style_var.get()
     thickness = thickness_var.get()
@@ -227,6 +229,8 @@ def update_thumbnail():
 
 # Create the main application window
 app = CTk()
+app.title("Gusset Inspector")
+app.iconbitmap("resources/logo.ico")
 
 # Bind the app with Escape keyboard to quit app whenever pressed
 app.bind('<Escape>', lambda e: app.quit())

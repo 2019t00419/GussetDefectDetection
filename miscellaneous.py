@@ -27,7 +27,7 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 
 
 
-def preprocess(original_frame,style,sample_longest_contour,sample_second_longest_contour):
+def preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
     threshold1=100
     threshold2=200
 
@@ -49,13 +49,14 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
     canny = cv.Canny(blurred_otsu, threshold1, threshold2)
 
     #cv.imshow('Canny Edge', canny)
-    if style == "Light":
-        original_frame_for_hsv = cv.resize(original_frame, (720, 1280))
-        hsv = cv.cvtColor(original_frame_for_hsv, cv.COLOR_BGR2HSV)
+    if (colour == "Bianco" or colour == "Skin"):
+        #original_frame_for_hsv = cv.resize(original_frame, (720, 1280))
+        #hsv = cv.cvtColor(original_frame_for_hsv, cv.COLOR_BGR2HSV)
+        hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
 
         # Extract the saturatin channel
         s_channel = hsv[:, :, 1]
-        
+        cv.imshow("s_channel",s_channel)
         # process the saturation channel for edge detection
         blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
         _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
@@ -71,15 +72,17 @@ def preprocess(original_frame,style,sample_longest_contour,sample_second_longest
 
 
 
-def preprocess_for_detection(image,style,sample_longest_contour,sample_second_longest_contour):
-    hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+def preprocess_for_detection(image,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
 
     display_image = image.copy()
-
     #grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    #grayscale_image = image[:, :, 1] #Green channel
-    #grayscale_image = image[:, :, 0] #Blue channel
-    grayscale_image = hsv_image[:, :, 1]
+    if(colour == "Bianco" or colour == "Skin"):
+        grayscale_image = image[:, :, 2] #Red channel
+        #grayscale_image = image[:, :, 2] #Blue channel
+        #grayscale_image = hsv_image[:, :, 1]
+    elif(colour == "Nero"):
+        grayscale_image = image[:, :, 1] #Green channel
+
     cv.imshow("grayscale_image",grayscale_image)
     detection_mask = np.zeros_like(grayscale_image)
 

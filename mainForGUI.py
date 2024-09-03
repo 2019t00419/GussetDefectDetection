@@ -12,7 +12,7 @@ source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def generateOutputFrame(captured_frame,style,sample_longest_contour,sample_second_longest_contour):    
+def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):    
     c=0
     gusset_identified = False
     gusset_side = "Not identified"
@@ -26,7 +26,7 @@ def generateOutputFrame(captured_frame,style,sample_longest_contour,sample_secon
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,style,sample_longest_contour,sample_second_longest_contour)    
+    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)    
     frame_contours = original_frame.copy()
     #frame_contours = original_frame_resized.copy()
     processed_frame = original_frame.copy()
