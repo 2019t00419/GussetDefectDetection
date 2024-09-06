@@ -37,7 +37,6 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-    print (f"this is {styleValue}")
     #track computation time for framerate calculation
     start_cpu = time.time()
 
@@ -82,7 +81,7 @@ def displayLive():
     
     canny_resized = cv.resize(canny, (640, 360))
     canny_resized = cv.rotate(canny_resized, cv.ROTATE_90_CLOCKWISE)
-    cv.imshow('Canny Edge', canny_resized)
+    #cv.imshow('Canny Edge', canny_resized)
     frame = display_image.copy()
     if frame is None:
         frame = initial_image
@@ -115,9 +114,6 @@ def displayCaptured():
         return
     cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, capture_height)
-    cap.set(cv.CAP_PROP_EXPOSURE, -5.0)
-    cap.set(cv.CAP_PROP_WHITE_BALANCE_BLUE_U, -1.0)
-    cap.set(cv.CAP_PROP_ISO_SPEED, -1.0)
     time.sleep(0.01)  # Allow the camera to adjust
     
     ret, captured_frame = cap.read()

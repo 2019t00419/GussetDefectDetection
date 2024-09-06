@@ -26,7 +26,8 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     #original_frame = camera(video_source)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
-    original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)    
+    
+    original_frame,original_frame_resized,blurred_otsu,canny = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)    
     frame_contours = original_frame.copy()
     #frame_contours = original_frame_resized.copy()
     processed_frame = original_frame.copy()
@@ -65,14 +66,18 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
                 balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
                 #Adding texture analysis
 
+                #isolate adhesive
                 fabric_mask_colour = np.ones_like(original_frame)
-                fabric_mask = np.zeros_like(original_frame)
-                fabric_mask = cv.cvtColor(fabric_mask, cv.COLOR_BGR2GRAY)
+                cv.drawContours(fabric_mask_colour, [longest_contour], -1, (255,255,255), cv.FILLED)
+                cv.drawContours(fabric_mask_colour, [second_longest_contour], -1, (0,0,0), cv.FILLED)
 
-                cv.drawContours(fabric_mask, [second_longest_contour], -1, 255, cv.FILLED)
+                fabric_mask = cv.cvtColor(fabric_mask_colour, cv.COLOR_BGR2GRAY)
+
+                cv.imshow("fabric_mask",fabric_mask)
 
                 
                 masked_image_for_texture = cv.bitwise_and(original_frame, fabric_mask_colour, mask=fabric_mask)
+                cv.imshow("masked_image_for_texture",masked_image_for_texture)
                 #stain_marks = detect_stains(masked_image_for_texture)
                 stain_marks = True
                 if stain_marks :

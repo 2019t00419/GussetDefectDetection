@@ -62,6 +62,19 @@ def detection_support(image):
     segmented = result.reshape((img .shape))
     segmented = segmented.astype(np.int8)
 
+    # Predict the probabilities for each class
+    probabilities = loaded_model.predict_proba(X)
+
+    # Get the predicted classes (i.e., the segmentation result)
+    predicted_classes = np.argmax(probabilities, axis=1)
+
+    # Get the confidence for the predicted class (max probability for each pixel)
+    confidences = np.max(probabilities, axis=1)
+
+    # Calculate the average confidence across all pixels
+    average_confidence = np.mean(confidences)
+    print(f"Average confidence of the segmentation: {average_confidence:.2f}")
+
     # Alternatively, use convertScaleAbs
     segmented_8u = cv.convertScaleAbs(segmented)
     support_image = np.zeros_like(segmented_8u)
@@ -80,11 +93,11 @@ def detection_support(image):
     resized_image = cv.resize(support_image, (input_image_height,input_image_width))
     cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', resized_image)
 
-    cv.imshow("view",support_image)
+    #cv.imshow("view",support_image)
 
     return resized_image
 '''
-image_path = 'test/Test_images/captured (0).jpg'
+image_path = 'test/Test_images/captured (13).jpg'
 image = cv.imread(image_path)
 
 cv.imshow("view",detection_support(image))

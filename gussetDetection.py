@@ -15,7 +15,7 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
     
     if contours:
         longest_contour=identify_outer_edge(contours,sample_longest_contour)
-        print(f"sample_longest_contour = {sample_longest_contour}")
+        #print(f"sample_longest_contour = {sample_longest_contour}")
 
         if longest_contour is not None:
             #cv.drawContours(display_image, [box], 0, (0, 0, 255), 2)
@@ -29,7 +29,7 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
             confidence = (1-ret)*100
             if confidence <= 0:
                 confidence = 0
-            print(f"Gusset detection confidence is {confidence}%")
+            #print(f"Gusset detection confidence is {confidence}%")
                     
             if ret<0.2:
 

@@ -31,19 +31,26 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 def preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
     threshold1=100
     threshold2=200
-    grayscale_image = detection_support(original_frame)
+
+#detection assisted image from machine learning
+    assisted_grayscale_image = detection_support(original_frame)
     original_frame_resized = cv.resize(original_frame, (720, 1280))
-    #grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
-    #grayscale_image = cv.cvtColor(original_frame_resized, cv.COLOR_BGR2GRAY)
 
     # Apply Gaussian Blur
-    blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
+    assisted_blurred_image = cv.GaussianBlur(assisted_grayscale_image, (5, 5), 0)
 
     # Otsu's Binarization
-    _, otsu_thresholded = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    blurred_otsu = cv.GaussianBlur(otsu_thresholded, (5, 5), 0)
-    otsu_resized = cv.resize(blurred_otsu, (720, 1280))    
+    _, assisted_otsu_thresholded = cv.threshold(assisted_blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    assisted_blurred_otsu = cv.GaussianBlur(assisted_otsu_thresholded, (5, 5), 0)
+
+#None assisted detection result
+    original_grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
+    original_blurred_image = cv.GaussianBlur(original_grayscale_image, (5, 5), 0)
+    _, original_otsu_thresholded = cv.threshold(original_blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    original_blurred_otsu = cv.GaussianBlur(original_otsu_thresholded, (5, 5), 0)
     
+#combining both images to increase accuracy of the selection area
+    blurred_otsu = cv.bitwise_and(assisted_blurred_otsu, original_blurred_otsu, mask=original_blurred_otsu)
 
 
     # Apply Canny edge detection
@@ -69,7 +76,7 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
         if longest_contour is not None:
             cv.drawContours(canny, [longest_contour], -1, 255, 1)
             cv.imshow("canny+NEW",canny)
-    return original_frame,original_frame_resized,blurred_otsu,canny,blurred_image,grayscale_image
+    return original_frame,original_frame_resized,blurred_otsu,canny
 
 
 
@@ -84,7 +91,7 @@ def preprocess_for_detection(image,sample_longest_contour,sample_second_longest_
     elif(colour == "Nero"):
         grayscale_image = image[:, :, 1] #Green channel
 
-    cv.imshow("grayscale_image",grayscale_image)
+    #cv.imshow("grayscale_image",grayscale_image)
     detection_mask = np.zeros_like(grayscale_image)
 
     frame_height, frame_width = grayscale_image.shape
