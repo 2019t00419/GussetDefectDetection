@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 from detectionAssistfilters import detection_filtes
 import os
+from sklearn import metrics
 
 resize_factor = 4.5
 image_dataset = pd.DataFrame()  #Dataframe to capture image features
@@ -157,7 +158,6 @@ if (dataset['Image_Name'].equals(dataset['Mask_Name'])):
     # STEP 5: Accuracy check
     #########################################################
 
-    from sklearn import metrics
     prediction_test = model.predict(X_test)
     ##Check accuracy on test dataset. 
     print ("Accuracy = ", metrics.accuracy_score(y_test, prediction_test))

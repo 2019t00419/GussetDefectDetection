@@ -32,7 +32,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     #frame_contours = original_frame_resized.copy()
     processed_frame = original_frame.copy()
     #processed_frame = original_frame_resized.copy()
-
+    
     
     # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)

@@ -119,7 +119,6 @@ def displayCaptured():
     ret, captured_frame = cap.read()
     if ret:
         print(f"captured resolution is:{captured_frame.shape}")
-        cv.imwrite(f"Images/captured/captured ({count}).jpg", captured_frame)
         cap.set(cv.CAP_PROP_FRAME_WIDTH, display_width)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, display_height)
         time.sleep(0.01)  # Allow the camera to adjust
@@ -143,7 +142,6 @@ def displayCaptured():
 
     if frame_height/frame_width < 1:
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
-    cv.imwrite("images/in/captured/Captured ("+str(0)+").jpg",captured_frame)
 
 
     processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
