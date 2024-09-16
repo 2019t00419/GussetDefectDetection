@@ -55,6 +55,6 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
             return gusset_detected,cx,cy,box,longest_contour,display_image,grayscale_image,captured,ma,MA,confidence
         
         else:       
-            print(f"Longest contour is not available")     
+            #print(f"Longest contour is not available")     
             return gusset_detected,cx,cy,box,longest_contour,display_image,grayscale_image,captured,ma,MA,confidence
 

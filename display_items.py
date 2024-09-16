@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
         
-def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,original_frame_resized,blurred_otsu,canny,count):
+def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count):
     if gusset_identified:
         if gusset_side == "Front":
             fabric_area = cv.contourArea(longest_contour)

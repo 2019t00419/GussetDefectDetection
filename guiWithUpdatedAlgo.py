@@ -18,6 +18,7 @@ count = 0
 initial_image = cv.imread("resources/loading.jpg")
 sample_longest_contour = 0
 sample_second_longest_contour = 0
+sys_error = ""
 
 display_live_running = False  # Flag to track the running state
 
@@ -46,7 +47,10 @@ def displayLive():
     #Error handing for failing to load current frame
     if not success:
         print("Failed to load video")
+        sys_error = "Camera error"
         return None
+    else:
+        sys_error = "Camera ready"
     #preprocessing the low res images for gusset detection process
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
     #gusset detection using the contours identified
@@ -199,6 +203,7 @@ def update_thumbnail():
     global styleValue
     global thickness
     global colour
+    global sys_error
     
     styleValue = style_var.get()
     thickness = thickness_var.get()
@@ -232,6 +237,7 @@ def update_thumbnail():
     thumbnailView.configure(image=thumbnail_Img_photo_image) 
     
     return sample_longest_contour,sample_second_longest_contour
+
 
 # Create the main application window
 app = CTk()
@@ -286,6 +292,9 @@ statusFrame.grid(row=3, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), stic
 
 defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
 defectsFrame.grid(row=4, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+sysErrorFrame = CTkFrame(app, corner_radius=10)
+sysErrorFrame.grid(row=9, column=0, columnspan=4, padx=(2, 2), pady=(2, 2), sticky="nsew")
 
 thumbnailViewWidth, thumbnailViewHeight = 100,150 # Replace with your actual dimensions
 # Convert the PIL Image to a CTkImage
@@ -352,7 +361,12 @@ balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 sideMixupText = CTkLabel(defectsFrame, text="")
 sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
 
+sysErrorLabel = CTkLabel(sysErrorFrame, text=sys_error)
+sysErrorLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+
 if (sample_longest_contour != 0  & sample_second_longest_contour != 0):
     sample_longest_contour,sample_second_longest_contour = update_thumbnail()
+else:
+    sys_error = "sample contour error"
 # Create an infinite loop for displaying app on screen
 app.mainloop()
