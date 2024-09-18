@@ -7,7 +7,7 @@ import pickle
 
 
 def feature_extraction(input_img):
-    #cv.imshow("original image", input_img)
+    ##cv.imshow("original image", input_img)
     if input_img.ndim == 3 and input_img.shape[-1] == 3:
         img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
     elif input_img.ndim == 2:
@@ -53,7 +53,7 @@ def detection_support(image):
     #filename = "sandstone_model_multi_image"
     loaded_model = pickle.load(open(filename, 'rb'))
 
-    #cv.imshow("original image", image)
+    ##cv.imshow("original image", image)
     #image = cv.GaussianBlur(image, (9, 9), 0)
 
     #Call the feature extraction function.
@@ -89,18 +89,18 @@ def detection_support(image):
     
     support_image[segmented_8u == 1] = [255]  # Red
 
-    cv.imshow("viesdw",image)
+    cv.imshow("support_image",image)
     resized_image = cv.resize(support_image, (input_image_height,input_image_width))
     cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', resized_image)
 
-    #cv.imshow("view",support_image)
+    ##cv.imshow("view",support_image)
 
     return resized_image
 '''
-image_path = 'test/Test_images/captured (13).jpg'
+image_path = 'test/Test_images/captured_20240916_171207.jpg'
 image = cv.imread(image_path)
 
-cv.imshow("view",detection_support(image))
+#cv.imshow("view",detection_support(image))
 
 cv.waitKey(0)
 cv.destroyAllWindows()

@@ -7,7 +7,7 @@ import pickle
 
 
 def feature_extraction(input_img):
-    #cv.imshow("original image", input_img)
+    ##cv.imshow("original image", input_img)
     if input_img.ndim == 3 and input_img.shape[-1] == 3:
         img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
     elif input_img.ndim == 2:
@@ -45,7 +45,7 @@ def detect_stains(image):
     #filename = "sandstone_model_multi_image"
     loaded_model = pickle.load(open(filename, 'rb'))
 
-    #cv.imshow("original image", image)
+    ##cv.imshow("original image", image)
     #image = cv.GaussianBlur(image, (9, 9), 0)
 
     #Call the feature extraction function.
@@ -64,7 +64,7 @@ def detect_stains(image):
     image[segmented_8u == 1] = [0, 255, 0]  # Green
     #segmented_bgr_image[segmented_8u == 2] = [255, 0, 0]  # Blue
 
-    cv.imshow("segmented_bgr_image", image)
+    #cv.imshow("segmented_bgr_image", image)
 
     cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', segmented_bgr_image)
 

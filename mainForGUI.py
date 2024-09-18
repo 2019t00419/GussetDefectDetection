@@ -3,7 +3,7 @@ import numpy as np
 from balanceOut import checkGussetPosition,checkBalanceOut
 from contourID import identify_edges
 from miscellaneous import preprocess
-from SMDYOLO import crop_image
+from sideMixupDetection import crop_image
 from display_items import outputs
 import time
 from textureAnalysis import detect_stains
@@ -74,11 +74,11 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
                 fabric_mask = cv.cvtColor(fabric_mask_colour, cv.COLOR_BGR2GRAY)
 
-                cv.imshow("fabric_mask",fabric_mask)
+                #cv.imshow("fabric_mask",fabric_mask)
 
                 
                 masked_image_for_texture = cv.bitwise_and(original_frame, fabric_mask_colour, mask=fabric_mask)
-                cv.imshow("masked_image_for_texture",masked_image_for_texture)
+                #cv.imshow("masked_image_for_texture",masked_image_for_texture)
                 #stain_marks = detect_stains(masked_image_for_texture)
                 stain_marks = True
                 if stain_marks :

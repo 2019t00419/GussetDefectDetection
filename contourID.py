@@ -110,7 +110,7 @@ def sampleContours(sample_path):
     
     # Find contours and draw the bounding box of the largest contour
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
-    #cv.imshow("canny",canny)
+    ##cv.imshow("canny",canny)
 
     for contour in contours:
             length = cv.arcLength(contour, closed=True)
@@ -140,7 +140,7 @@ def sampleContours(sample_path):
     cv.drawContours(detection_mask, [longest_contour],  -1, 255, 1)
     
     detection_mask = cv.resize(detection_mask, (360,640)) 
-    #cv.imshow("sample image",detection_mask)
+    ##cv.imshow("sample image",detection_mask)
 
     if longest_contour is not None and second_longest_contour is not None:
         print("\n\n\n\nSample image is successfull\n\n\n\n")

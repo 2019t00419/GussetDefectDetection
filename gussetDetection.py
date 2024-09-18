@@ -31,8 +31,8 @@ def detect_gusset(contours,display_image,grayscale_image,x_margins,y_margins,fra
                 confidence = 0
             #print(f"Gusset detection confidence is {confidence}%")
                     
-            if ret<0.2:
-
+            if confidence > 80:
+                #print(f"Gusset detection confidence is {confidence}%")
                 x, y, w, h = cv.boundingRect(longest_contour)
                 cv.rectangle(display_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 

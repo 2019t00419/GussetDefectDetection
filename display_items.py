@@ -8,7 +8,7 @@ def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour
             cv.drawContours(frame_contours, [longest_contour], -1, (0, 0, 255), thickness=3)
             cv.putText(frame_contours, "Fabric_area : "+str(fabric_area), (400, 650), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
             #display(frame_contours,longest_contour)
-            #cv.imshow('Edges', frame_contours_resized) 
+            ##cv.imshow('Edges', frame_contours_resized) 
             
             cv.imwrite("images/out/output/front/Output(front side) ("+str(count)+").jpg",frame_contours)
             #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
@@ -25,12 +25,12 @@ def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour
             cv.putText(frame_contours, "Fabric_area : "+str(fabric_area), (400, 650), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
             cv.putText(frame_contours, "Adhesive area : "+str(adhesive_area), (400, 675), cv.FONT_HERSHEY_PLAIN, 2, (66,245,245), 2, cv.LINE_AA)
             #display(frame_contours,longest_contour)
-            #cv.imshow('Edges', frame_contours_resized) 
+            ##cv.imshow('Edges', frame_contours_resized) 
             
             cv.imwrite("images/out/output/back/Output(back side) ("+str(count)+").jpg",frame_contours)
             #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
-        #cv.imshow('Edges', original_frame_resized)
+        ##cv.imshow('Edges', original_frame_resized)
 
         cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
         print("Invalid contours")

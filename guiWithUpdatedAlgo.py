@@ -85,7 +85,7 @@ def displayLive():
     
     canny_resized = cv.resize(canny, (640, 360))
     canny_resized = cv.rotate(canny_resized, cv.ROTATE_90_CLOCKWISE)
-    #cv.imshow('Canny Edge', canny_resized)
+    ##cv.imshow('Canny Edge', canny_resized)
     frame = display_image.copy()
     if frame is None:
         frame = initial_image

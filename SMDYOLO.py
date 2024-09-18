@@ -57,7 +57,7 @@ def crop_image(original_frame, longest_contour, count):
         _, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
         # Display the cropped image
-        #cv.imshow("Otsu cropped Image", otsu_cropped_image)
+        ##cv.imshow("Otsu cropped Image", otsu_cropped_image)
         cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", grayscale_cropped_image)
         #fabric_side = detect_side(otsu_cropped_image)
         fabric_side = infer_image(grayscale_cropped_image)

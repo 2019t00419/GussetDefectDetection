@@ -66,7 +66,7 @@ def capture_training_images():
         cv.line(display_image, (int(cx), 0), (int(cx), int(cy)), (0, 255, 0), 2)
         cv.line(display_image, (0,int(cy)), (int(cy), int(cx)), (0, 255, 0), 2)
 
-        cv.imshow("display",display_image)
+        #cv.imshow("display",display_image)
 
         # Define the coordinates
         tlx, tly = cx - int(image_width/2), cy - int(image_width/2)  # Top-left corner
@@ -78,7 +78,7 @@ def capture_training_images():
             #_, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
             # Display the cropped image
-            cv.imshow("grayscale_cropped_image", grayscale_cropped_image)
+            #cv.imshow("grayscale_cropped_image", grayscale_cropped_image)
 
             key = cv.waitKey(1)
             if key == ord('0'):  # Check for 'c' key press

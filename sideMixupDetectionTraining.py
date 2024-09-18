@@ -5,21 +5,21 @@ import cv2 as cv
 import os
 import seaborn as sns
 import pickle
-from gussetSideDetectionFilters import resizer, feature_extractor
+from sideMixupDetectionFilters import resizer, feature_extractor
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 import random
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 
-size = 240
+size = 64
 
 # Resize images to
 # Capture images and labels into arrays.
 # Start by creating empty lists.
 train_images = []
 train_labels = [] 
-for directory_path in glob.glob("test/Classification/Train_images/*"):
+for directory_path in glob.glob("test/SMD/Train_images/*"):
     label = directory_path.split("\\")[-1]
     print(label)
     for img_path in glob.glob(os.path.join(directory_path, "*.jpg")):
@@ -37,11 +37,10 @@ train_labels = np.array(train_labels)
 # Do exactly the same for test/validation images
 test_images = []
 test_labels = [] 
-for directory_path in glob.glob("test/Classification/validation/*"):
+for directory_path in glob.glob("test/SMD/validation/*"):
     fruit_label = directory_path.split("\\")[-1]
     for img_path in glob.glob(os.path.join(directory_path, "*.jpg")):
         imgc = cv.imread(img_path, cv.IMREAD_COLOR)
-        imgc = resizer(imgc, size)
         img = cv.cvtColor(imgc, cv.COLOR_BGR2GRAY)  # Optional.
         test_images.append(img)
         test_labels.append(fruit_label)
@@ -74,8 +73,8 @@ RF_model = RandomForestClassifier(n_estimators=50, random_state=42)
 RF_model.fit(X_for_RF, y_train)
 
 # Save the trained model and label encoder
-pickle.dump(RF_model, open("detectionSupportModelforSide", 'wb'))
-pickle.dump(le, open("label_encoder.pkl", 'wb'))
+pickle.dump(RF_model, open("sideMixupdetectionModel", 'wb'))
+pickle.dump(le, open("SMD_encoder.pkl", 'wb'))
 
 # Predict on Test data
 test_features = feature_extractor(x_test, imgc)

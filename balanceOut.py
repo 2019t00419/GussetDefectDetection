@@ -104,7 +104,7 @@ def checkGussetPosition(gusset_identified,original_frame,frame_contours,original
         else:
             longest_contour = None
     else:
-        #cv.imshow('Edges', original_frame)
+        ##cv.imshow('Edges', original_frame)
         print("BalanceOut:Invalid contours")
 
     if second_longest_contour is not None: 

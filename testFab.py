@@ -19,11 +19,11 @@ entr_img = (entr_img - entr_img.min()) / (entr_img.max() - entr_img.min())
 entr_img_8bit = img_as_ubyte(entr_img)
 
 processed_frame = cv.resize(entr_img, (360, 640))    
-cv.imshow("processed_frame", processed_frame) 
+#cv.imshow("processed_frame", processed_frame) 
 entr_img_8bit = cv.resize(entr_img_8bit, (360, 640))    
-cv.imshow("entr_img_8bit", entr_img_8bit)
-cv.imshow("processed_frame", processed_frame)  
 #cv.imshow("entr_img_8bit", entr_img_8bit)
+#cv.imshow("processed_frame", processed_frame)  
+##cv.imshow("entr_img_8bit", entr_img_8bit)
 
     # Wait indefinitely for a key press
 cv.waitKey(0)

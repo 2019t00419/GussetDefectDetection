@@ -16,7 +16,7 @@ def detect_gusset_side(imgc, size, model, label_encoder):
     start_preprocess = time.time()
     
     # Efficient image loading and preprocessing using OpenCV
-    #imgc = cv.imread(image_path, cv.IMREAD_COLOR)  # Read the image
+    imgc = cv.imread(image_path, cv.IMREAD_COLOR)  # Read the image
     imgc = resizer(imgc, size)  # Resize the image
 
     # Convert image to grayscale and normalize
@@ -50,13 +50,12 @@ def detect_gusset_side(imgc, size, model, label_encoder):
     predict_time = end_predict - start_predict
     
     return img_prediction, preprocess_time, predict_time
-"""
+
 # Example prediction for a single image
-image_path = "test/Classification/Test_images/new (8).jpg"
+image_path = "test/Classification/Test_images/captured_20240918_164720.jpg"
 prediction, preprocess_time, predict_time = detect_gusset_side(image_path, 240, model, label_encoder)
 
 # Print the results
 print(f"The predicted class for the image is: {prediction[0]}")
 print(f"Preprocessing time: {preprocess_time:.6f} seconds")
 print(f"Prediction time: {predict_time:.6f} seconds")
-"""

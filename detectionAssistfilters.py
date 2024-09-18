@@ -82,44 +82,44 @@ def detection_filtes(img, df,imgc):
     #"""
     # Apply Canny
     edges = cv.Canny(img, 100, 200)
-    #cv.imshow("edges", edges)
+    ##cv.imshow("edges", edges)
     results['Canny Edge'] = edges.reshape(-1)
 
 
     # Apply Sobel
     edge_sobel = sobel(img)
-    #cv.imshow("edge_sobel", edge_sobel)
+    ##cv.imshow("edge_sobel", edge_sobel)
     results['Sobel'] = edge_sobel.reshape(-1)
 
     # Apply Scharr
     edge_scharr = scharr(img)
-    #cv.imshow("edge_scharr", edge_scharr)
+    ##cv.imshow("edge_scharr", edge_scharr)
     results['Scharr'] = edge_scharr.reshape(-1)
 
     # Apply Prewitt
     edge_prewitt = prewitt(img)
-    #cv.imshow("edge_prewitt", edge_prewitt)
+    ##cv.imshow("edge_prewitt", edge_prewitt)
     results['Prewitt'] = edge_prewitt.reshape(-1)
     
     # Apply Gaussian with sigma=7
     gaussian_img2 = nd.gaussian_filter(img, sigma=7)
-    #cv.imshow("gaussian_img2", gaussian_img2)
+    ##cv.imshow("gaussian_img2", gaussian_img2)
     results['Gaussian s7'] = gaussian_img2.reshape(-1)
     #"""
     # Apply Roberts edge
     edge_roberts = roberts(img)
-    #cv.imshow("edge_roberts", edge_roberts)
+    ##cv.imshow("edge_roberts", edge_roberts)
     results['Roberts'] = edge_roberts.reshape(-1) 
 
     # Apply Gaussian with sigma=3
     gaussian_img = nd.gaussian_filter(img, sigma=3)
-    #cv.imshow("gaussian_img", gaussian_img)
+    ##cv.imshow("gaussian_img", gaussian_img)
     results['Gaussian s3'] = gaussian_img.reshape(-1)
 
 
     # Apply Median with size=3
     median_img = nd.median_filter(img, size=3)
-    #cv.imshow("median_img", median_img)
+    ##cv.imshow("median_img", median_img)
     results['Median s3'] = median_img.reshape(-1)
 
     hsv = cv.cvtColor(imgc, cv.COLOR_BGR2HSV)
