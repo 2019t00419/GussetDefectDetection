@@ -52,7 +52,7 @@ def displayLive():
     else:
         sys_error = "Camera ready"
     #preprocessing the low res images for gusset detection process
-    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
+    contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
     #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny,sample_longest_contour,sample_second_longest_contour)
 

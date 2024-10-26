@@ -156,7 +156,7 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
 
 
 
-def preprocess_for_detection(image,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
+def preprocess_for_detection(image):
 
     display_image = image.copy()
     #grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
