@@ -1,4 +1,4 @@
-import os; os.system('cls')
+import os
 import tkinter as tk
 import serial
 
@@ -23,15 +23,28 @@ def toggle_conveyor():
         conveyor_button.config(text="Start Conveyor", bg="#90EE90")
         print("Conveyor stopped")
     else:
-        arduino.write(bytes('s', 'utf-8'))  # Command to start conveyor
+        if reverse_var.get():  # Check if the reverse checkbox is checked
+            arduino.write(bytes('r', 'utf-8'))  # Command to start conveyor in reverse
+            print("Conveyor started in reverse")
+        else:
+            arduino.write(bytes('s', 'utf-8'))  # Command to start conveyor forward
+            print("Conveyor started forward")
         conveyor_button.config(text="Stop Conveyor", bg="#FF6666")
-        print("Conveyor started")
     conveyor_on = not conveyor_on
+
+# Function to map keys to button actions
+def key_press(event):
+    if event.keysym == 'Down':  # Map Down arrow
+        bad()
+    elif event.keysym == 'Up':  # Map Up arrow
+        good()
+    elif event.keysym == 'Return':
+        toggle_conveyor()
 
 # GUI setup
 win = tk.Tk()
 win.title('Selector')
-win.minsize(300, 100)
+win.minsize(300, 150)
 
 label = tk.Label(win, text=' Gusset State ', font='calibri', fg='blue')
 label.grid(column=1, row=1)
@@ -44,5 +57,13 @@ btn_good.grid(column=2, row=2)
 
 conveyor_button = tk.Button(win, text="Start Conveyor", font='calibri 12 bold', bg='#90EE90', command=toggle_conveyor)
 conveyor_button.grid(column=1, row=3, columnspan=2)
+
+# Checkbox to set conveyor direction
+reverse_var = tk.BooleanVar()
+reverse_checkbox = tk.Checkbutton(win, text="Reverse Direction", variable=reverse_var, font='calibri 10')
+reverse_checkbox.grid(column=1, row=4, columnspan=2)
+
+# Bind keyboard keys to functions
+win.bind('<Key>', key_press)
 
 win.mainloop()

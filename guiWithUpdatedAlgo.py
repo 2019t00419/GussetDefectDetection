@@ -8,6 +8,7 @@ from miscellaneous import initialize_cam,preprocess_for_detection,calculateFPS
 from gussetDetection import detect_gusset
 from contourID import sampleContours
 from display_items import thumbnail_ganeration
+import serial
 
 cpu_times = []
 last_update_time = time.time()
@@ -28,6 +29,43 @@ capture_width, capture_height = 3840, 2160
 
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)     
+
+# Serial communication setup
+serialCom = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)# Track conveyor state
+conveyor_on = False
+
+
+def bad():
+    serialCom.write(bytes('b', 'utf-8'))
+    print("Defective - moving backward")
+
+def good():
+    serialCom.write(bytes('g', 'utf-8'))
+    print("Non-defective - moving forward")
+
+def toggle_conveyor_forward():
+    global conveyor_on
+    if conveyor_on:
+        serialCom.write(bytes('s', 'utf-8'))  # Command to stop conveyor
+        conveyor_forward_button.configure(text="Conveyor Forward")
+        print("Conveyor stopped")
+    else:
+        serialCom.write(bytes('f', 'utf-8'))  # Command to start conveyor
+        conveyor_forward_button.configure(text="Stop Conveyor")
+        print("Conveyor started")
+    conveyor_on = not conveyor_on
+
+def toggle_conveyor_backward():
+    global conveyor_on
+    if conveyor_on:
+        serialCom.write(bytes('s', 'utf-8'))  # Command to stop conveyor
+        conveyor_backward_button.configure(text="Conveyor Backward")
+        print("Conveyor stopped")
+    else:
+        serialCom.write(bytes('r', 'utf-8'))  # Command to start conveyor
+        conveyor_backward_button.configure(text="Stop Conveyor")
+        print("Conveyor started")
+    conveyor_on = not conveyor_on
 
 
 #define the live diplay function for displaying live eed from the camera
@@ -55,6 +93,9 @@ def displayLive():
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
     #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny,sample_longest_contour,sample_second_longest_contour)
+    
+    if gussetIdentified is None or cx is None or display_image is None or grayscale_image is None or captured is None or confidence is None:
+        print("\n\n\n\ncontour error\n\n\n\n\n")
 
     #process handling for status of gusset identification
     if gussetIdentified:
@@ -62,7 +103,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
+            toggle_conveyor_forward()
             displayCaptured()
+            toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
@@ -150,7 +193,6 @@ def displayCaptured():
 
     processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
 
-
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
     if processed_frame is None:
         print("Error: File not found.")
@@ -182,7 +224,9 @@ def displayCaptured():
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
         if gusset_side == "Front":
             balanceOutText.configure(text=f"")
+            good()
         elif gusset_side == "Back":
+            bad()
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
 
 
@@ -339,6 +383,21 @@ colour_var.trace("w", lambda *args: update_thumbnail())
 # Create a button to open the camera in GUI app
 startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200,state="disabled")
 startButton.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
+
+label = CTkLabel(settingsFrame, text='Conveyor manual controller',width=200)
+label.grid(column=1, row=5, columnspan=3, padx=(10, 5), pady=(10, 5))
+
+btn_bad = CTkButton(settingsFrame, text='Defective',command=bad ,width=200)
+btn_bad.grid(column=3, row=6, padx=(10, 5), pady=(10, 5))
+
+btn_good = CTkButton(settingsFrame, text='Non-defective',command=good ,width=200)
+btn_good.grid(column=3, row=7, padx=(10, 5), pady=(10, 5))
+
+conveyor_forward_button = CTkButton(settingsFrame, text="Conveyor forward", command=toggle_conveyor_forward ,width=200)
+conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
+
+conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor forward", command=toggle_conveyor_backward ,width=200)
+conveyor_backward_button.grid(column=3, row=9,  padx=(10, 5), pady=(10, 5))
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")
 statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
