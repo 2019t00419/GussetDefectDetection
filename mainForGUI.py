@@ -7,6 +7,7 @@ from sideMixupDetection import crop_image
 from display_items import outputs
 import time
 from textureAnalysis import detect_stains
+from datetime import datetime
 
 source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
@@ -94,7 +95,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
             else :
                 balance_out = "Front side of the gusset detected"
 
-            fabric_side = crop_image(original_frame, longest_contour, 0)
+            fabric_side = crop_image(original_frame, longest_contour,100)
         else:
             fabric_side = "error"
 
@@ -104,5 +105,9 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         end_time = time.time()  # End time
         elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
         print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+        
+        cv.imwrite(f"images/processed/processed ({timestamp}).jpg", processed_frame)
     return processed_frame,balance_out,fabric_side,gusset_side
 

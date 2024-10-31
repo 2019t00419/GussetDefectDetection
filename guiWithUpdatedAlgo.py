@@ -91,11 +91,11 @@ def displayLive():
         sys_error = "Camera ready"
     #preprocessing the low res images for gusset detection process
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
+
     #gusset detection using the contours identified
     gussetIdentified, cx, cy, box, longest_contour, display_image, grayscale_image, captured, ma, MA,confidence = detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, captured, canny,sample_longest_contour,sample_second_longest_contour)
     
-    if gussetIdentified is None or cx is None or display_image is None or grayscale_image is None or captured is None or confidence is None:
-        print("\n\n\n\ncontour error\n\n\n\n\n")
+    
 
     #process handling for status of gusset identification
     if gussetIdentified:
@@ -103,9 +103,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
-            toggle_conveyor_forward()
+            #toggle_conveyor_forward()
             displayCaptured()
-            toggle_conveyor_backward()
+            #toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
@@ -393,10 +393,10 @@ btn_bad.grid(column=3, row=6, padx=(10, 5), pady=(10, 5))
 btn_good = CTkButton(settingsFrame, text='Non-defective',command=good ,width=200)
 btn_good.grid(column=3, row=7, padx=(10, 5), pady=(10, 5))
 
-conveyor_forward_button = CTkButton(settingsFrame, text="Conveyor forward", command=toggle_conveyor_forward ,width=200)
+conveyor_forward_button = CTkButton(settingsFrame, text="Conveyor Forward", command=toggle_conveyor_forward ,width=200)
 conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
 
-conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor forward", command=toggle_conveyor_backward ,width=200)
+conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor Backward", command=toggle_conveyor_backward ,width=200)
 conveyor_backward_button.grid(column=3, row=9,  padx=(10, 5), pady=(10, 5))
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")

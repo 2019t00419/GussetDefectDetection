@@ -3,6 +3,7 @@ import cv2 as cv
 import pickle
 import time
 from sideMixupDetectionFilters import resizer, feature_extractor
+from datetime import datetime
 
 # Load the trained model and label encoder (no need to load each time for multiple predictions)
 model = pickle.load(open("sideMixupdetectionModel", 'rb'))
@@ -61,44 +62,61 @@ print(f"The predicted class for the image is: {prediction[0]}")
 print(f"Preprocessing time: {preprocess_time:.6f} seconds")
 print(f"Prediction time: {predict_time:.6f} seconds")
 """
+def crop_image(original_frame, longest_contour, image_width):
+    # Check if contour is valid
+    if longest_contour is None or len(longest_contour) == 0:
+        print("Warning: No valid contour provided to crop_image.")
+        return None
 
-def crop_image(original_frame, longest_contour, count):
+    # Calculate moments for the center
     M = cv.moments(longest_contour)
     if M['m00'] == 0:
-        return None 
-    else:
-        frame_height, frame_width, channels = original_frame.shape
-        print(original_frame.shape)
-        cx = int(frame_width * (M['m10'] / M['m00']) / 960)
-        cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
+        print("Warning: Contour moments calculation resulted in m00 = 0.")
+        return None
+    
+    # Get dimensions of original frame
+    frame_height, frame_width, _ = original_frame.shape
+    print(f"Original frame dimensions: width={frame_width}, height={frame_height}")
 
-        print("Center point = (" + str(cx) + "," + str(cy) + ")")
+    # Calculate the center point (cx, cy) based on moments
+    cx = int(frame_width * (M['m10'] / M['m00']) / 960)
+    cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
+    print(f"Center point of crop: ({cx}, {cy})")
 
-        # Define the coordinates
-        tlx, tly = cx - int(image_width/2), cy - int(image_width/2)  # Top-left corner
-        brx, bry = cx + int(image_width/2), cy + int(image_width/2)  # Bottom-right corner
+    # Define the top-left and bottom-right coordinates of the square crop
+    tlx, tly = cx - int(image_width / 2), cy - int(image_width / 2)
+    brx, bry = cx + int(image_width / 2), cy + int(image_width / 2)
+    print(f"Initial bounding box - Top Left: ({tlx}, {tly}), Bottom Right: ({brx}, {bry})")
 
-        print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
-        print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
+    # Ensure bounding box is within frame boundaries
+    tlx, tly = max(0, tlx), max(0, tly)
+    brx, bry = min(frame_width, brx), min(frame_height, bry)
+    print(f"Adjusted bounding box - Top Left: ({tlx}, {tly}), Bottom Right: ({brx}, {bry})")
 
-        # Ensure the coordinates define a square area
-        if abs(tlx - brx) != abs(tly - bry):
-            raise ValueError("The provided coordinates do not define a square area.")
+    # Check if adjusted box dimensions still form a valid area
+    if tlx >= brx or tly >= bry:
+        print("Warning: Adjusted crop coordinates result in an empty area. Skipping this frame.")
+        return None
 
-        # Crop the image
-        cropped_image = original_frame[tly:bry, tlx:brx]
-        grayscale_cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+    # Crop the image
+    cropped_image = original_frame[tly:bry, tlx:brx]
+    if cropped_image.size == 0:
+        print("Warning: Cropped image is empty after applying ROI.")
+        return None
 
-        # Display the cropped image
-        ##cv.imshow("Otsu cropped Image", otsu_cropped_image)
-        cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", grayscale_cropped_image)
-        #fabric_side = detect_side(otsu_cropped_image)
+    # Convert cropped image to grayscale
+    grayscale_cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
 
-        fabric_side, preprocess_time, predict_time = side_mixup_detection(cropped_image, 64, model, label_encoder)
-        fabric_side = fabric_side[0]
-        
-        # Print the results
-        print(f"The fabric is: {fabric_side}")
-        print(f"Preprocessing time: {preprocess_time:.6f} seconds")
-        print(f"Prediction time: {predict_time:.6f} seconds")
+    now = datetime.now()
+    timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+    # Save cropped image for debugging purposes
+    cv.imwrite(f"images/out/cropped/cropped ({timestamp}).jpg", grayscale_cropped_image)
+
+    # Call fabric side detection and log timing information
+    fabric_side, preprocess_time, predict_time = side_mixup_detection(cropped_image, 64, model, label_encoder)
+    fabric_side = fabric_side[0]
+    print(f"Fabric side detection result: {fabric_side}")
+    print(f"Preprocessing time: {preprocess_time:.6f} seconds")
+    print(f"Prediction time: {predict_time:.6f} seconds")
+
     return fabric_side

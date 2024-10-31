@@ -6,7 +6,7 @@ from scipy.spatial import KDTree
 
 def checkBalanceOut(longest_contour, second_longest_contour, frame_contours):
 
-    thickness = 4    
+    thickness = 6  
     tolerance = 1
     balance_out = False
     
@@ -115,6 +115,6 @@ def checkGussetPosition(gusset_identified,original_frame,frame_contours,original
 
 
 def pix_to_mm(pix):
-    convert_factor = 9
+    convert_factor = 14.4
     mm = pix/convert_factor
     return mm

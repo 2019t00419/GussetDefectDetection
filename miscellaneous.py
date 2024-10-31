@@ -37,6 +37,8 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
 def preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
     
 
+    captured_view_image = original_frame.copy()
+
     threshold1=100
     threshold2=200
 #detecting gusset side using assisted RF model
@@ -69,10 +71,9 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
 
         gusset_boundary_mask = cv.cvtColor(gusset_boundary_mask_colour, cv.COLOR_BGR2GRAY)
 
-        
         original_frame_background_removed = cv.bitwise_and(original_frame, gusset_boundary_mask_colour, mask=gusset_boundary_mask)
 
-        cv.imshow("original_frame_background_removed",original_frame_background_removed)
+        #cv.imshow("original_frame_background_removed",original_frame_background_removed)
 
         # Get the current date and time
         now = datetime.now()
@@ -94,7 +95,8 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
 
         if(side == 'back'):
         #detection assisted image from machine learning
-            assisted_grayscale_image = detection_support(original_frame)
+            assisted_grayscale_image,captured_view_image = detection_support(original_frame)
+
             #original_frame_resized = cv.resize(original_frame, (720, 1280))
             # Apply Gaussian Blur
             assisted_blurred_image = cv.GaussianBlur(assisted_grayscale_image, (5, 5), 0)
@@ -152,7 +154,7 @@ def preprocess(original_frame,sample_longest_contour,sample_second_longest_conto
                 ##cv.imshow("canny+NEW",canny)
         else:  
             show_error("No outer edge identified")
-    return original_frame,blurred_otsu,canny
+    return captured_view_image,blurred_otsu,canny
 
 
 

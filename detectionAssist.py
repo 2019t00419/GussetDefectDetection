@@ -89,13 +89,14 @@ def detection_support(image):
     
     support_image[segmented_8u == 1] = [255]  # Red
 
-    cv.imshow("support_image",image)
-    resized_image = cv.resize(support_image, (input_image_height,input_image_width))
+    #cv.imshow("support_image",image)
+    resized_support_image = cv.resize(support_image, (input_image_height,input_image_width))
+    resized_image = cv.resize(image, (input_image_height,input_image_width))
     cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', resized_image)
 
     ##cv.imshow("view",support_image)
 
-    return resized_image
+    return resized_support_image,resized_image
 '''
 image_path = 'test/Test_images/captured_20240916_171207.jpg'
 image = cv.imread(image_path)
