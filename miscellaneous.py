@@ -33,129 +33,109 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
     return cap
 
+import time
 
-def preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):
-    
+def preprocess(original_frame, sample_longest_contour, sample_second_longest_contour, styleValue, thickness, colour):
+    start_time = time.time()  # Start timer
 
     captured_view_image = original_frame.copy()
-
-    threshold1=100
-    threshold2=200
-#detecting gusset side using assisted RF model
+    threshold1 = 100
+    threshold2 = 200
+    
+    # Detecting gusset side using assisted RF model
     side, _, _ = detect_gusset_side(original_frame, 240, model, label_encoder)
-    print(f"Side predicted by the gusset side detection assist : {side[0]}")
+    print(f"Side predicted by the gusset side detection assist: {side[0]}")
 
-#removing background
-    if(colour == "Bianco" or colour == "Skin" or side == "back"):
-        grayscale_image = original_frame[:, :, 2] #Red channel
-        #grayscale_image = image[:, :, 2] #Blue channel
-        #grayscale_image = hsv_image[:, :, 1]
-    elif(colour == "Nero" and side == "front"):
-        grayscale_image = original_frame[:, :, 1] #Green channel
+    end_time0 = time.time()  # End timer
+    print(f"Time taken to complete detect_gusset_side function: {end_time0 - start_time:.6f} seconds")
+    # Removing background based on color and side conditions
+    if colour == "Bianco" or colour == "Skin" or side == "back":
+        grayscale_image = original_frame[:, :, 2]  # Red channel
+    elif colour == "Nero" and side == "front":
+        grayscale_image = original_frame[:, :, 1]  # Green channel
 
-    # Show the masked grayscale image
-    # CPU operations
+    # Processing grayscale image
     blurred_image = cv.GaussianBlur(grayscale_image, (5, 5), 0)
     _, thresholded_image = cv.threshold(blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     blurred_otsu = cv.GaussianBlur(thresholded_image, (5, 5), 0)
     canny = cv.Canny(blurred_otsu, 100, 200)
 
-    ##cv.imshow("canny",canny)
-    # Find contours and draw the bounding box of the largest contour
+    # Finding contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
-    longest_contour=identify_outer_edge(contours,sample_longest_contour)
-
+    longest_contour = identify_outer_edge(contours, sample_longest_contour)
+    start_time1 = time.time()  # Start timer
     if longest_contour is not None:
         gusset_boundary_mask_colour = np.zeros_like(original_frame)
-        cv.drawContours(gusset_boundary_mask_colour, [longest_contour], -1, (255,255,255), cv.FILLED)
-
+        cv.drawContours(gusset_boundary_mask_colour, [longest_contour], -1, (255, 255, 255), cv.FILLED)
         gusset_boundary_mask = cv.cvtColor(gusset_boundary_mask_colour, cv.COLOR_BGR2GRAY)
-
         original_frame_background_removed = cv.bitwise_and(original_frame, gusset_boundary_mask_colour, mask=gusset_boundary_mask)
 
-        #cv.imshow("original_frame_background_removed",original_frame_background_removed)
-
-        # Get the current date and time
         now = datetime.now()
-        timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
-
-        # Define the filename with timestamp
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
         filename = f"images/captured/captured_{timestamp}.jpg"
-        # Save the image
         cv.imwrite(filename, original_frame)
 
-    #None assisted detection result
+        start_time2 = time.time()  # Start timer
+
         original_grayscale_image = cv.cvtColor(original_frame, cv.COLOR_BGR2GRAY)
-        # Apply Gaussian Blur
         original_blurred_image = cv.GaussianBlur(original_grayscale_image, (5, 5), 0)
-        # Otsu's Binarization
         _, original_otsu_thresholded = cv.threshold(original_blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
         original_blurred_otsu = cv.GaussianBlur(original_otsu_thresholded, (5, 5), 0)
 
+        end_time2 = time.time()  # End timer
+        print(f"Time taken to complete mandatory preprocessing: {end_time2 - start_time2:.6f} seconds")
 
-        if(side == 'back'):
-        #detection assisted image from machine learning
-            assisted_grayscale_image,captured_view_image = detection_support(original_frame)
+        if side == 'back':
+            start_time3 = time.time()  # Start timer
+            
+            assisted_grayscale_image, captured_view_image = detection_support(original_frame)
+            
+            end_time3 = time.time()  # End timer
+            print(f"Time taken to complete detection support: {end_time3 - start_time3:.6f} seconds")
 
-            #original_frame_resized = cv.resize(original_frame, (720, 1280))
-            # Apply Gaussian Blur
+
             assisted_blurred_image = cv.GaussianBlur(assisted_grayscale_image, (5, 5), 0)
-            # Otsu's Binarization
             _, assisted_otsu_thresholded = cv.threshold(assisted_blurred_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
             assisted_blurred_otsu = cv.GaussianBlur(assisted_otsu_thresholded, (5, 5), 0)
-
-            
-        #combining both images to increase accuracy of the selection area
             blurred_otsu = cv.bitwise_and(assisted_blurred_otsu, original_blurred_otsu, mask=original_blurred_otsu)
-
-
-        # Apply Canny edge detection
             canny = cv.Canny(blurred_otsu, threshold1, threshold2)
-        elif (side == 'front'):
-        
-        # Apply Canny edge detection
+            
             canny = cv.Canny(original_blurred_otsu, threshold1, threshold2)
-        ##cv.imshow('Canny Edge', canny)
-        
-        if (colour == "Bianco" or colour == "Skin"):
-            #original_frame_for_hsv = cv.resize(original_frame, (720, 1280))
-            #hsv = cv.cvtColor(original_frame_for_hsv, cv.COLOR_BGR2HSV)
-            hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
+        elif side == 'front':
+            canny = cv.Canny(original_blurred_otsu, threshold1, threshold2)
 
-            # Extract the saturatin channel
+        end_time1 = time.time()  # End timer
+        print(f"Time taken to complete side dependent preprocessing: {end_time1 - start_time1:.6f} seconds")
+        if colour == "Bianco" or colour == "Skin":
+            hsv = cv.cvtColor(original_frame, cv.COLOR_BGR2HSV)
             s_channel = hsv[:, :, 1]
-            # process the saturation channel for edge detection
             blurred_s_channel = cv.GaussianBlur(s_channel, (5, 5), 0)
             _, thresholded_s_channel = cv.threshold(blurred_s_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
             blurred_otsu_s_channel = cv.GaussianBlur(thresholded_s_channel, (5, 5), 0)
             canny_s_channel = cv.Canny(blurred_otsu_s_channel, 100, 200)
             s_channel_contours, _ = cv.findContours(canny_s_channel, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
-            
-            longest_contour= identify_inner_edge(s_channel_contours,sample_second_longest_contour)
+            longest_contour = identify_inner_edge(s_channel_contours, sample_second_longest_contour)
 
             if longest_contour is not None:
                 cv.drawContours(canny, [longest_contour], -1, 255, 1)
-                ##cv.imshow("canny+NEW",canny)
-        elif (colour == "Nero"):
-            
-            # Extract the saturatin channel
+        elif colour == "Nero":
             g_channel = original_frame[:, :, 1]
-            # process the saturation channel for edge detection
             blurred_g_channel = cv.GaussianBlur(g_channel, (5, 5), 0)
             _, thresholded_g_channel = cv.threshold(blurred_g_channel, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
             blurred_otsu_g_channel = cv.GaussianBlur(thresholded_g_channel, (5, 5), 0)
             canny_g_channel = cv.Canny(blurred_otsu_g_channel, 100, 200)
             g_channel_contours, _ = cv.findContours(canny_g_channel, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
-            
-            longest_contour= identify_inner_edge(g_channel_contours,sample_second_longest_contour)
+            longest_contour = identify_inner_edge(g_channel_contours, sample_second_longest_contour)
 
             if longest_contour is not None:
                 cv.drawContours(canny, [longest_contour], -1, 255, 1)
-                ##cv.imshow("canny+NEW",canny)
-        else:  
-            show_error("No outer edge identified")
-    return captured_view_image,blurred_otsu,canny
+        end_time1 = time.time()  # End timer
+        print(f"Time taken to complete color dependent preprocessing: {end_time1 - start_time1:.6f} seconds")
+    else:
+        show_error("No outer edge identified")
 
+
+    return captured_view_image, blurred_otsu, canny
 
 
 def preprocess_for_detection(image):

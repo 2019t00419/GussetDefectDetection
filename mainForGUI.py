@@ -104,7 +104,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
             # End of time calculation
         end_time = time.time()  # End time
         elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
-        print(f"Time taken to complete the function: {elapsed_time:.4f} ms\n\n") 
+        print(f"Time taken to generate output frame: {elapsed_time:.4f} ms\n\n") 
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
         

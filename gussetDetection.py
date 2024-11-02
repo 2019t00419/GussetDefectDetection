@@ -15,7 +15,7 @@ def detect_gusset(contours, display_image, grayscale_image, x_margins, y_margins
     captured = capturedIn
     confidence = 0
     
-    print("Captured :",captured)
+    #print("Captured :",captured)
     # Early return if contours is empty
     if not contours:
         print("No contours available, returning default values.")

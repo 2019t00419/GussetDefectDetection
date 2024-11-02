@@ -90,6 +90,7 @@ def displayLive():
     else:
         sys_error = "Camera ready"
     #preprocessing the low res images for gusset detection process
+    cv.imshow("live",image)
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
 
     #gusset detection using the contours identified
@@ -105,7 +106,7 @@ def displayLive():
             captured = True
             #toggle_conveyor_forward()
             displayCaptured()
-            #toggle_conveyor_backward()
+            #toggle_conveyor_forward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
