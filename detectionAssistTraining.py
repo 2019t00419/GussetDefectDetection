@@ -72,6 +72,7 @@ for mask in os.listdir(mask_path):
     output_image[(red_channel > 0) & (blue_channel == 0) & (green_channel == 0)] = 1
     output_image[(green_channel > 0) & (blue_channel == 0) & (red_channel == 0)] = 2
     output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel == 0)] = 3
+    output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel > 0)] = 4
 
     label_values = output_image.reshape(-1)
     df2['Label_Value'] = label_values
