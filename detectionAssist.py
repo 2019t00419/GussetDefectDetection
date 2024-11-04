@@ -76,10 +76,10 @@ def detection_support(image):
     conversion_start_time = time.time()
     segmented_8u = cv.convertScaleAbs(segmented)
     support_image = np.zeros_like(segmented_8u)
-    image[segmented_8u == 0] = [255, 0, 0]  # Green for adhesive
-    image[segmented_8u == 1] = [255, 255, 255]  # Green for adhesive
-    image[segmented_8u == 2] = [0, 255, 0]  # Green for adhesive
-    image[segmented_8u == 3] = [255, 0, 255]  # Green for adhesive
+    image[segmented_8u == 0] = [0, 0, 255]  # BGR
+    image[segmented_8u == 1] = [0, 255, 0]  # BGR
+    image[segmented_8u == 2] = [255, 0, 0]  # BGR
+    image[segmented_8u == 3] = [255, 255, 255]  # BGR
     support_image[segmented_8u == 3] = [255]
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
@@ -98,7 +98,7 @@ def detection_support(image):
     return resized_support_image, resized_image
 
 
-image_path = 'test/Test_images/captured_20241031_1638131.jpg'
+image_path = 'test/Test_images/captured_20241031_1638130.jpg'
 image = cv.imread(image_path)
 
 binary_image, processed_image = detection_support(image)

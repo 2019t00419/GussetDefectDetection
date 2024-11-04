@@ -107,7 +107,7 @@ print(f"Time taken for combining datasets and train/test split: {combine_end - c
 # SECTION 4: Train the model
 train_start = time.time()
 from sklearn.ensemble import RandomForestClassifier
-model = RandomForestClassifier(n_estimators=25, random_state=42)
+model = RandomForestClassifier(n_estimators=25, random_state=42, n_jobs = -1)
 model.fit(X_train, y_train)
 train_end = time.time()
 print(f"Time taken for training the model: {train_end - train_start} seconds")
