@@ -6,14 +6,21 @@ from detectionAssistfilters import detection_filtes
 import pickle
 
 
-def feature_extraction(input_img):
+def feature_extraction(input_img,colour):
     ##cv.imshow("original image", input_img)
-    if input_img.ndim == 3 and input_img.shape[-1] == 3:
-        img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
+    if input_img.ndim == 3 and input_img.shape[-1] == 3:   
+        #testing
+        if colour == "Bianco" or colour == "Skin":
+            img = input_img[:, :, 2]  # Red channel
+        elif colour == "Nero":
+            img = input_img[:, :, 1]  # Green channel
+            #img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
     elif input_img.ndim == 2:
         img = input_img
     else:
         raise Exception("The module works only with grayscale and RGB images!")
+
+
 
     #img = cv.GaussianBlur(img, (5, 5), 0)
     print(img)    
@@ -31,11 +38,12 @@ def feature_extraction(input_img):
 
 import time
 
-def detection_support(image):
+def detection_support(image,colour):
     total_start_time = time.time()  # Start total time for the function
     
     # Initial preparation
     prep_start_time = time.time()
+
     detection_height = 720
     input_image_width, input_image_height, _ = image.shape
     if input_image_width < input_image_height:  # Landscape
@@ -55,7 +63,7 @@ def detection_support(image):
 
     # Feature extraction
     feature_extraction_start_time = time.time()
-    img, X, image = feature_extraction(image)
+    img, X, image = feature_extraction(image,colour)
     feature_extraction_end_time = time.time()
     print(f"Time taken for feature extraction: {feature_extraction_end_time - feature_extraction_start_time:.6f} seconds")
 
@@ -75,33 +83,41 @@ def detection_support(image):
     # Image conversion and scaling
     conversion_start_time = time.time()
     segmented_8u = cv.convertScaleAbs(segmented)
-    support_image = np.zeros_like(segmented_8u)
-    image[segmented_8u == 0] = [0, 0, 255]  # BGR
-    image[segmented_8u == 1] = [0, 255, 0]  # BGR
-    image[segmented_8u == 2] = [255, 0, 0]  # BGR
-    image[segmented_8u == 3] = [255, 255, 255]  # BGR
-    support_image[segmented_8u == 3] = [255]
+    support_image_adhesive = np.zeros_like(segmented_8u)
+    support_image_fabric_mask = np.zeros_like(segmented_8u)
+    support_image_defects_mask = np.zeros_like(segmented_8u)
+    #image[segmented_8u == 0] = [0, 0, 255]  # BGR
+    #image[segmented_8u == 1] = [0, 255, 0]  # BGR
+    #image[segmented_8u == 2] = [255, 0, 0]  # BGR
+    #image[segmented_8u == 3] = [255, 255, 255]  # BGR
+    support_image_adhesive[segmented_8u == 1] = [255]
+    support_image_fabric_mask[segmented_8u == 0] = [255]
+    support_image_defects_mask[segmented_8u == 3] = [255]
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
+    #cv.imshow("support_image_fabric",support_image_fabric_mask)
+    support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
+
+    #cv.imshow("support_image_fabric",support_image_fabric)
 
     # Resizing and saving the segmented image
     resizing_start_time = time.time()
-    resized_support_image = cv.resize(support_image, (input_image_height, input_image_width))
-    resized_image = cv.resize(image, (input_image_height, input_image_width))
-    cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', resized_image)
+    resized_support_image_adhesive = cv.resize(support_image_adhesive, (input_image_height, input_image_width))
+    resized_image_fabric = cv.resize(support_image_fabric, (input_image_height, input_image_width))
+    cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', support_image_fabric)
     resizing_end_time = time.time()
     print(f"Time taken for resizing and saving: {resizing_end_time - resizing_start_time:.6f} seconds")
 
     total_end_time = time.time()
     print(f"Total time taken for detection_support function: {total_end_time - total_start_time:.6f} seconds")
 
-    return resized_support_image, resized_image
+    return resized_support_image_adhesive, resized_image_fabric
 
-
+"""
 image_path = 'test/Test_images/captured_20241031_1638130.jpg'
 image = cv.imread(image_path)
 
-binary_image, processed_image = detection_support(image)
+binary_image, processed_image = detection_support(image,"Skin")
 print(type(processed_image), processed_image.shape if processed_image is not None else "None")
 
 
@@ -115,3 +131,4 @@ else:
 
 cv.waitKey(0)
 cv.destroyAllWindows()
+"""

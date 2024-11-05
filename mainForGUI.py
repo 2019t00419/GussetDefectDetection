@@ -9,7 +9,7 @@ import time
 from textureAnalysis import detect_stains
 from datetime import datetime
 
-source= cv.VideoCapture(0)
+#source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
@@ -41,24 +41,30 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
     # Find the longest contour
     _,longest_contour,second_longest_contour=identify_edges(contours,sample_longest_contour,sample_second_longest_contour)
-    
+    print("1")
     if longest_contour is not None:
         match_gusset_shape = cv.matchShapes(longest_contour,sample_longest_contour,1,0.0)
         if match_gusset_shape > 0.2:
             gusset_identified = False
             longest_contour = None
+            print("2")
         else :
+            print("3")
             gusset_identified = True
             if second_longest_contour is not None:
+                print("4")
                 match_fabric_shape = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
                 total_area = cv.contourArea(longest_contour)
                 fabric_area = cv.contourArea(second_longest_contour)
                 area_ratio = fabric_area/total_area
                 if match_fabric_shape < 0.25 and area_ratio > 0.5:
                     gusset_side = "Back"
+                    print("6")
                 else :
                     gusset_side = "Front"
+                    print("7")
             else:
+                print("5")
                 gusset_side = "Front"
    
             #longest_contour = checkGussetPosition(gusset_identified,original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)

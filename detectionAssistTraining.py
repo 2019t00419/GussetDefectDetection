@@ -7,6 +7,8 @@ import os
 from sklearn import metrics
 import time
 
+colour = "Skin" #Bianco,Skin,Nero
+
 # Start total execution timer
 total_start = time.time()
 
@@ -32,13 +34,17 @@ for image in os.listdir(img_path):
     resize_factor = input_image_height / detection_height
     input_img = cv.resize(input_img, (int(input_image_height / resize_factor), int((input_image_width / input_image_height) * (input_image_height / resize_factor))))
     
-    if input_img.ndim == 3 and input_img.shape[-1] == 3:
-        img = cv.cvtColor(input_img, cv.COLOR_BGR2GRAY)
+    if input_img.ndim == 3 and input_img.shape[-1] == 3:   
+        #testing
+        if colour == "Bianco" or colour == "Skin":
+            img = input_img[:, :, 2]  # Red channel
+        elif colour == "Nero":
+            img = input_img[:, :, 1]  # Green channel
+            #img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
     elif input_img.ndim == 2:
         img = input_img
     else:
         raise Exception("The module works only with grayscale and RGB images!")
-
     pixel_values = img.reshape(-1)
     df['Original Image'] = pixel_values
     df['Image_Name'] = image
@@ -107,7 +113,7 @@ print(f"Time taken for combining datasets and train/test split: {combine_end - c
 # SECTION 4: Train the model
 train_start = time.time()
 from sklearn.ensemble import RandomForestClassifier
-model = RandomForestClassifier(n_estimators=25, random_state=42, n_jobs = -1)
+model = RandomForestClassifier(n_estimators=25, random_state=42)#n_jobs = -1
 model.fit(X_train, y_train)
 train_end = time.time()
 print(f"Time taken for training the model: {train_end - train_start} seconds")

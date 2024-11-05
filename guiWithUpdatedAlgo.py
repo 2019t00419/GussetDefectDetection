@@ -15,6 +15,7 @@ last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
 count = 0
+defected = True
  
 initial_image = cv.imread("resources/loading.jpg")
 sample_longest_contour = 0
@@ -76,6 +77,7 @@ def displayLive():
     global cpu_times
     global avg_cpu_fps
     global last_update_time
+    global defected
     #track computation time for framerate calculation
     start_cpu = time.time()
 
@@ -83,14 +85,21 @@ def displayLive():
     success, image = cap.read()
 
     #Error handing for failing to load current frame
-    if not success:
-        print("Failed to load video")
-        sys_error = "Camera error"
+    if not success or image is None:
+        print("Warning: live display failed.")
         return None
     else:
+        gray_frame = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        # Count non-zero pixels
+        non_zero_count = cv.countNonZero(gray_frame)
+        if(non_zero_count == 0):
+            print("Resetting camera feed")
+            cap.set(cv.CAP_PROP_FRAME_WIDTH, display_width)
+            cap.set(cv.CAP_PROP_FRAME_HEIGHT, display_height)
+            time.sleep(0.01)  # Allow the camera to adjust
         sys_error = "Camera ready"
     #preprocessing the low res images for gusset detection process
-    cv.imshow("live",image)
+    #cv.imshow("live",image)
     contours, display_image, grayscale_image, x_margins, y_margins, frame_width, frame_height, canny = preprocess_for_detection(image)
 
     #gusset detection using the contours identified
@@ -165,22 +174,16 @@ def displayCaptured():
     time.sleep(0.01)  # Allow the camera to adjust
     
     ret, captured_frame = cap.read()
-    if ret:
+    print("ret is ",ret)
+    if not ret or captured_frame is None:
+        print("Warning: Frame capture failed.")
+        return None
+    else:
         print(f"captured resolution is:{captured_frame.shape}")
         cap.set(cv.CAP_PROP_FRAME_WIDTH, display_width)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, display_height)
+        print(f"Switched to:{cap.get(cv.CAP_PROP_FRAME_WIDTH)} x {cap.get(cv.CAP_PROP_FRAME_HEIGHT)}")
         time.sleep(0.01)  # Allow the camera to adjust
-
-        exposure = cap.get(cv.CAP_PROP_EXPOSURE)
-        white_balance = cap.get(cv.CAP_PROP_WHITE_BALANCE_BLUE_U)
-        iso = cap.get(cv.CAP_PROP_ISO_SPEED)
-
-        print(f"Exposure: {exposure}")
-        print(f"White Balance: {white_balance}")
-        print(f"ISO: {iso}")
-
-    else:
-        print("Failed to capture image")
 
     if captured_frame is None:
         captured_frame = initial_image
@@ -225,10 +228,12 @@ def displayCaptured():
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
         if gusset_side == "Front":
             balanceOutText.configure(text=f"")
-            good()
         elif gusset_side == "Back":
-            bad()
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
+            if(balance_out == "No issue"):
+                good()
+            else:
+                bad()
 
 
 
@@ -237,7 +242,7 @@ def toggle_display():
     display_live_running = not display_live_running
     if display_live_running:
         displayLive()
-        displayCaptured()
+        #displayCaptured()
         startButton.configure(text="Stop")
     else:
         startButton.configure(text="Start")

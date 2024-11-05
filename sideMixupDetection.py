@@ -79,8 +79,8 @@ def crop_image(original_frame, longest_contour, image_width):
     print(f"Original frame dimensions: width={frame_width}, height={frame_height}")
 
     # Calculate the center point (cx, cy) based on moments
-    cx = int(frame_width * (M['m10'] / M['m00']) / 960)
-    cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
+    cx = int((M['m10'] / M['m00']))
+    cy = int((M['m01'] / M['m00']))
     print(f"Center point of crop: ({cx}, {cy})")
 
     # Define the top-left and bottom-right coordinates of the square crop
