@@ -1,104 +1,65 @@
+from ultralytics import YOLO
 import cv2 as cv
-import tkinter as tk
-from tkinter import messagebox
-from PIL import Image, ImageTk
 
-# Function to set resolution
-def set_resolution(width, height):
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
-    print(f"Resolution set to: {width}x{height}")
+image_width = 64
 
-# Function to start video capture
-def start_capture():
-    global cap
-    cap = cv.VideoCapture(0, cv.CAP_DSHOW)  # Use DirectShow backend
+def train_model():
+    model = YOLO("yolov8n-cls.pt")  # load a pretrained model (recommended for training)
+    results = model.train(data="F:/UOC/Research/Programs/Test program for edge detection/BalanceOutDetection/data", epochs=20, imgsz=64)
 
-    # Check if camera opened successfully
-    if not cap.isOpened():
-        messagebox.showerror("Error", "Could not open video stream.")
-        return
+def infer_image(cropped_image):
+    # Load the trained model
+    model = YOLO("runs/classify/train5/weights/best.pt")  # load your custom model
 
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
+    # Perform inference on the image
+    results = model(cropped_image)  # predict on an image
 
-    # Adding a delay for camera to initialize
-    import time
-    time.sleep(1)
+    # Extract class predictions and confidence scores
+    for result in results:
+        if hasattr(result, 'probs'):
+            # Print top-1 class and confidence
+            label_top1 = result.names[result.probs.top1]
+            confidence_top1 = result.probs.top1conf.item()
+            print(f"Side: {label_top1}, Confidence: {confidence_top1:.2f}")
+        else:
+            print("The results object does not have a 'probs' attribute. Here's the full results object:")
+            print(result)
+    return label_top1
 
-    # Read a few frames to stabilize the feed
-    for _ in range(5):
-        ret, frame = cap.read()
 
-    # Update the video feed in the GUI
-    update_frame()
 
-def update_frame():
-    global cap, video_label
-
-    ret, frame = cap.read()
-    if not ret:
-        messagebox.showerror("Error", "Failed to capture video.")
-        return
-
-    # Get the current resolution
-    width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
-
-    # Add resolution text to the frame
-    cv.putText(frame, f'Resolution: {width}x{height}', (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-    # Convert the frame to RGB format for displaying in Tkinter
-    frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-
-    # Resize the image while maintaining the aspect ratio
-    max_width = 640  # Set max width for the display
-    max_height = 480  # Set max height for the display
-    aspect_ratio = width / height
-
-    if width > height:
-        new_width = min(max_width, width)
-        new_height = int(new_width / aspect_ratio)
+def crop_image(original_frame, longest_contour, count):
+    M = cv.moments(longest_contour)
+    if M['m00'] == 0:
+        return None 
     else:
-        new_height = min(max_height, height)
-        new_width = int(new_height * aspect_ratio)
+        frame_height, frame_width, channels = original_frame.shape
+        print(original_frame.shape)
+        cx = int(frame_width * (M['m10'] / M['m00']) / 960)
+        cy = int(frame_height * (M['m01'] / M['m00']) / 1280)
 
-    frame_resized = cv.resize(frame_rgb, (new_width, new_height))
+        print("Center point = (" + str(cx) + "," + str(cy) + ")")
 
-    # Create a PhotoImage object from the resized image
-    img = Image.fromarray(frame_resized)
-    img_tk = ImageTk.PhotoImage(image=img)
+        # Define the coordinates
+        tlx, tly = cx - int(image_width/2), cy - int(image_width/2)  # Top-left corner
+        brx, bry = cx + int(image_width/2), cy + int(image_width/2)  # Bottom-right corner
 
-    video_label.imgtk = img_tk  # Keep a reference to avoid garbage collection
-    video_label.configure(image=img_tk)
+        print("Top left point = (" + str(tlx) + "," + str(tly) + ")")
+        print("Bottom right point = (" + str(brx) + "," + str(bry) + ")")
 
-    video_label.after(10, update_frame)  # Schedule the next frame update
+        # Ensure the coordinates define a square area
+        if abs(tlx - brx) != abs(tly - bry):
+            raise ValueError("The provided coordinates do not define a square area.")
 
-# Main function to set up the GUI
-def main():
-    global cap, video_label
-    cap = None
+        # Crop the image
+        cropped_image = original_frame[tly:bry, tlx:brx]
+        grayscale_cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+        _, otsu_cropped_image = cv.threshold(grayscale_cropped_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-    root = tk.Tk()
-    root.title("Video Capture")
+        # Display the cropped image
+        ##cv.imshow("Otsu cropped Image", otsu_cropped_image)
+        cv.imwrite("images/out/cropped/cropped (" + str(count) + ").jpg", grayscale_cropped_image)
+        #fabric_side = detect_side(otsu_cropped_image)
+        fabric_side = infer_image(grayscale_cropped_image)
+    return fabric_side
 
-    # Create a label to display the video
-    video_label = tk.Label(root)
-    video_label.pack()
-
-    start_button = tk.Button(root, text="Start Capture", command=start_capture)
-    start_button.pack(pady=20)
-
-    # Create buttons for different resolutions
-    res_640x480 = tk.Button(root, text="Set Resolution 640x480", command=lambda: set_resolution(640, 480))
-    res_1280x720 = tk.Button(root, text="Set Resolution 1280x720", command=lambda: set_resolution(1280, 720))
-    res_3840x2160 = tk.Button(root, text="Set Resolution 3840x2160", command=lambda: set_resolution(3840, 2160))
-
-    res_640x480.pack(pady=5)
-    res_1280x720.pack(pady=5)
-    res_3840x2160.pack(pady=5)
-
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
