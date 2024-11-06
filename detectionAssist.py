@@ -116,6 +116,7 @@ def detection_support(image,colour,captured_time):
     resized_support_image_adhesive = cv.resize(support_image_adhesive, (input_image_height, input_image_width))
     #resized_image_fabric = cv.resize(support_image_fabric, (input_image_height, input_image_width))
     resized_image_fabric_opened = cv.resize(support_image_fabric_opened, (input_image_height, input_image_width))
+    resized_opened_support_image_fabric_mask = cv.resize(opened_support_image_fabric_mask, (input_image_height, input_image_width))
     #resized_image_defects = cv.resize(support_image_defects_mask, (input_image_height, input_image_width))
     resized_image_defects_opened = cv.resize(opened_support_image_defects_mask, (input_image_height, input_image_width))
 
@@ -131,7 +132,7 @@ def detection_support(image,colour,captured_time):
     #cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects)
     cv.imwrite(f"images/captured/defects/assisted_image ({captured_time})_opened.jpg", resized_image_defects_opened)
 
-    return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened
+    return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
 """
 image_path = 'test/Test_images/captured_20241031_1638130.jpg'

@@ -68,9 +68,9 @@ def process_gussets():
             # Check if 20 seconds have passed for the current gusset
             elapsed_time = current_time - capture_times[processed_count]
 
-            print("Elapsed_time : ",elapsed_time)
-            print("capture_count : ",capture_count)
-            print("processed_count : ",processed_count)
+            #print("Elapsed_time : ",elapsed_time)
+            #print("capture_count : ",capture_count)
+            #print("processed_count : ",processed_count)
 
             if elapsed_time >= 20:  # 20 seconds have passed for this gusset
                 processed_count += 1
@@ -250,7 +250,7 @@ def displayCaptured():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
+    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
     if processed_frame is None:
@@ -282,9 +282,16 @@ def displayCaptured():
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
         if gusset_side == "Front":
             balanceOutText.configure(text=f"")
+            if(fabric_damage):
+                defected = False
+            else:
+                defected = True
+            gusset_states.append(defected)  
+            capture_count = capture_count+1
+            # Start the timer to process gussets after 20 seconds
         elif gusset_side == "Back":
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
-            if(balance_out == "No issue"):
+            if(balance_out == "No issue" or fabric_damage):
                 defected = False
             else:
                 defected = True

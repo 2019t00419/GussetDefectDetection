@@ -45,9 +45,9 @@ def preprocess(original_frame, sample_longest_contour, sample_second_longest_con
     print(f"Time taken to complete detect_gusset_side function: {end_time0 - start_time:.6f} seconds")
     # Removing background based on color and side conditions
 
-    assisted_adhesive_image, assisted_fabric_image,assisted_defects_image = detection_support(original_frame,colour,captured_time)
+    assisted_adhesive_image, assisted_fabric_image,assisted_defects_image,opened_support_image_fabric_mask = detection_support(original_frame,colour,captured_time)
 
-    grayscale_image_fabric = cv.cvtColor(assisted_fabric_image,cv.COLOR_BGR2GRAY)
+    #grayscale_image_fabric = cv.cvtColor(assisted_fabric_image,cv.COLOR_BGR2GRAY)
 
     #newly added line for detection support
     
@@ -62,7 +62,7 @@ def preprocess(original_frame, sample_longest_contour, sample_second_longest_con
     blurred_assisted_adhesive_image = cv.GaussianBlur(assisted_adhesive_image, (5, 5), 0)
     canny = cv.Canny(blurred_assisted_adhesive_image, 100, 200)
 
-    return captured_view_image,blurred_assisted_adhesive_image,assisted_defects_image,canny
+    return captured_view_image,blurred_assisted_adhesive_image,assisted_defects_image,canny,opened_support_image_fabric_mask
 
 
 def preprocess_for_detection(image):

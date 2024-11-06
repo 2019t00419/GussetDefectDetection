@@ -1,18 +1,13 @@
 import cv2 as cv
 import numpy as np
         
-def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count,assisted_defects_image):
+def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count,fabric_damage,defect_contours):
     if gusset_identified:
-        # Convert the mask to binary (if it isn’t already)
-
-        # Find contours in the binary mask
-        contours, _ = cv.findContours(binary_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-        # Draw red bounding boxes on the original image
-        highlighted_image = frame_contours.copy()  # Make a copy to draw boxes on
-        for contour in contours:
-            x, y, w, h = cv.boundingRect(contour)  # Get bounding box coordinates
-            cv.rectangle(highlighted_image, (x, y), (x + w, y + h), (0, 0, 255), 2)  # Draw red rectangle
+        if fabric_damage:
+            # Draw red bounding boxes on the original image
+            for defect_contour in defect_contours:
+                x, y, w, h = cv.boundingRect(defect_contour)  # Get bounding box coordinates
+                cv.rectangle(frame_contours, (x, y), (x + w, y + h), (0, 0, 255), 2)  # Draw red rectangle
 
         if gusset_side == "Front":
             fabric_area = cv.contourArea(longest_contour)
@@ -89,3 +84,4 @@ def thumbnail_ganeration(sample_longest_contour,sample_second_longest_contour,sa
     display_thumbnail = cv.resize(display_image, (int(input_image_height/resize_factor),int((input_image_width/input_image_height)*(input_image_height/resize_factor))))
     
     return display_thumbnail
+

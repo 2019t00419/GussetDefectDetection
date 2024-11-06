@@ -78,6 +78,45 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thic
     return(balance_out)
 
 
+def check_fabric_damage(assisted_defects_image):
+    fabric_damage = False
+    # Threshold for detecting dense clusters
+    solidity_threshold = 0.8
+
+    # Find contours in the binary mask
+    defect_contours, _ = cv.findContours(assisted_defects_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    # Draw red bounding boxes on the original image for dense clusters only
+    for defect_contour in defect_contours:
+        # Calculate the area of the contour and its convex hull
+        contour_area = cv.contourArea(defect_contour)
+        if contour_area == 0:
+            continue
+
+        hull = cv.convexHull(defect_contour)
+        hull_area = cv.contourArea(hull)
+
+        # Calculate solidity (contour_area / hull_area)
+        solidity = contour_area / hull_area
+
+        # Check if the contour is dense enough based on solidity
+        print(f"Solidity of potential fabric damages : {solidity}")
+        if solidity >= solidity_threshold:
+            fabric_damage = True
+
+    return defect_contours,fabric_damage
+
+
+
+
+
+def pix_to_mm(pix):
+    convert_factor = 14.4
+    mm = pix/convert_factor
+    return mm
+
+
+
 
 
 def checkGussetPosition(gusset_identified,original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour):
@@ -116,8 +155,3 @@ def checkGussetPosition(gusset_identified,original_frame,frame_contours,original
         #plot the coordinates
     return(longest_contour)
 
-
-def pix_to_mm(pix):
-    convert_factor = 14.4
-    mm = pix/convert_factor
-    return mm
