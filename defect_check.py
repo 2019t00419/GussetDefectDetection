@@ -79,9 +79,9 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thic
 
 
 def check_fabric_damage(assisted_defects_image):
-    fabric_damage = False
+    fabric_damage_bool = False
     # Threshold for detecting dense clusters
-    solidity_threshold = 0.8
+    solidity_threshold = 0.6
 
     # Find contours in the binary mask
     defect_contours, _ = cv.findContours(assisted_defects_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -102,9 +102,9 @@ def check_fabric_damage(assisted_defects_image):
         # Check if the contour is dense enough based on solidity
         print(f"Solidity of potential fabric damages : {solidity}")
         if solidity >= solidity_threshold:
-            fabric_damage = True
+            fabric_damage_bool = True
 
-    return defect_contours,fabric_damage
+    return defect_contours,fabric_damage_bool
 
 
 

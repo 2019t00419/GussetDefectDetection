@@ -43,7 +43,6 @@ gusset_states = []
 capture_times = []
 
 global defected
-defected = True
 
 capture_count = 0
 processed_count = 0
@@ -215,6 +214,7 @@ def displayLive():
 
 def displayCaptured():
 
+    defected = False
     global capture_count
     now = datetime.now()
 
@@ -280,21 +280,22 @@ def displayCaptured():
         
         gussetSideText.configure(text=f"Gusset side : {gusset_side}")
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
+        fabricDamageText.configure(text=f"Fabric state : {fabric_damage}")
+
         if gusset_side == "Front":
             balanceOutText.configure(text=f"")
-            if(fabric_damage):
-                defected = False
-            else:
+            if(fabric_damage == "Damaged"):
                 defected = True
+
             gusset_states.append(defected)  
             capture_count = capture_count+1
             # Start the timer to process gussets after 20 seconds
         elif gusset_side == "Back":
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
-            if(balance_out == "No issue" or fabric_damage):
-                defected = False
-            else:
+            if(balance_out == "Balance out" or fabric_damage == "Damaged"):
                 defected = True
+
+
             gusset_states.append(defected)  
             capture_count = capture_count+1
             # Start the timer to process gussets after 20 seconds
@@ -487,6 +488,9 @@ balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
 
 sideMixupText = CTkLabel(defectsFrame, text="")
 sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
+
+fabricDamageText = CTkLabel(defectsFrame, text="")
+fabricDamageText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5))
 
 sysErrorLabel = CTkLabel(sysErrorFrame, text=sys_error)
 sysErrorLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))

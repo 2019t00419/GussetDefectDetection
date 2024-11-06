@@ -85,15 +85,23 @@ def detection_support(image,colour,captured_time):
     segmented_8u = cv.convertScaleAbs(segmented)
     support_image_adhesive = np.zeros_like(segmented_8u)
     support_image_fabric_mask = np.zeros_like(segmented_8u)
+    support_image_fabric_mask1 = np.zeros_like(segmented_8u)
     support_image_defects_mask = np.zeros_like(segmented_8u)
     #image[segmented_8u == 0] = [0, 0, 255]  # BGR
     #image[segmented_8u == 1] = [0, 255, 0]  # BGR
     #image[segmented_8u == 2] = [255, 0, 0]  # BGR
     #image[segmented_8u == 3] = [255, 255, 255]  # BGR
     support_image_adhesive[segmented_8u == 1] = [255]
+
     support_image_fabric_mask[segmented_8u == 0] = [255]
     support_image_fabric_mask[segmented_8u == 3] = [255]
+    support_image_fabric_mask[segmented_8u == 4] = [255]
+
+    
+    support_image_fabric_mask1[segmented_8u == 5] = [255]
+
     support_image_defects_mask[segmented_8u == 3] = [255]
+    support_image_defects_mask[segmented_8u == 4] = [255]
 
 
     # Assuming support_image_defects_mask is a binary mask image
@@ -105,7 +113,8 @@ def detection_support(image,colour,captured_time):
 
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
-    #cv.imshow("support_image_fabric",support_image_fabric_mask)
+    cv.imshow("front fabric",support_image_fabric_mask)
+    cv.imshow("back fabric",support_image_fabric_mask1)
     support_image_fabric_opened = cv.bitwise_and(image, image, mask=opened_support_image_fabric_mask)
     #support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
 
@@ -128,9 +137,9 @@ def detection_support(image,colour,captured_time):
     
     cv.imwrite(f"images/captured/adhesive/assisted_image ({captured_time}).jpg", resized_support_image_adhesive)
     #cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time}).jpg", resized_image_fabric)
-    cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time})_opened.jpg", resized_image_fabric_opened)
+    cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time}).jpg", resized_image_fabric_opened)
     #cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects)
-    cv.imwrite(f"images/captured/defects/assisted_image ({captured_time})_opened.jpg", resized_image_defects_opened)
+    cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects_opened)
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 

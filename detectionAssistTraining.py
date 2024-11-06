@@ -86,6 +86,8 @@ for mask in os.listdir(mask_path):
     output_image[(green_channel > 0) & (blue_channel == 0) & (red_channel == 0)] = 2
     output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel == 0)] = 3
     output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel > 0)] = 4
+    output_image[(blue_channel > 0) & (green_channel > 0) & (red_channel == 0)] = 5
+    output_image[(blue_channel == 0) & (green_channel > 0) & (red_channel > 0)] = 6
 
     label_values = output_image.reshape(-1)
     df2['Label_Value'] = label_values
@@ -162,7 +164,7 @@ mean_iou_score = mean_iou(y_test, prediction_test, num_classes=4)  # Adjust numb
 print("Mean IoU:", mean_iou_score)
 
 from yellowbrick.classifier import ROCAUC
-roc_auc = ROCAUC(model, classes=[0, 1, 2, 3])
+roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4, 5])
 roc_auc.fit(X_train, y_train)
 roc_auc.score(X_test, y_test)
 roc_auc.show()

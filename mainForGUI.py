@@ -96,7 +96,12 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
 
     if gusset_identified:     
-        defect_contours,fabric_damage=check_fabric_damage(assisted_defects_mask)
+        defect_contours,fabric_damage_bool=check_fabric_damage(assisted_defects_mask)
+
+        if fabric_damage_bool :
+                fabric_damage = "Damaged"
+        else:
+                fabric_damage = "No issue"
 
         if gusset_side == "Back" :
             balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,thickness)
@@ -134,6 +139,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
 
     else:
+        fabric_damage = "error"
         fabric_side = "error"
         defect_contours = None
         processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c,fabric_damage,defect_contours)
