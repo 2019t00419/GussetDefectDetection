@@ -13,7 +13,7 @@ from datetime import datetime
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour):    
+def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time):    
     c=0
     gusset_identified = False
     gusset_side = "Not identified"
@@ -28,15 +28,14 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
     
-    original_frame,blurred_otsu,canny = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)    
+    original_frame,blurred_otsu,assisted_defects_image,canny = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)    
     
     frame_contours = original_frame.copy()
     #frame_contours = original_frame_resized.copy()
     processed_frame = original_frame.copy()
     #processed_frame = original_frame_resized.copy()
     
-    
-    # Find contours
+        # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     # Find the longest contour
@@ -71,7 +70,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         
         if gusset_identified:
             if gusset_side == "Back" :
-                balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours)
+                balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,thickness)
                 #Adding texture analysis
 
                 #isolate adhesive
@@ -105,15 +104,16 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         else:
             fabric_side = "error"
 
-        processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c)
+        processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c,assisted_defects_image)
                 
             # End of time calculation
         end_time = time.time()  # End time
         elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
         print(f"Time taken to generate output frame: {elapsed_time:.4f} ms\n\n") 
-        now = datetime.now()
-        timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+
+          # Format: YYYYMMDD_HHMMSS
         
-        cv.imwrite(f"images/processed/processed ({timestamp}).jpg", processed_frame)
+        cv.imwrite(f"images/captured/processed/processed ({captured_time}).jpg", processed_frame)
+        cv.imwrite(f"images/captured/original/original ({captured_time}).jpg", original_frame)
     return processed_frame,balance_out,fabric_side,gusset_side
 

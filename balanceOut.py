@@ -4,9 +4,12 @@ from scipy.spatial import KDTree
 
 
 
-def checkBalanceOut(longest_contour, second_longest_contour, frame_contours):
-
-    thickness = 6  
+def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thicknessStr):
+    if (thicknessStr == "4mm"):
+        thickness = 4
+    elif(thicknessStr == "6mm"):
+        thickness = 6
+        
     tolerance = 1
     balance_out = False
     
@@ -68,8 +71,8 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours):
     else:
         cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
     
-    cv.putText(frame_contours, "Thickness : " + str(thickness), (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
-    cv.putText(frame_contours, "Tolerance : " + str(tolerance * 100) + "%", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Thickness : " + str(thickness)+ "mm", (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance) + "mm", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
 
 
     return(balance_out)

@@ -1,8 +1,19 @@
 import cv2 as cv
 import numpy as np
         
-def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count):
+def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,count,assisted_defects_image):
     if gusset_identified:
+        # Convert the mask to binary (if it isn’t already)
+
+        # Find contours in the binary mask
+        contours, _ = cv.findContours(binary_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+        # Draw red bounding boxes on the original image
+        highlighted_image = frame_contours.copy()  # Make a copy to draw boxes on
+        for contour in contours:
+            x, y, w, h = cv.boundingRect(contour)  # Get bounding box coordinates
+            cv.rectangle(highlighted_image, (x, y), (x + w, y + h), (0, 0, 255), 2)  # Draw red rectangle
+
         if gusset_side == "Front":
             fabric_area = cv.contourArea(longest_contour)
             cv.drawContours(frame_contours, [longest_contour], -1, (0, 0, 255), thickness=3)
@@ -10,7 +21,7 @@ def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour
             #display(frame_contours,longest_contour)
             ##cv.imshow('Edges', frame_contours_resized) 
             
-            cv.imwrite("images/out/output/front/Output(front side) ("+str(count)+").jpg",frame_contours)
+            #cv.imwrite("images/out/output/front/Output(front side) ("+str(count)+").jpg",frame_contours)
             #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
         
         elif gusset_side == "Back":
@@ -27,16 +38,16 @@ def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour
             #display(frame_contours,longest_contour)
             ##cv.imshow('Edges', frame_contours_resized) 
             
-            cv.imwrite("images/out/output/back/Output(back side) ("+str(count)+").jpg",frame_contours)
+            #cv.imwrite("images/out/output/back/Output(back side) ("+str(count)+").jpg",frame_contours)
             #print("Defect count :"+str(defect_count)+"\t Non defect count :"+str(non_defect_count))
     else:
         ##cv.imshow('Edges', original_frame_resized)
 
-        cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
+        #cv.imwrite("images\out\output\Output ("+str(count)+").jpg",original_frame)
         print("Invalid contours")
 
-    cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
-    cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
+    #cv.imwrite("images\out\otsu\otsu ("+str(count)+").jpg",blurred_otsu)
+    #cv.imwrite("images\out\canny\canny ("+str(count)+").jpg",canny)
     return frame_contours
 
 

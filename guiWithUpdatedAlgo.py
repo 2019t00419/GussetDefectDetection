@@ -9,13 +9,13 @@ from gussetDetection import detect_gusset
 from contourID import sampleContours
 from display_items import thumbnail_ganeration
 import serial
+from datetime import datetime
 
 cpu_times = []
 last_update_time = time.time()
 avg_cpu_fps = 0  # Initialize average CPU FPS
 captured = False
 count = 0
-defected = True
  
 initial_image = cv.imread("resources/loading.jpg")
 sample_longest_contour = 0
@@ -35,14 +35,60 @@ cap = initialize_cam(display_width, display_height)
 serialCom = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)# Track conveyor state
 conveyor_on = False
 
+# Lists to store gusset states and their corresponding capture times
+global gusset_states
+global capture_times
+
+gusset_states = []
+capture_times = []
+
+global defected
+defected = True
+
+capture_count = 0
+processed_count = 0
+
+last_execution_time = None
+
+def process_gussets():
+    global processed_count
+    current_time = time.time()
+
+    # Check if there are gussets to process and if the processed_count is within bounds
+    if len(gusset_states) == 0 or len(capture_times) == 0:
+        return  # No gussets to process yet
+    else:
+        # If this is the first gusset, process it immediately
+        if capture_count == 1:
+            if gusset_states[0]:  # Bad gusset
+                bad()
+            else:  # good gusset
+                good()
+        if processed_count < len(gusset_states):
+            # Check if 20 seconds have passed for the current gusset
+            elapsed_time = current_time - capture_times[processed_count]
+
+            print("Elapsed_time : ",elapsed_time)
+            print("capture_count : ",capture_count)
+            print("processed_count : ",processed_count)
+
+            if elapsed_time >= 20:  # 20 seconds have passed for this gusset
+                processed_count += 1
+                # Process the next gusset if it exists
+                if processed_count < len(gusset_states):
+                    if gusset_states[processed_count-1]:  # Good gusset
+                        good()
+                    else:  
+                        bad()# Bad gusset
+
 
 def bad():
     serialCom.write(bytes('b', 'utf-8'))
-    print("Defective - moving backward")
+    #print("Defective - moving backward")
 
 def good():
     serialCom.write(bytes('g', 'utf-8'))
-    print("Non-defective - moving forward")
+    #print("Non-defective - moving forward")
 
 def toggle_conveyor_forward():
     global conveyor_on
@@ -71,13 +117,15 @@ def toggle_conveyor_backward():
 
 #define the live diplay function for displaying live eed from the camera
 def displayLive():
+    
+    process_gussets()
+    
     #define global variables
     global captured
     global count
     global cpu_times
     global avg_cpu_fps
     global last_update_time
-    global defected
     #track computation time for framerate calculation
     start_cpu = time.time()
 
@@ -113,9 +161,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
-            #toggle_conveyor_forward()
+            toggle_conveyor_forward()
             displayCaptured()
-            #toggle_conveyor_forward()
+            toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
@@ -166,7 +214,14 @@ def displayLive():
 
 
 def displayCaptured():
-    
+
+    global capture_count
+    now = datetime.now()
+
+    captured_time = now.strftime("%Y%m%d_%H%M%S")
+
+    capture_times.append(time.time())
+
     if not display_live_running:
         return
     cap.set(cv.CAP_PROP_FRAME_WIDTH, capture_width)
@@ -195,13 +250,12 @@ def displayCaptured():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
 
 
-    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour)
+    processed_frame,balance_out,fabric_side,gusset_side = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
     if processed_frame is None:
         print("Error: File not found.")
-    else:     
-                
+    else:        
         # Set the width and height 
         processed_frame_resized = cv.resize(processed_frame, (360, 640))
 
@@ -231,11 +285,12 @@ def displayCaptured():
         elif gusset_side == "Back":
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
             if(balance_out == "No issue"):
-                good()
+                defected = False
             else:
-                bad()
-
-
+                defected = True
+            gusset_states.append(defected)  
+            capture_count = capture_count+1
+            # Start the timer to process gussets after 20 seconds
 
 def toggle_display():
     global display_live_running

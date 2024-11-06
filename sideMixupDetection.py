@@ -110,7 +110,7 @@ def crop_image(original_frame, longest_contour, image_width):
     now = datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
     # Save cropped image for debugging purposes
-    cv.imwrite(f"images/out/cropped/cropped ({timestamp}).jpg", grayscale_cropped_image)
+    #cv.imwrite(f"images/out/cropped/cropped ({timestamp}).jpg", grayscale_cropped_image)
 
     # Call fabric side detection and log timing information
     fabric_side, preprocess_time, predict_time = side_mixup_detection(cropped_image, 64, model, label_encoder)

@@ -38,7 +38,7 @@ def feature_extraction(input_img,colour):
 
 import time
 
-def detection_support(image,colour):
+def detection_support(image,colour,captured_time):
     total_start_time = time.time()  # Start total time for the function
     
     # Initial preparation
@@ -92,26 +92,46 @@ def detection_support(image,colour):
     #image[segmented_8u == 3] = [255, 255, 255]  # BGR
     support_image_adhesive[segmented_8u == 1] = [255]
     support_image_fabric_mask[segmented_8u == 0] = [255]
+    support_image_fabric_mask[segmented_8u == 3] = [255]
     support_image_defects_mask[segmented_8u == 3] = [255]
+
+
+    # Assuming support_image_defects_mask is a binary mask image
+    
+    erosion_kernel = cv.getStructuringElement(cv.MORPH_CROSS, (3, 3))
+
+    opened_support_image_defects_mask = cv.morphologyEx(support_image_defects_mask, cv.MORPH_OPEN, erosion_kernel)
+    opened_support_image_fabric_mask = cv.morphologyEx(support_image_fabric_mask, cv.MORPH_OPEN, erosion_kernel)
+
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
     #cv.imshow("support_image_fabric",support_image_fabric_mask)
-    support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
+    support_image_fabric_opened = cv.bitwise_and(image, image, mask=opened_support_image_fabric_mask)
+    #support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
 
     #cv.imshow("support_image_fabric",support_image_fabric)
 
     # Resizing and saving the segmented image
     resizing_start_time = time.time()
     resized_support_image_adhesive = cv.resize(support_image_adhesive, (input_image_height, input_image_width))
-    resized_image_fabric = cv.resize(support_image_fabric, (input_image_height, input_image_width))
-    cv.imwrite('test/Segmanted_images/segmented_bgr_image.jpg', support_image_fabric)
+    #resized_image_fabric = cv.resize(support_image_fabric, (input_image_height, input_image_width))
+    resized_image_fabric_opened = cv.resize(support_image_fabric_opened, (input_image_height, input_image_width))
+    #resized_image_defects = cv.resize(support_image_defects_mask, (input_image_height, input_image_width))
+    resized_image_defects_opened = cv.resize(opened_support_image_defects_mask, (input_image_height, input_image_width))
+
     resizing_end_time = time.time()
     print(f"Time taken for resizing and saving: {resizing_end_time - resizing_start_time:.6f} seconds")
 
     total_end_time = time.time()
     print(f"Total time taken for detection_support function: {total_end_time - total_start_time:.6f} seconds")
+    
+    cv.imwrite(f"images/captured/adhesive/assisted_image ({captured_time}).jpg", resized_support_image_adhesive)
+    #cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time}).jpg", resized_image_fabric)
+    cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time})_opened.jpg", resized_image_fabric_opened)
+    #cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects)
+    cv.imwrite(f"images/captured/defects/assisted_image ({captured_time})_opened.jpg", resized_image_defects_opened)
 
-    return resized_support_image_adhesive, resized_image_fabric
+    return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened
 
 """
 image_path = 'test/Test_images/captured_20241031_1638130.jpg'

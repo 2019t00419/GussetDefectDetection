@@ -6,14 +6,23 @@ from detectionAssistfilters import detection_filtes
 import os
 from sklearn import metrics
 import time
+import threading
+import sys
 
-colour = "Skin" #Bianco,Skin,Nero
+colour = "Skin"  # Options: Bianco, Skin, Nero
 
 # Start total execution timer
 total_start = time.time()
-
 resize_factor = 4.5
-image_dataset = pd.DataFrame()  # Dataframe to capture image features
+image_dataset = pd.DataFrame()  # DataFrame to capture image features
+
+# Function to display a spinner animation
+def spinner():
+    while training:
+        for char in "|/-\\":
+            sys.stdout.write(f'\rTraining model... {char}')
+            sys.stdout.flush()
+            time.sleep(0.2)
 
 # SECTION 1: Load and preprocess images
 img_path = "test/Train_images/"
@@ -35,12 +44,10 @@ for image in os.listdir(img_path):
     input_img = cv.resize(input_img, (int(input_image_height / resize_factor), int((input_image_width / input_image_height) * (input_image_height / resize_factor))))
     
     if input_img.ndim == 3 and input_img.shape[-1] == 3:   
-        #testing
         if colour == "Bianco" or colour == "Skin":
             img = input_img[:, :, 2]  # Red channel
         elif colour == "Nero":
             img = input_img[:, :, 1]  # Green channel
-            #img = cv.cvtColor(input_img,cv.COLOR_BGR2GRAY)
     elif input_img.ndim == 2:
         img = input_img
     else:
@@ -110,13 +117,26 @@ else:
 combine_end = time.time()
 print(f"Time taken for combining datasets and train/test split: {combine_end - combine_start} seconds")
 
-# SECTION 4: Train the model
-train_start = time.time()
+# SECTION 4: Train the model with spinner animation
 from sklearn.ensemble import RandomForestClassifier
-model = RandomForestClassifier(n_estimators=25, random_state=42)#n_jobs = -1
+
+training = True  # Flag to indicate training status
+train_start = time.time()
+
+# Start the spinner in a separate thread
+spinner_thread = threading.Thread(target=spinner)
+spinner_thread.start()
+
+# Model training
+model = RandomForestClassifier(n_estimators=25, random_state=42) # Adjust `n_jobs` as needed
 model.fit(X_train, y_train)
+
+# Stop the spinner
+training = False
+spinner_thread.join()
+
 train_end = time.time()
-print(f"Time taken for training the model: {train_end - train_start} seconds")
+print(f"\nTime taken for training the model: {train_end - train_start} seconds")
 
 # SECTION 5: Model evaluation with Mean IoU
 evaluate_start = time.time()
