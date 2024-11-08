@@ -179,3 +179,25 @@ print(f"Time taken for saving the model: {save_end - save_start} seconds")
 # Total execution time
 total_end = time.time()
 print(f"Total execution time: {total_end - total_start} seconds")
+# Print feature importance
+feature_importance = model.feature_importances_
+feature_names = X.columns  # Get the names of the features from the DataFrame columns
+
+# Create a DataFrame for easy visualization
+importance_df = pd.DataFrame({
+    'Feature': feature_names,
+    'Importance': feature_importance
+}).sort_values(by='Importance', ascending=False)
+
+print("\nFeature Importance:")
+print(importance_df)
+
+# Optional: Plot the feature importance for a more visual representation
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+plt.barh(importance_df['Feature'], importance_df['Importance'], color='skyblue')
+plt.xlabel("Importance")
+plt.title("Feature Importance from Random Forest")
+plt.gca().invert_yaxis()  # Highest importance at the top
+plt.show()

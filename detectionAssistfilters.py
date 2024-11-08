@@ -21,7 +21,7 @@ def detection_filtes(img, df,imgc):
     sigma_values = 1,3
     lamda_factor = 8
     gamma_values = 1.3, 1.4, 1.5
-    ksize = 30
+    ksize = 3
 
     num = 1  # To count numbers up in order to give Gabor features a label in the data frame
     results = {}
@@ -57,59 +57,59 @@ def detection_filtes(img, df,imgc):
    
     #Gabor311 : theta= 5.105088062083414 : sigma= 1 : lamda= 2.748893571891069 : gamma= 0.5
     #kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F) 
-    #kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 5.497787143782138 , 0.7853981633974483 , 1.5 ,0, ktype=cv.CV_32F)   
-    #kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 5.497787143782138 , 0.39269908169872414 , 1.4 ,0, ktype=cv.CV_32F)
-    #kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
-    #kernel4 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
+    kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)   
+    kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    kernel4 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
     kernel5 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
     kernel6 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
     kernel7 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
-    #kernel8 = cv.getGaborKernel((ksize, ksize), 1 , 3.9269908169872414 , 0.7853981633974483 , 1.3 ,0, ktype=cv.CV_32F)
-    #kernel9 = cv.getGaborKernel((ksize, ksize), 1 , 3.9269908169872414 , 0.7853981633974483 , 1.4 ,0, ktype=cv.CV_32F)
+    kernel8 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    kernel9 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
 
-    #results["gabor_1"] = (cv.filter2D(img, cv.CV_8UC3, kernel1)).reshape(-1)
-    #results["gabor_2"] = (cv.filter2D(img, cv.CV_8UC3, kernel2)).reshape(-1)
-    #results["gabor_3"] = (cv.filter2D(img, cv.CV_8UC3, kernel3)).reshape(-1)
-    #results["gabor_4"] = (cv.filter2D(img, cv.CV_8UC3, kernel4)).reshape(-1)
+    results["gabor_1"] = (cv.filter2D(img, cv.CV_8UC3, kernel1)).reshape(-1)
+    results["gabor_2"] = (cv.filter2D(img, cv.CV_8UC3, kernel2)).reshape(-1)
+    results["gabor_3"] = (cv.filter2D(img, cv.CV_8UC3, kernel3)).reshape(-1)
+    results["gabor_4"] = (cv.filter2D(img, cv.CV_8UC3, kernel4)).reshape(-1)
     results["gabor_5"] = (cv.filter2D(img, cv.CV_8UC3, kernel5)).reshape(-1)
     results["gabor_6"] = (cv.filter2D(img, cv.CV_8UC3, kernel6)).reshape(-1)
     results["gabor_7"] = (cv.filter2D(img, cv.CV_8UC3, kernel7)).reshape(-1)
-    #results["gabor_8"] = (cv.filter2D(img, cv.CV_8UC3, kernel8)).reshape(-1)
-    #results["gabor_9"] = (cv.filter2D(img, cv.CV_8UC3, kernel9)).reshape(-1)
+    results["gabor_8"] = (cv.filter2D(img, cv.CV_8UC3, kernel8)).reshape(-1)
+    results["gabor_9"] = (cv.filter2D(img, cv.CV_8UC3, kernel9)).reshape(-1)
 
    
 
     #"""
     # Apply Canny
-    edges = cv.Canny(img, 100, 200)
+    #edges = cv.Canny(img, 100, 200)
     ##cv.imshow("edges", edges)
-    results['Canny Edge'] = edges.reshape(-1)
+    #results['Canny Edge'] = edges.reshape(-1)
 
 
     # Apply Sobel
-    edge_sobel = sobel(img)
+    #edge_sobel = sobel(img)
     ##cv.imshow("edge_sobel", edge_sobel)
-    results['Sobel'] = edge_sobel.reshape(-1)
+    #results['Sobel'] = edge_sobel.reshape(-1)
 
     # Apply Scharr
-    edge_scharr = scharr(img)
+    #edge_scharr = scharr(img)
     ##cv.imshow("edge_scharr", edge_scharr)
-    results['Scharr'] = edge_scharr.reshape(-1)
+    #results['Scharr'] = edge_scharr.reshape(-1)
 
     # Apply Prewitt
-    edge_prewitt = prewitt(img)
+    #edge_prewitt = prewitt(img)
     ##cv.imshow("edge_prewitt", edge_prewitt)
-    results['Prewitt'] = edge_prewitt.reshape(-1)
+    #results['Prewitt'] = edge_prewitt.reshape(-1)
     
     # Apply Gaussian with sigma=7
-    gaussian_img2 = nd.gaussian_filter(img, sigma=7)
+    #gaussian_img2 = nd.gaussian_filter(img, sigma=7)
     ##cv.imshow("gaussian_img2", gaussian_img2)
-    results['Gaussian s7'] = gaussian_img2.reshape(-1)
+    #results['Gaussian s7'] = gaussian_img2.reshape(-1)
     #"""
     # Apply Roberts edge
-    edge_roberts = roberts(img)
+    #edge_roberts = roberts(img)
     ##cv.imshow("edge_roberts", edge_roberts)
-    results['Roberts'] = edge_roberts.reshape(-1) 
+    #results['Roberts'] = edge_roberts.reshape(-1) 
 
     # Apply Gaussian with sigma=3
     gaussian_img = nd.gaussian_filter(img, sigma=3)
@@ -127,14 +127,14 @@ def detection_filtes(img, df,imgc):
     b_channel = imgc[:, :, 0]
     g_channel = imgc[:, :, 1]
     r_channel = imgc[:, :, 2]
-    h_channel = hsv[:, :, 0]
+    #h_channel = hsv[:, :, 0]
     s_channel = hsv[:, :, 1]
     v_channel = hsv[:, :, 2]
 
     results['b_channel'] = b_channel.reshape(-1)
     results['g_channel'] = g_channel.reshape(-1)
     results['r_channel'] = r_channel.reshape(-1)
-    results['h_channel'] = h_channel.reshape(-1)
+    #results['h_channel'] = h_channel.reshape(-1)
     results['s_channel'] = s_channel.reshape(-1)
     results['v_channel'] = v_channel.reshape(-1)
 
