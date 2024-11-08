@@ -28,7 +28,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
     
-    original_frame,blurred_otsu,assisted_defects_mask,canny,assisted_fabric_mask = preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)    
+    original_frame,blurred_otsu,assisted_defects_mask,canny,assisted_fabric_mask= preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)    
     
     frame_contours = original_frame.copy()
     #frame_contours = original_frame_resized.copy()
@@ -156,5 +156,5 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     cv.imwrite(f"images/captured/processed/processed ({captured_time}).jpg", processed_frame)
     cv.imwrite(f"images/captured/original/original ({captured_time}).jpg", original_frame)
 
-    return processed_frame,balance_out,fabric_side,gusset_side,fabric_damage
+    return processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu
 

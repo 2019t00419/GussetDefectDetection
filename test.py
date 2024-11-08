@@ -1,34 +1,39 @@
+import cv2
 import numpy as np
-from skimage import io, color
-from skimage.feature import graycomatrix, graycoprops
 import matplotlib.pyplot as plt
 
-# Load the image
-image = io.imread('test.jpg')
+def apply_highpass_filter(image_path, cutoff=30):
+    # Step 1: Load the image and convert to grayscale
+    img = cv2.imread(image_path, 0)
+    if img is None:
+        raise ValueError("Image not found or unable to load")
 
-# Convert to grayscale
-gray_image = color.rgb2gray(image)
+    # Step 2: Apply Fourier Transform
+    dft = np.fft.fft2(img)
+    dft_shift = np.fft.fftshift(dft)  # Shift the zero frequency to the center
 
-# Quantize the grayscale image to reduce the number of gray levels
-gray_image = (gray_image * 255).astype(np.uint8)
+    # Step 3: Create a high-pass filter
+    rows, cols = img.shape
+    crow, ccol = rows // 2, cols // 2  # Center coordinates
+    mask = np.ones((rows, cols), np.uint8)
+    mask[crow - cutoff:crow + cutoff, ccol - cutoff:ccol + cutoff] = 0  # Create a centered square mask
 
-# Compute the GLCM
-distances = [1]  # distance between pixel pairs
-angles = [0, np.pi/4, np.pi/2, 3*np.pi/4]  # angles in radians
-glcm = graycomatrix(gray_image, distances=distances, angles=angles, symmetric=True, normed=True)
+    # Step 4: Apply the mask to the Fourier-transformed image
+    filtered_dft = dft_shift * mask
 
-# Extract GLCM properties
-properties = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation', 'ASM']
+    # Step 5: Inverse Fourier Transform to return to spatial domain
+    filtered_dft_shift = np.fft.ifftshift(filtered_dft)
+    img_back = np.fft.ifft2(filtered_dft_shift)
+    img_back = np.abs(img_back)  # Get magnitude (real part)
 
-# Calculate the properties
-for prop in properties:
-    print(f'{prop}: {graycoprops(glcm, prop)}')
+    # Display the images
+    plt.figure(figsize=(10, 5))
+    plt.subplot(121), plt.imshow(img, cmap='gray')
+    plt.title("Original Image"), plt.axis('off')
+    plt.subplot(122), plt.imshow(img_back, cmap='gray')
+    plt.title("High-pass Filtered Image"), plt.axis('off')
+    plt.show()
 
-# Visualize the GLCM
-plt.figure(figsize=(8, 8))
-for i, angle in enumerate(angles):
-    plt.subplot(2, 2, i+1)
-    plt.imshow(glcm[:, :, 0, i], cmap='gray')
-    plt.title(f'GLCM for angle {angle} radians')
-plt.tight_layout()
-plt.show()
+# Use the function
+apply_highpass_filter('Images\\captured\\original\\original (20241107_153813).jpg', cutoff=750)
+

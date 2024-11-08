@@ -51,8 +51,8 @@ def preprocess(original_frame, sample_longest_contour, sample_second_longest_con
 
     #newly added line for detection support
     
-    #resized_image1 = cv.resize(assisted_adhesive_image, (360, 640))
-    #cv.imshow("assisted adhesive image",resized_image1)
+    resized_image1 = cv.resize(assisted_adhesive_image, (360, 640))
+    cv.imshow("assisted adhesive image",resized_image1)
 
     #resized_image2 = cv.resize(grayscale_image_fabric, (360, 640))
     #cv.imshow("assisted image grayscale_image_fabric",resized_image2)

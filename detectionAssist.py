@@ -85,7 +85,6 @@ def detection_support(image,colour,captured_time):
     segmented_8u = cv.convertScaleAbs(segmented)
     support_image_adhesive = np.zeros_like(segmented_8u)
     support_image_fabric_mask = np.zeros_like(segmented_8u)
-    support_image_fabric_mask1 = np.zeros_like(segmented_8u)
     support_image_defects_mask = np.zeros_like(segmented_8u)
     #image[segmented_8u == 0] = [0, 0, 255]  # BGR
     #image[segmented_8u == 1] = [0, 255, 0]  # BGR
@@ -95,13 +94,8 @@ def detection_support(image,colour,captured_time):
 
     support_image_fabric_mask[segmented_8u == 0] = [255]
     support_image_fabric_mask[segmented_8u == 3] = [255]
-    support_image_fabric_mask[segmented_8u == 4] = [255]
-
-    
-    support_image_fabric_mask1[segmented_8u == 5] = [255]
 
     support_image_defects_mask[segmented_8u == 3] = [255]
-    support_image_defects_mask[segmented_8u == 4] = [255]
 
 
     # Assuming support_image_defects_mask is a binary mask image
@@ -114,7 +108,6 @@ def detection_support(image,colour,captured_time):
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
     cv.imshow("front fabric",support_image_fabric_mask)
-    cv.imshow("back fabric",support_image_fabric_mask1)
     support_image_fabric_opened = cv.bitwise_and(image, image, mask=opened_support_image_fabric_mask)
     #support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
 
@@ -147,7 +140,7 @@ def detection_support(image,colour,captured_time):
 image_path = 'test/Test_images/captured_20241031_1638130.jpg'
 image = cv.imread(image_path)
 
-binary_image, processed_image = detection_support(image,"Skin")
+processed_image,binary_image,_,_ = detection_support(image,"Skin",0)
 print(type(processed_image), processed_image.shape if processed_image is not None else "None")
 
 

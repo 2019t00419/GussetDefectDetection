@@ -183,9 +183,7 @@ def displayLive():
     #modifying the resultant frame for displaying on live feed
     #display_image was replaced using canny for experimental purpose.
     
-    canny_resized = cv.resize(canny, (640, 360))
-    canny_resized = cv.rotate(canny_resized, cv.ROTATE_90_CLOCKWISE)
-    ##cv.imshow('Canny Edge', canny_resized)
+    
     frame = display_image.copy()
     if frame is None:
         frame = initial_image
@@ -195,9 +193,12 @@ def displayLive():
 
     if frame_height / frame_width < 1:
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
+        canny = cv.rotate(canny, cv.ROTATE_90_CLOCKWISE)
         frame_resized = cv.resize(frame, (360, 640))
+        canny_resized = cv.resize(canny, (360, 640))
     else:
         frame_resized = cv.resize(frame, (640, 360))
+        canny_resized = cv.resize(canny, (640, 360))
 
     cv.putText(frame_resized, str(display_image.shape), (10, 10), cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), 1, cv.LINE_AA)
 
@@ -206,6 +207,19 @@ def displayLive():
     photo_image = CTkImage(light_image=captured_image, size=(cameraView.winfo_width(), cameraView.winfo_height()))
     cameraView.photo_image = photo_image
     cameraView.configure(image=photo_image)
+
+
+
+
+    # Convert image from one color space to other 
+    live_canny_display = cv.cvtColor(canny_resized, cv.COLOR_BGR2RGBA) 
+    # Capture the latest frame and transform to image 
+    live_canny_display_Img = Image.fromarray(live_canny_display) 
+    live_canny_display_Img_photo_image = CTkImage(light_image=live_canny_display_Img, size=(thumbnailView.winfo_width(), thumbnailView.winfo_height()))
+    # Displaying photoimage in the label 
+    liveCannyView.photo_image = live_canny_display_Img_photo_image
+    # Configure image in the label 
+    liveCannyView.configure(image=live_canny_display_Img_photo_image) 
 
     fpsText.configure(text=f"FPS : {int(avg_cpu_fps)}")
 
@@ -250,7 +264,7 @@ def displayCaptured():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
 
 
-    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
+    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
 
     cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
     if processed_frame is None:
@@ -277,6 +291,19 @@ def displayCaptured():
         # Configure image in the label 
         captureView.configure(image=processed_photo_image) 
 
+
+
+        # Convert image from one color space to other 
+        captured_adhesive = cv.cvtColor(blurred_otsu, cv.COLOR_BGR2RGBA) 
+        # Capture the latest frame and transform to image 
+        captured_adhesive_Img = Image.fromarray(captured_adhesive) 
+        captured_adhesive_Img_photo_image = CTkImage(light_image=captured_adhesive_Img, size=(captured_adhesiveView.winfo_width(), captured_adhesiveView.winfo_height()))
+        # Displaying photoimage in the label 
+        captured_adhesiveView.photo_image = captured_adhesive_Img_photo_image
+        # Configure image in the label 
+        captured_adhesiveView.configure(image=captured_adhesive_Img_photo_image) 
+
+
         
         gussetSideText.configure(text=f"Gusset side : {gusset_side}")
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
@@ -299,6 +326,97 @@ def displayCaptured():
             gusset_states.append(defected)  
             capture_count = capture_count+1
             # Start the timer to process gussets after 20 seconds
+
+
+
+
+def displayCapturedManual(captured_frame):
+
+    defected = False
+    global capture_count
+    now = datetime.now()
+
+    captured_time = now.strftime("%Y%m%d_%H%M%S")
+
+    capture_times.append(time.time())
+
+    if captured_frame is None:
+        captured_frame = initial_image
+
+    frame_height, frame_width, channels = captured_frame.shape
+    print("resolution = "+str(frame_height)+"x"+str(frame_width))
+
+    if frame_height/frame_width < 1:
+        captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
+
+
+    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
+
+    cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
+    if processed_frame is None:
+        print("Error: File not found.")
+    else:        
+        # Set the width and height 
+        processed_frame_resized = cv.resize(processed_frame, (360, 640))
+
+        # Convert image from one color space to other 
+        processed_frame_resized = cv.cvtColor(processed_frame_resized, cv.COLOR_BGR2RGBA) 
+    
+        # Capture the latest frame and transform to image 
+        processed_frame_resized_image = Image.fromarray(processed_frame_resized) 
+    
+        # Convert captured image to photoimage 
+        #processed_photo_image = ImageTk.PhotoImage(image=processed_frame_resized_image) 
+        
+        processed_photo_image = CTkImage(light_image=processed_frame_resized_image, size=(cameraView.winfo_width(), cameraView.winfo_height()))
+
+    
+        # Displaying photoimage in the label 
+        captureView.photo_image = processed_photo_image
+    
+        # Configure image in the label 
+        captureView.configure(image=processed_photo_image) 
+
+
+
+        # Convert image from one color space to other 
+        captured_adhesive = cv.cvtColor(blurred_otsu, cv.COLOR_BGR2RGBA) 
+        # Capture the latest frame and transform to image 
+        captured_adhesive_Img = Image.fromarray(captured_adhesive) 
+        captured_adhesive_Img_photo_image = CTkImage(light_image=captured_adhesive_Img, size=(captured_adhesiveView.winfo_width(), captured_adhesiveView.winfo_height()))
+        # Displaying photoimage in the label 
+        captured_adhesiveView.photo_image = captured_adhesive_Img_photo_image
+        # Configure image in the label 
+        captured_adhesiveView.configure(image=captured_adhesive_Img_photo_image) 
+
+
+        
+        gussetSideText.configure(text=f"Gusset side : {gusset_side}")
+        sideMixupText.configure(text=f"Fabric side : {fabric_side}")
+        fabricDamageText.configure(text=f"Fabric state : {fabric_damage}")
+
+        if gusset_side == "Front":
+            balanceOutText.configure(text=f"")
+            if(fabric_damage == "Damaged"):
+                defected = True
+
+            gusset_states.append(defected)  
+            capture_count = capture_count+1
+            # Start the timer to process gussets after 20 seconds
+        elif gusset_side == "Back":
+            balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
+            if(balance_out == "Balance out" or fabric_damage == "Damaged"):
+                defected = True
+
+
+            gusset_states.append(defected)  
+            capture_count = capture_count+1
+            # Start the timer to process gussets after 20 seconds
+
+
+
+
+
 
 def toggle_display():
     global display_live_running
@@ -351,6 +469,27 @@ def update_thumbnail():
     
     return sample_longest_contour,sample_second_longest_contour
 
+def upload_image():
+    # Open file dialog to select an image
+    file_path = filedialog.askopenfilename(
+        title="Select Image", 
+        filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;*.bmp;*.tiff")]
+    )
+    
+    if file_path:
+        # Read the selected image
+        uploaded_image = cv.imread(file_path)
+        
+        if uploaded_image is None:
+            print("Error: Could not load the image.")
+            return
+
+        print(f"Image loaded from: {file_path}")
+
+        displayCapturedManual(uploaded_image)
+        
+def expand():
+    TroubleshootingFrame.grid(row=1, column=5, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 # Create the main application window
 app = CTk()
@@ -394,11 +533,23 @@ capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
 settingsLabel = CTkLabel(app, text="Settings")
 settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
 
-settingsFrame = CTkFrame(app, corner_radius=10)
-settingsFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+expandButtonFrame = CTkFrame(app, corner_radius=3)
+expandButtonFrame.grid(row=1, column=4, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+
+TroubleshootingFrame = CTkFrame(app, corner_radius=10)
+# Hide the TroubleshootingFrame
+TroubleshootingFrame.pack_forget()
+
 
 previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
-previewFrame.grid(row=2, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+previewFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+# Set a fixed width for settingsFrame
+settingsFrame = CTkFrame(app, corner_radius=10, width=400,height = 400)  # Set desired width, e.g., 300
+settingsFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
 
 statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
 statusFrame.grid(row=3, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
@@ -409,17 +560,46 @@ defectsFrame.grid(row=4, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(
 sysErrorFrame = CTkFrame(app, corner_radius=10)
 sysErrorFrame.grid(row=9, column=0, columnspan=4, padx=(2, 2), pady=(2, 2), sticky="nsew")
 
+
 thumbnailViewWidth, thumbnailViewHeight = 100,150 # Replace with your actual dimensions
 # Convert the PIL Image to a CTkImage
 thumbnailView = CTkLabel(previewFrame, text="", width=thumbnailViewWidth, height=thumbnailViewHeight)
 thumbnailView.pack(padx=5, pady=5)
 
+# Convert the PIL Image to a CTkImage
+liveCannyView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
+liveCannyView.pack(padx=5, pady=5)
 
-# Ensure the rows and columns expand proportionally
-app.grid_rowconfigure(4, weight=1)
-app.grid_columnconfigure(2, weight=1)
-app.grid_rowconfigure(5, weight=1)
-app.grid_columnconfigure(3, weight=1)
+# Convert the PIL Image to a CTkImage
+captured_adhesiveView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
+captured_adhesiveView.pack(padx=5, pady=5)
+
+
+
+# Ensure rows and columns expand proportionally for TroubleshootingView only
+app.grid_rowconfigure(0, weight=0)
+app.grid_columnconfigure(2, weight=0)
+app.grid_rowconfigure(1, weight=0)
+app.grid_columnconfigure(3, weight=0)
+app.grid_rowconfigure(2, weight=0)
+app.grid_rowconfigure(3, weight=0)
+app.grid_rowconfigure(4, weight=0)
+app.grid_rowconfigure(5, weight=0)
+app.grid_columnconfigure(1, weight=0)
+app.grid_rowconfigure(6, weight=1)
+app.grid_columnconfigure(4, weight=1)
+
+# Prevent resizing of all frames except TroubleshootingView
+settingsFrame.grid_propagate(False)
+captureFrame.grid_propagate(False)
+cameraFrame.grid_propagate(False)
+defectsFrame.grid_propagate(False)
+statusFrame.grid_propagate(False)
+previewFrame.grid_propagate(False)
+sysErrorFrame.grid_propagate(False)
+TroubleshootingFrame.grid_forget()
+
+
 
 # Add style selector
 styleLabel = CTkLabel(settingsFrame, text="Style")
@@ -467,6 +647,13 @@ conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
 
 conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor Backward", command=toggle_conveyor_backward ,width=200)
 conveyor_backward_button.grid(column=3, row=9,  padx=(10, 5), pady=(10, 5))
+
+uploadButton = CTkButton(settingsFrame, text="Upload Image", command=upload_image)
+uploadButton.grid(row=4, column=2, padx=(10, 5), pady=(10, 5))
+
+expand_button = CTkButton(expandButtonFrame, text='>',command=expand ,height=650,width=6,fg_color="grey17",text_color="grey40")
+expand_button.grid(column=0, row=2)
+
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")
 statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
