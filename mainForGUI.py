@@ -9,17 +9,23 @@ import time
 #from textureAnalysis import detect_stains
 from datetime import datetime
 
+
+
 #source= cv.VideoCapture(0)
 #video_source= cv.VideoCapture("images\in\sample.mp4")
 
 
-def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time):    
-    c=0
+def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,adhesiveWidth,colour,captured_time):    
+    defects =[]
     gusset_identified = False
-    gusset_side = "Not identified"
     processed_frame = None
+    gusset_side = "Not identified"
     balance_out = "Error"
     fabric_side = "error"
+    longest_contour = None
+    second_longest_contour = None
+    longest_contour_check = None
+    printY = 300
 
     start_time = time.time()  # Start timex
     #chose read image mode
@@ -28,7 +34,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     
     
-    original_frame,blurred_otsu,assisted_defects_mask,canny,assisted_fabric_mask= preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)    
+    original_frame,blurred_otsu,assisted_defects_mask,canny,assisted_fabric_mask= preprocess(original_frame,sample_longest_contour,sample_second_longest_contour,styleValue,adhesiveWidth,colour,captured_time)    
     
     frame_contours = original_frame.copy()
     #frame_contours = original_frame_resized.copy()
@@ -38,60 +44,115 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         # Find contours
     contours, _ = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
+
     # Find the longest contour
     _,longest_contour,second_longest_contour=identify_edges(contours,sample_longest_contour,sample_second_longest_contour)
     print("1")
     if longest_contour is not None:
-        match_gusset_shape = cv.matchShapes(longest_contour,sample_longest_contour,1,0.0)
-        if match_gusset_shape > 0.2:
-            gusset_identified = False
-            longest_contour = None
-            print("2")
-        else :
-            print("3")
+
+        longest_contour_area = cv.contourArea(longest_contour)
+
+        match_longest_contour_shape = cv.matchShapes(longest_contour,sample_longest_contour,1,0.0)
+
+        if longest_contour_area > 200: # longest_contour_area is OK
             gusset_identified = True
-            if second_longest_contour is not None:
-                print("4")
-                match_fabric_shape = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
-                total_area = cv.contourArea(longest_contour)
-                fabric_area = cv.contourArea(second_longest_contour)
-                area_ratio = fabric_area/total_area
-                if match_fabric_shape < 0.25 and area_ratio > 0.5:
-                    gusset_side = "Back"
-                    print("6")
-                else :
-                    gusset_side = "error"
-                    print("7")
-            else:
-                print("5")
-                gusset_side = "Front"
             fabric_side = crop_image(original_frame, longest_contour,100)
-   
-            #longest_contour = checkGussetPosition(gusset_identified,original_frame,frame_contours,original_frame_resized,longest_contour,second_longest_contour)
+            if match_longest_contour_shape < 0.2: # match_longest_contour_shape  is OK
+                #longest contour is OK
+                if second_longest_contour is not None:
+                    second_longest_contour_area = cv.contourArea(second_longest_contour)
+                    match_second_longest_contour_shape = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
+                    if second_longest_contour_area > 200: #second_longest_contour_area is OK
+                        if match_second_longest_contour_shape < 0.2: # match_second_longest_contour_shape  is OK
+                            #Adhesive is OK
+                            print("Adhesive is Okay")
+                            gusset_side = "Back"
+                        else:
+                            #Ahsesive is defective
+                            print("Adhesive is Defective")
+                            gusset_side = "defective"
+                            defects.append("Adhesive is Defective")
+                    else:
+                        #Ahsesive is defective
+                        print("Adhesive is Defective")
+                        gusset_side = "defective"
+                        defects.append("Adhesive is Defective")
+                else:
+                    print("Adhesive shape is defective")
+                    gusset_side = "defective"
+                    defects.append("Adhesive shape is defective")
+            else:
+                print("Panel cut damage")
+                gusset_side = "defective"
+                defects.append("Panel cut damage")
+                
+        else :
+            print("Noise detected. Check for Front")
+            # Processing grayscale image
+            blurred_assisted_fabric_mask = cv.GaussianBlur(assisted_fabric_mask, (5, 5), 0)
+            canny_check = cv.Canny(blurred_assisted_fabric_mask, 100, 200)
+            contours_check, _ = cv.findContours(canny_check, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+            # Find the longest contour
+            longest_contour_check=identify_outer_edge(contours_check,sample_longest_contour)
+            second_longest_contour_check = None
+
+            if longest_contour_check is not None:
+                longest_contour_check_area = cv.contourArea(longest_contour_check)
+                match_longest_contour_shape = cv.matchShapes(longest_contour_check,sample_longest_contour,1,0.0)
+
+                if longest_contour_check_area > 200:
+                    gusset_identified = True
+                    fabric_side = crop_image(original_frame, longest_contour_check,100)
+                    if match_longest_contour_shape < 0.2:
+                        print("Front side identifed. No shape defects")
+                        gusset_side = "Front"
+                    else:
+                        print("Front side identifed. Defecive shape")
+                        gusset_side = "defective"
+                        defects.append("Defecive shape")
+                else:
+                    print("No gusset identified. Consider as Noise")
+                    gusset_identified = False
+                         
+            else:
+                print("No fabric contours identified.")
+                gusset_identified = False
+                longest_contour_check = None
+
+            
     else:
-        print("8")
+        print("No contours detected in Adhesive mask. Check for Front side")
         # Processing grayscale image
         blurred_assisted_fabric_mask = cv.GaussianBlur(assisted_fabric_mask, (5, 5), 0)
         canny_check = cv.Canny(blurred_assisted_fabric_mask, 100, 200)
         contours_check, _ = cv.findContours(canny_check, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
         # Find the longest contour
         longest_contour_check=identify_outer_edge(contours_check,sample_longest_contour)
-        second_longest_contour_check = None
 
         if longest_contour_check is not None:
-            match_gusset_shape = cv.matchShapes(longest_contour_check,sample_longest_contour,1,0.0)
+            longest_contour_check_area = cv.contourArea(longest_contour_check)
+            match_longest_contour_shape = cv.matchShapes(longest_contour_check,sample_longest_contour,1,0.0)
 
-            if match_gusset_shape > 0.2:
+            if longest_contour_check_area > 200:
+                if match_longest_contour_shape < 0.2:
+                    print("Front side identifed. No shape defects")
+                    gusset_identified = True
+                    gusset_side = "Front"
+                    fabric_side = crop_image(original_frame, longest_contour_check,100)
+                else:
+                    print("Front side identifed. Defecive shape")
+                    gusset_identified = True
+                    gusset_side = "defective"
+                    defects.append("Defecive shape")
+                    fabric_side = crop_image(original_frame, longest_contour_check,100)
+            else:
+                print("No gusset identified. Consider as Noise")
                 gusset_identified = False
-                longest_contour_check = None
-                print("9")
-            else :
-                print("10")
-                gusset_identified = True
-                gusset_side = "Front"
-                fabric_side = crop_image(original_frame, longest_contour_check,100)
+                        
         else:
-            fabric_side = "error"
+            print("No fabric contours identified.")
+            gusset_identified = False
+            longest_contour_check = None
 
 
 
@@ -100,11 +161,12 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
         if fabric_damage_bool :
                 fabric_damage = "Damaged"
+                defects.append("fabric damage")
         else:
                 fabric_damage = "No issue"
 
         if gusset_side == "Back" :
-            balance_out_bool = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,thickness)
+            balance_out_bool,printY = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,adhesiveWidth,printY)
             #Adding texture analysis
 
             #isolate adhesive
@@ -120,36 +182,36 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
             masked_image_for_texture = cv.bitwise_and(original_frame, fabric_mask_colour, mask=fabric_mask)
             #cv.imshow("masked_image_for_texture",masked_image_for_texture)
             #stain_marks = detect_stains(masked_image_for_texture)
-            stain_marks = True
-            if stain_marks :
-                print("Stain marks are avilable")
-            else:
-                print("fabric status is fine")
 
             if balance_out_bool :
                 balance_out = "Balance out"
+                defects.append("Balance out")
             else:
                 balance_out = "No issue"
-            processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c,fabric_damage,defect_contours)
-
 
         elif(gusset_side == "Front"):
             balance_out = "Front side of the gusset detected"
-            processed_frame=outputs(gusset_identified,gusset_side,longest_contour_check,second_longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,c,fabric_damage,defect_contours)
-
-
     else:
         fabric_damage = "error"
         fabric_side = "error"
         defect_contours = None
-        processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,frame_contours,original_frame,blurred_otsu,canny,c,fabric_damage,defect_contours)
 
+
+    processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,fabric_damage,defect_contours,defects,printY)    
+
+    
     
             
         # End of time calculation
     end_time = time.time()  # End time
     elapsed_time = (end_time - start_time)*1000  # Calculate elapsed time
     print(f"Time taken to generate output frame: {elapsed_time:.4f} ms\n\n") 
+    print("\n\n")
+    print("balance_out : ",balance_out)
+    print("fabric_damage : ",fabric_damage)
+    print("gusset_side : ",gusset_side)
+    print("fabric_side : ",fabric_side)
+    print("\n\n")
 
         # Format: YYYYMMDD_HHMMSS
     

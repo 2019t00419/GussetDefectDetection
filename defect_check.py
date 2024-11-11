@@ -4,14 +4,18 @@ from scipy.spatial import KDTree
 
 
 
-def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thicknessStr):
-    if (thicknessStr == "4mm"):
-        thickness = 4
-    elif(thicknessStr == "6mm"):
-        thickness = 6
+def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,adhesiveWidthStr,printY):
+    if (adhesiveWidthStr == "4mm"):
+        adhesiveWidth = 4
+    elif(adhesiveWidthStr == "6mm"):
+        adhesiveWidth = 6
         
     tolerance = 1
     balance_out = False
+    fontSize=5
+    fontThickness = 3
+    printY = 300
+    lineSpace = 70
     
     # Convert contours to NumPy arrays for efficient computation
     longest_contour = np.array(longest_contour)
@@ -29,12 +33,12 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thic
     
     # Calculate the average minimum distance
     #avg_dist = np.mean(min_distances)
-    #thickness = pix_to_mm(avg_dist)
+    #adhesiveWidth = pix_to_mm(avg_dist)
 
     # Variables for tracking
     itr_count = 0
     sum_distances = 0
-    gap = 50
+    gap = 100
 
     # Variables for text display coordinates
     x_out_display, y_out_display = 0, 0
@@ -51,13 +55,13 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thic
             sum_distances = 0
             itr_count = 0
             
-            if ((avg_segment_dist > (thickness + tolerance)) or (avg_segment_dist < (thickness - tolerance))):
+            if ((avg_segment_dist > (adhesiveWidth + tolerance)) or (avg_segment_dist < (adhesiveWidth - tolerance))):
                 balance_out = True
                 color = (0, 0, 255)
             else:
                 color = (0, 0, 0)
             
-            cv.putText(frame_contours, str(round(avg_segment_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 2, color, 2, cv.LINE_AA)
+            cv.putText(frame_contours, str(round(avg_segment_dist, 2)), (x_out_display, y_out_display), cv.FONT_HERSHEY_PLAIN, 3.5, color, 3, cv.LINE_AA)
             cv.line(frame_contours, (x_out_display, y_out_display), (x_in_display, y_in_display), color, 2)
         
         elif itr_count == gap // 2:
@@ -65,17 +69,14 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,thic
             x_out_display, y_out_display = longest_coords[nearest_point_index]
             x_in_display, y_in_display = inner_coordinates
 
-    if balance_out:
-        cv.putText(frame_contours, "Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
-        cv.putText(frame_contours, "Balance Out", (400, 550), cv.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2, cv.LINE_AA)
-    else:
-        cv.putText(frame_contours, "Non-Defective", (400, 500), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_AA)
     
-    cv.putText(frame_contours, "Thickness : " + str(thickness)+ "mm", (400, 575), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
-    cv.putText(frame_contours, "Tolerance : " + str(tolerance) + "mm", (400, 600), cv.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2, cv.LINE_AA)
+    cv.putText(frame_contours, "Adhesive Width : " + str(adhesiveWidth)+ "mm", (400, printY), cv.FONT_HERSHEY_PLAIN, fontSize, (255, 255, 255), fontThickness, cv.LINE_AA)
+    printY += lineSpace
+    cv.putText(frame_contours, "Tolerance : " + str(tolerance) + "mm", (400, printY), cv.FONT_HERSHEY_PLAIN, fontSize, (255, 255, 255), fontThickness, cv.LINE_AA)
+    printY += lineSpace
 
 
-    return(balance_out)
+    return(balance_out,printY)
 
 
 def check_fabric_damage(assisted_defects_image):

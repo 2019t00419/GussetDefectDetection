@@ -31,23 +31,6 @@ def identify_edges(contours,sample_longest_contour,sample_second_longest_contour
                 if 0.05 < relative_length1 < 0.5:
                     second_max_length = length
                     second_longest_contour = contour
-    if longest_contour is not None:
-        longest_contour_uncertainity = cv.matchShapes(longest_contour,sample_longest_contour,1,0.0)  
-        if longest_contour_uncertainity < 0.2:
-            gusset_side = "Front"
-            if second_longest_contour is not None:
-                second_longest_contour_uncertainity = cv.matchShapes(second_longest_contour,sample_second_longest_contour,1,0.0)
-                if second_longest_contour_uncertainity < 0.2:
-                    gusset_side = "Back"
-                else:
-                    gusset_side = "Front"
-                    second_longest_contour = None
-            else:
-                gusset_side = "Front"
-                second_longest_contour = None
-        else:
-            gusset_side = None
-            longest_contour = None
     return(gusset_side,longest_contour,second_longest_contour)  
 
 def identify_inner_edge(contours,sample_second_longest_contour):

@@ -108,7 +108,7 @@ def detection_support(image,colour,captured_time):
     conversion_end_time = time.time()
     print(f"Time taken for image conversion and scaling: {conversion_end_time - conversion_start_time:.6f} seconds")
     support_image_fabric_opened = cv.bitwise_and(image, image, mask=opened_support_image_fabric_mask)
-    cv.imshow("fabric",support_image_fabric_opened)
+    #cv.imshow("fabric",support_image_fabric_opened)
     #support_image_fabric = cv.bitwise_and(image, image, mask=support_image_fabric_mask)
 
     #cv.imshow("support_image_fabric",support_image_fabric)
@@ -136,7 +136,7 @@ def detection_support(image,colour,captured_time):
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
-#"""
+"""
 image_path = 'images\\captured\\original\\original (20241108_105652).jpg'
 image_path = 'images\\in\\Test_Image_ (146).jpg'
 image = cv.imread(image_path)
@@ -155,4 +155,4 @@ else:
 
 cv.waitKey(0)
 cv.destroyAllWindows()
-#"""
+"""

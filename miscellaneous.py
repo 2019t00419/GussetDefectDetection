@@ -30,7 +30,7 @@ def initialize_cam(width, height, backend=cv.CAP_DSHOW):
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
     return cap
 
-def preprocess(original_frame, sample_longest_contour, sample_second_longest_contour, styleValue, thickness, colour,captured_time):
+def preprocess(original_frame, sample_longest_contour, sample_second_longest_contour, styleValue, adhesiveWidth, colour,captured_time):
     start_time = time.time()  # Start timer
 
     captured_view_image = original_frame.copy()
@@ -52,7 +52,7 @@ def preprocess(original_frame, sample_longest_contour, sample_second_longest_con
     #newly added line for detection support
     
     resized_image1 = cv.resize(assisted_adhesive_image, (360, 640))
-    cv.imshow("assisted adhesive image",resized_image1)
+    #cv.imshow("assisted adhesive image",resized_image1)
 
     #resized_image2 = cv.resize(grayscale_image_fabric, (360, 640))
     #cv.imshow("assisted image grayscale_image_fabric",resized_image2)

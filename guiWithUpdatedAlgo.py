@@ -47,18 +47,22 @@ global defected
 capture_count = 0
 processed_count = 0
 
+conveyor_ready = True
+
 last_execution_time = None
 
 def process_gussets():
     global processed_count
+    global conveyor_ready
     current_time = time.time()
+    print("conveyor_ready : ",conveyor_ready)
 
     # Check if there are gussets to process and if the processed_count is within bounds
     if len(gusset_states) == 0 or len(capture_times) == 0:
         return  # No gussets to process yet
     else:
         # If this is the first gusset, process it immediately
-        if capture_count == 1:
+        if capture_count == 1 and conveyor_ready:
             if gusset_states[0]:  # Bad gusset
                 bad()
             else:  # good gusset
@@ -67,18 +71,21 @@ def process_gussets():
             # Check if 20 seconds have passed for the current gusset
             elapsed_time = current_time - capture_times[processed_count]
 
-            #print("Elapsed_time : ",elapsed_time)
+            print("Elapsed_time : ",elapsed_time)
             #print("capture_count : ",capture_count)
             #print("processed_count : ",processed_count)
 
             if elapsed_time >= 20:  # 20 seconds have passed for this gusset
+                conveyor_ready = True
                 processed_count += 1
-                # Process the next gusset if it exists
-                if processed_count < len(gusset_states):
-                    if gusset_states[processed_count-1]:  # Good gusset
-                        good()
-                    else:  
-                        bad()# Bad gusset
+
+    # Process the next gusset if it exists
+    if processed_count < len(gusset_states) and conveyor_ready:
+        conveyor_ready = False
+        if gusset_states[processed_count-1]:  # Good gusset
+            good()
+        else:  
+            bad()# Bad gusset
 
 
 def bad():
@@ -160,9 +167,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
-            toggle_conveyor_forward()
+            #toggle_conveyor_forward()
             displayCaptured()
-            toggle_conveyor_backward()
+            #toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
@@ -215,7 +222,7 @@ def displayLive():
     live_canny_display = cv.cvtColor(canny_resized, cv.COLOR_BGR2RGBA) 
     # Capture the latest frame and transform to image 
     live_canny_display_Img = Image.fromarray(live_canny_display) 
-    live_canny_display_Img_photo_image = CTkImage(light_image=live_canny_display_Img, size=(thumbnailView.winfo_width(), thumbnailView.winfo_height()))
+    live_canny_display_Img_photo_image = CTkImage(light_image=live_canny_display_Img, size=(liveCannyView.winfo_width(), liveCannyView.winfo_height()))
     # Displaying photoimage in the label 
     liveCannyView.photo_image = live_canny_display_Img_photo_image
     # Configure image in the label 
@@ -264,9 +271,9 @@ def displayCaptured():
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
 
 
-    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
+    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,adhesiveWidth,colour,captured_time)
 
-    cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
+    cv.putText(processed_frame, str(captured_frame.shape), (10, 40), cv.FONT_HERSHEY_PLAIN, 3, (255,255,255), 3, cv.LINE_AA)
     if processed_frame is None:
         print("Error: File not found.")
     else:        
@@ -309,7 +316,9 @@ def displayCaptured():
         sideMixupText.configure(text=f"Fabric side : {fabric_side}")
         fabricDamageText.configure(text=f"Fabric state : {fabric_damage}")
 
-        if gusset_side == "Front":
+        if gusset_side == "defective":
+            defected = True
+        elif gusset_side == "Front":
             balanceOutText.configure(text=f"")
             if(fabric_damage == "Damaged"):
                 defected = True
@@ -350,9 +359,9 @@ def displayCapturedManual(captured_frame):
         captured_frame = cv.rotate(captured_frame, cv.ROTATE_90_CLOCKWISE) 
 
 
-    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,thickness,colour,captured_time)
+    processed_frame,balance_out,fabric_side,gusset_side,fabric_damage,blurred_otsu = generateOutputFrame(captured_frame,sample_longest_contour,sample_second_longest_contour,styleValue,adhesiveWidth,colour,captured_time)
 
-    cv.putText(processed_frame, str(captured_frame.shape), (10, 20), cv.FONT_HERSHEY_PLAIN, 1.5, (255,255,255), 2, cv.LINE_AA)
+    cv.putText(processed_frame, str(captured_frame.shape), (10, 40), cv.FONT_HERSHEY_PLAIN, 3, (255,255,255), 3, cv.LINE_AA)
     if processed_frame is None:
         print("Error: File not found.")
     else:        
@@ -396,7 +405,7 @@ def displayCapturedManual(captured_frame):
         fabricDamageText.configure(text=f"Fabric state : {fabric_damage}")
 
         if gusset_side == "Front":
-            balanceOutText.configure(text=f"")
+            balanceOutText.configure(text="")
             if(fabric_damage == "Damaged"):
                 defected = True
 
@@ -407,6 +416,8 @@ def displayCapturedManual(captured_frame):
             balanceOutText.configure(text=f"Adhesive tape : {balance_out}")
             if(balance_out == "Balance out" or fabric_damage == "Damaged"):
                 defected = True
+        else:
+            balanceOutText.configure(text="")
 
 
             gusset_states.append(defected)  
@@ -432,26 +443,28 @@ def update_thumbnail():
     global sample_longest_contour
     global sample_second_longest_contour
     global styleValue
-    global thickness
+    global adhesiveWidth
     global colour
     global sys_error
     
     styleValue = style_var.get()
-    thickness = thickness_var.get()
+    adhesiveWidth = adhesiveWidth_var.get()
     colour = colour_var.get()
 
-    if(styleValue != "Select Style" and thickness != "Select Adhesive Thickness" and colour != "Select Fabric Colour"):
+    if(styleValue != "Select Style" and adhesiveWidth != "Select Adhesive Width" and colour != "Select Fabric Colour"):
         startButton.configure(state="enabled")
+        uploadButton.configure(state="enabled")
     else:
         startButton.configure(state="disabled")
+        uploadButton.configure(state="disabled")
 
     print(f"The style is {styleValue}")
-    print(f"The thickness value is {thickness}")
+    print(f"The Adhesive Width value is {adhesiveWidth}")
     print(f"The colour is {colour}")
     
     sample_path = f"images\sample\{styleValue}.jpg"
     sample_longest_contour,sample_second_longest_contour,sample_image=sampleContours(sample_path)
-    thumbnail = thumbnail_ganeration(sample_longest_contour,sample_second_longest_contour,sample_image,colour,thickness)
+    thumbnail = thumbnail_ganeration(sample_longest_contour,sample_second_longest_contour,sample_image,colour,adhesiveWidth)
     # Convert image from one color space to other 
     thumbnail = cv.cvtColor(thumbnail, cv.COLOR_BGR2RGBA) 
 
@@ -540,7 +553,7 @@ expandButtonFrame.grid(row=1, column=4, rowspan=5, padx=(10, 5), pady=(10, 5), s
 
 TroubleshootingFrame = CTkFrame(app, corner_radius=10)
 # Hide the TroubleshootingFrame
-TroubleshootingFrame.pack_forget()
+TroubleshootingFrame.grid_forget()
 
 
 previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
@@ -568,11 +581,11 @@ thumbnailView.pack(padx=5, pady=5)
 
 # Convert the PIL Image to a CTkImage
 liveCannyView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
-liveCannyView.pack(padx=5, pady=5)
+liveCannyView.grid(row=1, column=0, padx=(10, 5), pady=(10, 5))
 
 # Convert the PIL Image to a CTkImage
 captured_adhesiveView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
-captured_adhesiveView.pack(padx=5, pady=5)
+captured_adhesiveView.grid(row=3, column=0, padx=(10, 5), pady=(10, 5))
 
 
 
@@ -611,14 +624,14 @@ dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
 style_var.trace("w", lambda *args: update_thumbnail())
 
 
-# Add thickness selector
-thicknessLabel = CTkLabel(settingsFrame, text="Thickness")
-thicknessLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+# Add adhesiveWidth selector
+adhesiveWidthLabel = CTkLabel(settingsFrame, text="Adhesive Width")
+adhesiveWidthLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
 
-thickness_var = StringVar(value="Select Adhesive Thickness")
-dropdown_menu = CTkOptionMenu(settingsFrame, variable=thickness_var, values=["4mm", "6mm"],width=200)
+adhesiveWidth_var = StringVar(value="Select Adhesive Width")
+dropdown_menu = CTkOptionMenu(settingsFrame, variable=adhesiveWidth_var, values=["4mm", "6mm"],width=200)
 dropdown_menu.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
-thickness_var.trace("w", lambda *args: update_thumbnail())
+adhesiveWidth_var.trace("w", lambda *args: update_thumbnail())
 
 # Add colour selector
 styleLabel = CTkLabel(settingsFrame, text="Colour")
@@ -648,8 +661,8 @@ conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
 conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor Backward", command=toggle_conveyor_backward ,width=200)
 conveyor_backward_button.grid(column=3, row=9,  padx=(10, 5), pady=(10, 5))
 
-uploadButton = CTkButton(settingsFrame, text="Upload Image", command=upload_image)
-uploadButton.grid(row=4, column=2, padx=(10, 5), pady=(10, 5))
+uploadButton = CTkButton(TroubleshootingFrame, text="Upload Image", command=upload_image, state="disabled")
+uploadButton.grid(row=2, column=0, padx=(10, 5), pady=(10, 5))
 
 expand_button = CTkButton(expandButtonFrame, text='>',command=expand ,height=650,width=6,fg_color="grey17",text_color="grey40")
 expand_button.grid(column=0, row=2)
