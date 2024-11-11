@@ -6,7 +6,7 @@ from miscellaneous import preprocess
 from sideMixupDetection import crop_image
 from display_items import outputs
 import time
-from textureAnalysis import detect_stains
+#from textureAnalysis import detect_stains
 from datetime import datetime
 
 #source= cv.VideoCapture(0)

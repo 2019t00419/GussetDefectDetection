@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 import pandas as pd
 import pickle
-from detectionAssistfilters import detection_filtes
+from detectionAssistfilters import detection_filters
 import os
 from sklearn import metrics
 import time
@@ -56,7 +56,7 @@ for image in os.listdir(img_path):
     df['Original Image'] = pixel_values
     df['Image_Name'] = image
     
-    df = detection_filtes(img, df, input_img)
+    df = detection_filters(img, df, input_img)
     image_dataset = pd.concat([image_dataset, df], ignore_index=True)
 
 image_end = time.time()  # End timer for image loading section
@@ -180,6 +180,9 @@ print(f"Time taken for saving the model: {save_end - save_start} seconds")
 total_end = time.time()
 print(f"Total execution time: {total_end - total_start} seconds")
 # Print feature importance
+
+
+# Calculate and display feature importance
 feature_importance = model.feature_importances_
 feature_names = X.columns  # Get the names of the features from the DataFrame columns
 
@@ -189,15 +192,18 @@ importance_df = pd.DataFrame({
     'Importance': feature_importance
 }).sort_values(by='Importance', ascending=False)
 
-print("\nFeature Importance:")
-print(importance_df)
+# Display top 10 features only
+top_10_importance_df = importance_df.head(10)
+
+print("\nTop 10 Feature Importance:")
+print(top_10_importance_df)
 
 # Optional: Plot the feature importance for a more visual representation
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(10, 6))
-plt.barh(importance_df['Feature'], importance_df['Importance'], color='skyblue')
+plt.barh(top_10_importance_df['Feature'], top_10_importance_df['Importance'], color='skyblue')
 plt.xlabel("Importance")
-plt.title("Feature Importance from Random Forest")
+plt.title("Top 10 Feature Importance from Random Forest")
 plt.gca().invert_yaxis()  # Highest importance at the top
 plt.show()

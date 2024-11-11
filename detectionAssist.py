@@ -2,7 +2,7 @@
 import numpy as np
 import cv2 as cv
 import pandas as pd
-from detectionAssistfilters import detection_filtes
+from detectionAssistfilters import detection_filters
 import pickle
 
 
@@ -32,7 +32,7 @@ def feature_extraction(input_img,colour):
     
     #Generate Gabor features
    
-    df = detection_filtes(img,df,input_img)
+    df = detection_filters(img,df,input_img)
 
     return img,df,input_img
 
@@ -136,8 +136,9 @@ def detection_support(image,colour,captured_time):
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
-"""
-image_path = 'test/Test_images/captured_20241031_1638130.jpg'
+#"""
+image_path = 'images\\captured\\original\\original (20241108_105652).jpg'
+image_path = 'images\\in\\Test_Image_ (146).jpg'
 image = cv.imread(image_path)
 
 processed_image,binary_image,_,_ = detection_support(image,"Skin",0)
@@ -154,4 +155,4 @@ else:
 
 cv.waitKey(0)
 cv.destroyAllWindows()
-"""
+#"""

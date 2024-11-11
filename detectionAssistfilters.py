@@ -4,7 +4,7 @@ from skimage.filters import roberts, sobel, scharr, prewitt
 import pandas as pd
 from scipy import ndimage as nd
 
-def detection_filtes(img, df,imgc):
+def detection_filters(img, df,imgc):
     '''
     theta_min = 20
     theta_max = 30
@@ -52,20 +52,25 @@ def detection_filtes(img, df,imgc):
                     num += 1
     """
     
-
+    kernel1 = cv.getGaborKernel((3, 3), 0.1, 0.628319, 3, 0.08, 0.188496, ktype=cv.CV_32F) 
+    kernel2 = cv.getGaborKernel((3, 3), 0.1, 4.08407, 3, 0.08, 0, ktype=cv.CV_32F) 
+    kernel3 = cv.getGaborKernel((3, 3), 0.2, 0.628319, 0.4, 0.08, 0.251327, ktype=cv.CV_32F) 
+    kernel4 = cv.getGaborKernel((3, 3), 0.2, 0.942478, 0.4, 0.08, 0, ktype=cv.CV_32F)  
+    kernel5 = cv.getGaborKernel((3, 3), 0.2, 3.76911, 0.4, 0.08, 0, ktype=cv.CV_32F) 
+    kernel6 = cv.getGaborKernel((3, 3), 0.2, 4.08407, 0.4, 0.04, 0.188496, ktype=cv.CV_32F) 
       
    
     #Gabor311 : theta= 5.105088062083414 : sigma= 1 : lamda= 2.748893571891069 : gamma= 0.5
     #kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F) 
-    kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)   
-    kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
-    kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
-    kernel4 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
-    kernel5 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
-    kernel6 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
-    kernel7 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
-    kernel8 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
-    kernel9 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    #kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)   
+    #kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    #kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    #kernel4 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
+    #kernel5 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
+    #kernel6 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    #kernel7 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    #kernel8 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    #kernel9 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
 
     results["gabor_1"] = (cv.filter2D(img, cv.CV_8UC3, kernel1)).reshape(-1)
     results["gabor_2"] = (cv.filter2D(img, cv.CV_8UC3, kernel2)).reshape(-1)
@@ -73,9 +78,9 @@ def detection_filtes(img, df,imgc):
     results["gabor_4"] = (cv.filter2D(img, cv.CV_8UC3, kernel4)).reshape(-1)
     results["gabor_5"] = (cv.filter2D(img, cv.CV_8UC3, kernel5)).reshape(-1)
     results["gabor_6"] = (cv.filter2D(img, cv.CV_8UC3, kernel6)).reshape(-1)
-    results["gabor_7"] = (cv.filter2D(img, cv.CV_8UC3, kernel7)).reshape(-1)
-    results["gabor_8"] = (cv.filter2D(img, cv.CV_8UC3, kernel8)).reshape(-1)
-    results["gabor_9"] = (cv.filter2D(img, cv.CV_8UC3, kernel9)).reshape(-1)
+    #results["gabor_7"] = (cv.filter2D(img, cv.CV_8UC3, kernel7)).reshape(-1)
+    #results["gabor_8"] = (cv.filter2D(img, cv.CV_8UC3, kernel8)).reshape(-1)
+    #results["gabor_9"] = (cv.filter2D(img, cv.CV_8UC3, kernel9)).reshape(-1)
 
    
 
