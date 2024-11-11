@@ -76,10 +76,10 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,adhe
     printY += lineSpace
 
 
-    return(balance_out,printY)
+    return(balance_out,printY,frame_contours)
 
 
-def check_fabric_damage(assisted_defects_image):
+def check_fabric_damage(assisted_defects_image,frame_contours):
     fabric_damage_bool = False
     # Threshold for detecting dense clusters
     solidity_threshold = 0.6
@@ -104,10 +104,56 @@ def check_fabric_damage(assisted_defects_image):
         print(f"Solidity of potential fabric damages : {solidity}")
         if solidity >= solidity_threshold:
             fabric_damage_bool = True
+            x, y, w, h = cv.boundingRect(defect_contour)  # Get bounding box coordinates
+            cv.rectangle(frame_contours, (x, y), (x + w, y + h), (0, 0, 255), 3)  # Draw red rectangle
+            cv.drawContours(frame_contours, [defect_contour],  -1, (0,0,255), 3)
 
-    return defect_contours,fabric_damage_bool
+    return fabric_damage_bool,frame_contours
 
 
+def checkPanelCutDamage(longest_contour,assisted_fabric_mask,frame_contours):
+    solidity_threshold = 0.6
+    panel_cut_damage_bool = False
+    
+    #isolate panel cut damage
+    gusset_mask = np.ones_like(assisted_fabric_mask)
+    cv.drawContours(gusset_mask, [longest_contour], -1, (255), cv.FILLED)   
+
+    invert_gusset_mask  = cv.bitwise_not(gusset_mask)
+
+
+    panel_cut_damage_mask = cv.bitwise_and(assisted_fabric_mask, assisted_fabric_mask, mask=invert_gusset_mask)
+
+
+
+    blurred_panel_cut_damage_mask = cv.GaussianBlur(panel_cut_damage_mask, (5, 5), 0)
+    canny_check = cv.Canny(blurred_panel_cut_damage_mask, 100, 200)
+    
+
+    defect_contours, _ = cv.findContours(canny_check, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+
+    # Draw red bounding boxes on the original image for dense clusters only
+    for defect_contour in defect_contours:
+        # Calculate the area of the contour and its convex hull
+        contour_area = cv.contourArea(defect_contour)
+        if contour_area == 0:
+            continue
+
+        hull = cv.convexHull(defect_contour)
+        hull_area = cv.contourArea(hull)
+
+        # Calculate solidity (contour_area / hull_area)
+        solidity = contour_area / hull_area
+
+        # Check if the contour is dense enough based on solidity
+        print(f"Solidity of potential panel cut damages : {solidity}")
+        if solidity >= solidity_threshold:
+            panel_cut_damage_bool = True
+            x, y, w, h = cv.boundingRect(defect_contour)  # Get bounding box coordinates
+            cv.rectangle(frame_contours, (x, y), (x + w, y + h), (0, 0, 255), 3)  # Draw red rectangle
+            cv.drawContours(frame_contours, [defect_contour],  -1, (0,0,255), 3)
+
+    return panel_cut_damage_bool,frame_contours
 
 
 

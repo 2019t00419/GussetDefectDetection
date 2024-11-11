@@ -1,18 +1,13 @@
 import cv2 as cv
 import numpy as np
         
-def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,fabric_damage,defect_contours,defects,printY):
+def outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,defects,printY):
     fontSize=5
     fontThickness = 3
     lineSpace = 70
     if gusset_identified:
         cv.putText(frame_contours, str(defects), (400, printY), cv.FONT_HERSHEY_PLAIN, fontSize, (0,0,255), fontThickness, cv.LINE_AA)
         printY += lineSpace
-        if fabric_damage:
-            # Draw red bounding boxes on the original image
-            for defect_contour in defect_contours:
-                x, y, w, h = cv.boundingRect(defect_contour)  # Get bounding box coordinates
-                cv.rectangle(frame_contours, (x, y), (x + w, y + h), (0, 0, 255),3)  # Draw red rectangle
 
         if gusset_side == "Front":
             fabric_area = cv.contourArea(longest_contour_check)

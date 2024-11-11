@@ -31,8 +31,6 @@ capture_width, capture_height = 3840, 2160
 # Open the webcam with low resolution using DirectShow backend
 cap = initialize_cam(display_width, display_height)     
 
-# Serial communication setup
-serialCom = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)# Track conveyor state
 conveyor_on = False
 
 # Lists to store gusset states and their corresponding capture times
@@ -50,12 +48,24 @@ processed_count = 0
 conveyor_ready = True
 
 last_execution_time = None
+serialCom= None
+
+def start_serial_com():
+    # Serial communication setup
+    global serialCom
+    serialCom = serial.Serial(port=str(comPort), baudrate=115200, timeout=0.1)# Track conveyor state
+
+def update_com_port():
+    global comPort
+    comPort = comPortVar.get()
+    if comPort != "Select COM Port":
+        connectButton.configure(state="enabled")
 
 def process_gussets():
     global processed_count
     global conveyor_ready
     current_time = time.time()
-    print("conveyor_ready : ",conveyor_ready)
+    #print("conveyor_ready : ",conveyor_ready)
 
     # Check if there are gussets to process and if the processed_count is within bounds
     if len(gusset_states) == 0 or len(capture_times) == 0:
@@ -167,9 +177,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
-            #toggle_conveyor_forward()
+            toggle_conveyor_forward()
             displayCaptured()
-            #toggle_conveyor_backward()
+            toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")
@@ -451,7 +461,7 @@ def update_thumbnail():
     adhesiveWidth = adhesiveWidth_var.get()
     colour = colour_var.get()
 
-    if(styleValue != "Select Style" and adhesiveWidth != "Select Adhesive Width" and colour != "Select Fabric Colour"):
+    if(styleValue != "Select Style" and adhesiveWidth != "Select Adhesive Width" and colour != "Select Fabric Colour" and comPort != "Select COM Port"):
         startButton.configure(state="enabled")
         uploadButton.configure(state="enabled")
     else:
@@ -502,7 +512,12 @@ def upload_image():
         displayCapturedManual(uploaded_image)
         
 def expand():
-    TroubleshootingFrame.grid(row=1, column=5, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+    if expand_button._text == ">":
+        expand_button.configure(text="<")
+        TroubleshootingFrame.grid(row=1, column=5, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+    else:
+        expand_button.configure(text=">")
+        TroubleshootingFrame.grid_forget()
 
 # Create the main application window
 app = CTk()
@@ -560,7 +575,7 @@ previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
 previewFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 # Set a fixed width for settingsFrame
-settingsFrame = CTkFrame(app, corner_radius=10, width=400,height = 400)  # Set desired width, e.g., 300
+settingsFrame = CTkFrame(app, corner_radius=10, width=420,height = 400)  # Set desired width, e.g., 300
 settingsFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 
@@ -612,54 +627,66 @@ previewFrame.grid_propagate(False)
 sysErrorFrame.grid_propagate(False)
 TroubleshootingFrame.grid_forget()
 
+# Add comport selector
 
+comPortVar = StringVar(value="Select COM Port")
+comPort_dropdown_menu = CTkOptionMenu(settingsFrame, variable=comPortVar, values=["COM0","COM1","COM2","COM3","COM4"],width=200)
+comPort_dropdown_menu.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+comPortVar.trace("w", lambda *args: update_com_port())
+
+
+# Create a button to open the camera in GUI app
+connectButton = CTkButton(settingsFrame, text="Connect", command=start_serial_com,width=200,state="disabled")
+connectButton.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
 
 # Add style selector
 styleLabel = CTkLabel(settingsFrame, text="Style")
-styleLabel.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+styleLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
 
 style_var = StringVar(value="Select Style")
 dropdown_menu = CTkOptionMenu(settingsFrame, variable=style_var, values=["CSI70", "SB70"],width=200)
-dropdown_menu.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+dropdown_menu.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
 style_var.trace("w", lambda *args: update_thumbnail())
 
 
 # Add adhesiveWidth selector
 adhesiveWidthLabel = CTkLabel(settingsFrame, text="Adhesive Width")
-adhesiveWidthLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+adhesiveWidthLabel.grid(row=3, column=2, padx=(10, 5), pady=(10, 5))
+
 
 adhesiveWidth_var = StringVar(value="Select Adhesive Width")
 dropdown_menu = CTkOptionMenu(settingsFrame, variable=adhesiveWidth_var, values=["4mm", "6mm"],width=200)
-dropdown_menu.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
+dropdown_menu.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
 adhesiveWidth_var.trace("w", lambda *args: update_thumbnail())
 
 # Add colour selector
 styleLabel = CTkLabel(settingsFrame, text="Colour")
-styleLabel.grid(row=3, column=2, padx=(10, 5), pady=(10, 5))
+styleLabel.grid(row=4, column=2, padx=(10, 5), pady=(10, 5))
 
 colour_var = StringVar(value="Select Fabric Colour")
 dropdown_menu = CTkOptionMenu(settingsFrame, variable=colour_var, values=["Nero", "Skin","Bianco"],width=200)
-dropdown_menu.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
+dropdown_menu.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
 colour_var.trace("w", lambda *args: update_thumbnail())
+
 
 # Create a button to open the camera in GUI app
 startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200,state="disabled")
-startButton.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
+startButton.grid(row=5, column=3, padx=(10, 5), pady=(10, 5))
 
 label = CTkLabel(settingsFrame, text='Conveyor manual controller',width=200)
-label.grid(column=1, row=5, columnspan=3, padx=(10, 5), pady=(10, 5))
+label.grid(column=1, row=6, columnspan=3, padx=(10, 5), pady=(10, 5))
 
 btn_bad = CTkButton(settingsFrame, text='Defective',command=bad ,width=200)
-btn_bad.grid(column=3, row=6, padx=(10, 5), pady=(10, 5))
+btn_bad.grid(column=3, row=7, padx=(10, 5), pady=(10, 5))
 
 btn_good = CTkButton(settingsFrame, text='Non-defective',command=good ,width=200)
-btn_good.grid(column=3, row=7, padx=(10, 5), pady=(10, 5))
+btn_good.grid(column=2, row=7, padx=(10, 5), pady=(10, 5))
 
 conveyor_forward_button = CTkButton(settingsFrame, text="Conveyor Forward", command=toggle_conveyor_forward ,width=200)
 conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
 
 conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor Backward", command=toggle_conveyor_backward ,width=200)
-conveyor_backward_button.grid(column=3, row=9,  padx=(10, 5), pady=(10, 5))
+conveyor_backward_button.grid(column=2, row=8,  padx=(10, 5), pady=(10, 5))
 
 uploadButton = CTkButton(TroubleshootingFrame, text="Upload Image", command=upload_image, state="disabled")
 uploadButton.grid(row=2, column=0, padx=(10, 5), pady=(10, 5))

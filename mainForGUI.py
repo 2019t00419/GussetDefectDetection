@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from defect_check import checkGussetPosition,checkBalanceOut,check_fabric_damage
+from defect_check import checkGussetPosition,checkBalanceOut,check_fabric_damage,checkPanelCutDamage
 from contourID import identify_edges,identify_outer_edge
 from miscellaneous import preprocess
 from sideMixupDetection import crop_image
@@ -22,6 +22,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
     gusset_side = "Not identified"
     balance_out = "Error"
     fabric_side = "error"
+    panel_cut_damage = "error"
     longest_contour = None
     second_longest_contour = None
     longest_contour_check = None
@@ -157,7 +158,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
 
     if gusset_identified:     
-        defect_contours,fabric_damage_bool=check_fabric_damage(assisted_defects_mask)
+        fabric_damage_bool,frame_contours=check_fabric_damage(assisted_defects_mask,frame_contours)
 
         if fabric_damage_bool :
                 fabric_damage = "Damaged"
@@ -166,22 +167,15 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
                 fabric_damage = "No issue"
 
         if gusset_side == "Back" :
-            balance_out_bool,printY = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,adhesiveWidth,printY)
-            #Adding texture analysis
-
-            #isolate adhesive
-            fabric_mask_colour = np.ones_like(original_frame)
-            cv.drawContours(fabric_mask_colour, [longest_contour], -1, (255,255,255), cv.FILLED)
-            cv.drawContours(fabric_mask_colour, [second_longest_contour], -1, (0,0,0), cv.FILLED)
-
-            fabric_mask = cv.cvtColor(fabric_mask_colour, cv.COLOR_BGR2GRAY)
-
-            #cv.imshow("fabric_mask",fabric_mask)
-
-            
-            masked_image_for_texture = cv.bitwise_and(original_frame, fabric_mask_colour, mask=fabric_mask)
-            #cv.imshow("masked_image_for_texture",masked_image_for_texture)
-            #stain_marks = detect_stains(masked_image_for_texture)
+            balance_out_bool,printY,frame_contours = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,adhesiveWidth,printY)
+            panel_cut_damage_bool,frame_contours= checkPanelCutDamage(longest_contour,assisted_fabric_mask,frame_contours)
+            #Adding texture analysis 
+            if panel_cut_damage_bool :
+                panel_cut_damage = "Panal cut damage"
+                defects.append("Panal cut damage")
+            else:
+                panel_cut_damage = "No issue"
+            print("panel_cut_damage : ",panel_cut_damage)
 
             if balance_out_bool :
                 balance_out = "Balance out"
@@ -197,7 +191,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         defect_contours = None
 
 
-    processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,fabric_damage,defect_contours,defects,printY)    
+    processed_frame=outputs(gusset_identified,gusset_side,longest_contour,second_longest_contour,longest_contour_check,frame_contours,original_frame,blurred_otsu,canny,defects,printY)    
 
     
     
