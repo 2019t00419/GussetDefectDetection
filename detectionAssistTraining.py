@@ -33,7 +33,7 @@ for image in os.listdir(img_path):
     df = pd.DataFrame()  # Temporary data frame to capture information for each loop.
     
     input_img = cv.imread(img_path + image)  # Read images
-    detection_height = 720  # Detection width is set for Landscape images
+    detection_height = 2160  # Detection width is set for Landscape images
 
     input_image_width, input_image_height, _ = input_img.shape
     if input_image_width < input_image_height:  # Portrait
@@ -171,7 +171,7 @@ print(f"Time taken for model evaluation: {evaluate_end - evaluate_start} seconds
 
 # SECTION 6: Save the model
 save_start = time.time()
-model_name = "detectionSupportModel"
+model_name = "detectionSupportModelHighRes"
 pickle.dump(model, open(model_name, 'wb'))
 save_end = time.time()
 print(f"Time taken for saving the model: {save_end - save_start} seconds")

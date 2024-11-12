@@ -1,6 +1,8 @@
 from customtkinter import *
 import cv2 as cv
-from PIL import Image, ImageTk 
+from PIL import Image, ImageTk
+import serial.tools
+import serial.tools.list_ports 
 from mainForGUI import generateOutputFrame
 import numpy as np
 import time
@@ -50,10 +52,35 @@ conveyor_ready = True
 last_execution_time = None
 serialCom= None
 
+class RedirectText:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+
+    def write(self, message):
+        self.text_widget.insert(END, message)
+        self.text_widget.see(END)  # Auto-scroll to the end
+
+    def flush(self):
+        pass  # Required for compatibility with stdout
+
+def get_available_com_ports():
+    # Scan and return a list of available COM ports
+    ports = serial.tools.list_ports.comports()
+    return [port.device for port in ports]
+
 def start_serial_com():
-    # Serial communication setup
     global serialCom
-    serialCom = serial.Serial(port=str(comPort), baudrate=115200, timeout=0.1)# Track conveyor state
+    try:
+        # Try to open the serial connection
+        serialCom = serial.Serial(port=str(comPort), baudrate=115200, timeout=0.1)
+        
+        # If successful, update button text to "Connected"
+        connectButton.configure(text="Connected", fg_color="green")  # Optionally, change color to indicate success
+
+    except serial.SerialException:
+        # If the connection fails, update button text to "Failed"
+        connectButton.configure(text="Disconnected", fg_color="red")  # Optionally, change color to indicate failure
+
 
 def update_com_port():
     global comPort
@@ -514,7 +541,7 @@ def upload_image():
 def expand():
     if expand_button._text == ">":
         expand_button.configure(text="<")
-        TroubleshootingFrame.grid(row=1, column=5, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+        TroubleshootingFrame.grid(row=1, column=4, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
     else:
         expand_button.configure(text=">")
         TroubleshootingFrame.grid_forget()
@@ -561,14 +588,15 @@ capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
 settingsLabel = CTkLabel(app, text="Settings")
 settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
 
-
-expandButtonFrame = CTkFrame(app, corner_radius=3)
-expandButtonFrame.grid(row=1, column=4, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-
 TroubleshootingFrame = CTkFrame(app, corner_radius=10)
 # Hide the TroubleshootingFrame
 TroubleshootingFrame.grid_forget()
+
+
+expandButtonFrame = CTkFrame(app, corner_radius=3, width= 20)
+expandButtonFrame.grid(row=1, column=6, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+
+
 
 
 previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
@@ -584,10 +612,6 @@ statusFrame.grid(row=3, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), stic
 
 defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
 defectsFrame.grid(row=4, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-sysErrorFrame = CTkFrame(app, corner_radius=10)
-sysErrorFrame.grid(row=9, column=0, columnspan=4, padx=(2, 2), pady=(2, 2), sticky="nsew")
-
 
 thumbnailViewWidth, thumbnailViewHeight = 100,150 # Replace with your actual dimensions
 # Convert the PIL Image to a CTkImage
@@ -606,16 +630,19 @@ captured_adhesiveView.grid(row=3, column=0, padx=(10, 5), pady=(10, 5))
 
 # Ensure rows and columns expand proportionally for TroubleshootingView only
 app.grid_rowconfigure(0, weight=0)
-app.grid_columnconfigure(2, weight=0)
-app.grid_rowconfigure(1, weight=0)
-app.grid_columnconfigure(3, weight=0)
+app.grid_rowconfigure(1, weight=1)
 app.grid_rowconfigure(2, weight=0)
 app.grid_rowconfigure(3, weight=0)
 app.grid_rowconfigure(4, weight=0)
 app.grid_rowconfigure(5, weight=0)
+app.grid_rowconfigure(6, weight=0)
+app.grid_columnconfigure(0, weight=0)
 app.grid_columnconfigure(1, weight=0)
-app.grid_rowconfigure(6, weight=1)
+app.grid_columnconfigure(2, weight=0)
+app.grid_columnconfigure(3, weight=0)
 app.grid_columnconfigure(4, weight=1)
+app.grid_columnconfigure(5, weight=1)
+app.grid_columnconfigure(6, weight=0)
 
 # Prevent resizing of all frames except TroubleshootingView
 settingsFrame.grid_propagate(False)
@@ -624,19 +651,20 @@ cameraFrame.grid_propagate(False)
 defectsFrame.grid_propagate(False)
 statusFrame.grid_propagate(False)
 previewFrame.grid_propagate(False)
-sysErrorFrame.grid_propagate(False)
+expandButtonFrame.grid_propagate(False)
+TroubleshootingFrame.grid_propagate(True)
 TroubleshootingFrame.grid_forget()
 
-# Add comport selector
+# Initialize dropdown with available COM ports
+available_ports = get_available_com_ports()
+available_ports.insert(0, "Select COM Port")  # Default option
 
 comPortVar = StringVar(value="Select COM Port")
-comPort_dropdown_menu = CTkOptionMenu(settingsFrame, variable=comPortVar, values=["COM0","COM1","COM2","COM3","COM4"],width=200)
+comPort_dropdown_menu = CTkOptionMenu(settingsFrame,variable=comPortVar, values=available_ports,width=200)
 comPort_dropdown_menu.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
 comPortVar.trace("w", lambda *args: update_com_port())
 
-
-# Create a button to open the camera in GUI app
-connectButton = CTkButton(settingsFrame, text="Connect", command=start_serial_com,width=200,state="disabled")
+connectButton = CTkButton(settingsFrame, text="Connect", command=start_serial_com, width=200, state="disabled")
 connectButton.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
 
 # Add style selector
@@ -719,8 +747,13 @@ sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
 fabricDamageText = CTkLabel(defectsFrame, text="")
 fabricDamageText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5))
 
-sysErrorLabel = CTkLabel(sysErrorFrame, text=sys_error)
-sysErrorLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+# Output display (CTkTextbox for print statements)
+output_text = CTkTextbox(TroubleshootingFrame, height=200, width=400)
+output_text.grid(row=0, column=0, padx=10, pady=10)
+
+# Redirect print to the CTkTextbox
+sys.stdout = RedirectText(output_text)
+
 
 if (sample_longest_contour != 0  & sample_second_longest_contour != 0):
     sample_longest_contour,sample_second_longest_contour = update_thumbnail()
