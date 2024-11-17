@@ -4,16 +4,9 @@ from skimage.filters import roberts, sobel, scharr, prewitt
 import pandas as pd
 from scipy import ndimage as nd
 
-def detection_filters(img, df,imgc):
-    '''
-    theta_min = 20
-    theta_max = 30
-    theta_factor = 16  # theta = theta/theta_factor * np.pi
-    sigma_values = 1,3
-    lamda_factor = 4
-    gamma_values = 1.3, 1.4, 1.5
-    ksize = 10
+def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
     
+    results = {}
     '''
     theta_min = 20
     theta_max = 30
@@ -21,70 +14,104 @@ def detection_filters(img, df,imgc):
     sigma_values = 1,3
     lamda_factor = 8
     gamma_values = 1.3, 1.4, 1.5
-    ksize = 3
+    ksize = 10
+    
+    '''
+    """
+    theta_iterations= 8
+    theta_factor = 8  # theta = theta/theta_factor * np.pi
+    sigma_values = 1,3
+    lamda_factor = 8
+    gamma_values = 1.3,1.4,1.5
+    ksize_min = 0
+    ksize_max = 9
 
     num = 1  # To count numbers up in order to give Gabor features a label in the data frame
-    results = {}
-    """
-    # Number of thetas
-    for theta in range(theta_min, theta_max):
-        # Calculating theta for each iteration. max 2pi
-        theta = (theta / theta_factor) * np.pi
-        # Sigma values list
-        for sigma in sigma_values:
-            # Range of wavelengths. 0 to pi with increments of pi/4
-            for lamda in np.arange(0, np.pi, np.pi / lamda_factor):
-                # Gamma values list
-                for gamma in gamma_values:     
-                    # Label for the gabor kernel  
-                    gabor_label = 'Gabor' + str(num)
-                    # Generating gabor kernel with the specific values
-                    kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F)    
-                    # Apply the gabor kernel to the training image. fmg = filtered 2D image 
-                    fimg = cv.filter2D(img, cv.CV_8UC3, kernel)
-                    # Reshape the 2D filtered image to a column
-                    filtered_img = fimg.reshape(-1)
-                    # Store the filtered image pixels in the dictionary
-                    results[gabor_label] = filtered_img
-                    # Print parameters used in the gabor kernel
-                    print(gabor_label, ': sigma=', sigma, ': theta=', theta, ': lamda=', lamda, ': gamma=', gamma)
-                    print('kernel = cv.getGaborKernel((ksize,ksize),',sigma,',',theta,',',lamda,',',gamma,',0,','ktype=cv.CV_32F)#',gabor_label)
-                    num += 1
-    """
+    with open(output_file, 'w') as file:
+        file.write('\n\n\n\nNew itwration\n\n\n\n')
+        for ksize in range(ksize_min,ksize_max):
+            # Number of thetas
+            for theta in range(0, theta_iterations):
+                # Calculating theta for each iteration. max 2pi
+                theta = (theta / theta_factor) * np.pi
+                # Sigma values list
+                for sigma in sigma_values:
+                    # Range of wavelengths. 0 to pi with increments of pi/4
+                    for lamda in np.arange(0, np.pi, np.pi / lamda_factor):
+                        # Gamma values list
+                        for gamma in gamma_values:     
+                            # Label for the gabor kernel  
+                            gabor_label = 'Gabor' + str(num)
+                            kernel_name = 'kernel_' + str(num)+'saved'
+                            # Generating gabor kernel with the specific values
+                            kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F)    
+                            # Apply the gabor kernel to the training image. fmg = filtered 2D image 
+                            fimg = cv.filter2D(img, cv.CV_8UC3, kernel)
+                            # Reshape the 2D filtered image to a column
+                            filtered_img = fimg.reshape(-1)
+                            # Store the filtered image pixels in the dictionary
+                            results[gabor_label] = filtered_img
+                            # Print parameters used in the gabor kernel
+                            #print(gabor_label, 'ksize',ksize,': sigma=', sigma, ': theta=', theta, ': lamda=', lamda, ': gamma=', gamma)
+                            print(kernel_name,'= cv.getGaborKernel((',ksize,',',ksize,'),',sigma,',',theta,',',lamda,',',gamma,',0,','ktype=cv.CV_32F)#',gabor_label)
+                            kernel_definition = (f"{kernel_name} = cv.getGaborKernel(({ksize}, {ksize}), {sigma}, {theta},{lamda}, {gamma}, 0, ktype=cv.CV_32F)  # {gabor_label}")
+                            file.write(kernel_definition + '\n')
+                            num += 1
+
+
     
-    kernel1 = cv.getGaborKernel((3, 3), 0.1, 0.628319, 3, 0.08, 0.188496, ktype=cv.CV_32F) 
-    kernel2 = cv.getGaborKernel((3, 3), 0.1, 4.08407, 3, 0.08, 0, ktype=cv.CV_32F) 
-    kernel3 = cv.getGaborKernel((3, 3), 0.2, 0.628319, 0.4, 0.08, 0.251327, ktype=cv.CV_32F) 
-    kernel4 = cv.getGaborKernel((3, 3), 0.2, 0.942478, 0.4, 0.08, 0, ktype=cv.CV_32F)  
-    kernel5 = cv.getGaborKernel((3, 3), 0.2, 3.76911, 0.4, 0.08, 0, ktype=cv.CV_32F) 
-    kernel6 = cv.getGaborKernel((3, 3), 0.2, 4.08407, 0.4, 0.04, 0.188496, ktype=cv.CV_32F) 
+    #kernel11 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.04 , 1.3 ,np.pi/4, ktype=cv.CV_32F)
+    #kernel12 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.03, 1.3 ,np.pi/8, ktype=cv.CV_32F)
+    kernel13 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.04, 1.3 ,0, ktype=cv.CV_32F)
+    #kernel14 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.04 , 1.3 ,3*np.pi/4, ktype=cv.CV_32F)
+    #kernel15 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.04, 1.3 ,5*np.pi/6, ktype=cv.CV_32F)
       
+    kernel10 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.01 , 1.3 ,0, ktype=cv.CV_32F)
    
     #Gabor311 : theta= 5.105088062083414 : sigma= 1 : lamda= 2.748893571891069 : gamma= 0.5
     #kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F) 
     #kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)   
-    #kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
-    #kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    kernel3 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
     #kernel4 = cv.getGaborKernel((ksize, ksize), 1 , 4.71238898038469 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
     #kernel5 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.5 ,0, ktype=cv.CV_32F)
-    #kernel6 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
-    kernel7 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
+    kernel6 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
+    #kernel7 = cv.getGaborKernel((ksize, ksize), 1 , 4.516039439535327 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
     kernel8 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)
     kernel9 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
 
-    results["gabor_1"] = (cv.filter2D(img, cv.CV_8UC3, kernel1)).reshape(-1)
+   #results["gabor_1"] = (cv.filter2D(img, cv.CV_8UC3, kernel1)).reshape(-1)
     results["gabor_2"] = (cv.filter2D(img, cv.CV_8UC3, kernel2)).reshape(-1)
     results["gabor_3"] = (cv.filter2D(img, cv.CV_8UC3, kernel3)).reshape(-1)
-    results["gabor_4"] = (cv.filter2D(img, cv.CV_8UC3, kernel4)).reshape(-1)
-    results["gabor_5"] = (cv.filter2D(img, cv.CV_8UC3, kernel5)).reshape(-1)
+    #results["gabor_4"] = (cv.filter2D(img, cv.CV_8UC3, kernel4)).reshape(-1)
+    #results["gabor_5"] = (cv.filter2D(img, cv.CV_8UC3, kernel5)).reshape(-1)
     results["gabor_6"] = (cv.filter2D(img, cv.CV_8UC3, kernel6)).reshape(-1)
-    results["gabor_7"] = (cv.filter2D(img, cv.CV_8UC3, kernel7)).reshape(-1)
+   # results["gabor_7"] = (cv.filter2D(img, cv.CV_8UC3, kernel7)).reshape(-1)
     results["gabor_8"] = (cv.filter2D(img, cv.CV_8UC3, kernel8)).reshape(-1)
     results["gabor_9"] = (cv.filter2D(img, cv.CV_8UC3, kernel9)).reshape(-1)
 
+
+    results["gabor_10"] = (cv.filter2D(img, cv.CV_8UC3, kernel10)).reshape(-1)
+   # results["gabor_11"] = (cv.filter2D(img, cv.CV_8UC3, kernel11)).reshape(-1)
+    #results["gabor_12"] = (cv.filter2D(img, cv.CV_8UC3, kernel12)).reshape(-1)
+    results["gabor_13"] = (cv.filter2D(img, cv.CV_8UC3, kernel13)).reshape(-1)
+   # results["gabor_14"] = (cv.filter2D(img, cv.CV_8UC3, kernel14)).reshape(-1)
+   # results["gabor_15"] = (cv.filter2D(img, cv.CV_8UC3, kernel15)).reshape(-1)
+
    
 
-    #"""
+    """
+    kernel_2252saved = cv.getGaborKernel((5, 5), 3, 2.356194490192345,2.356194490192345, 1.4, 0, ktype=cv.CV_32F)  # Gabor2252
+    kernel_1869saved = cv.getGaborKernel((4, 4), 3, 2.356194490192345,2.356194490192345, 1.5, 0, ktype=cv.CV_32F)  # Gabor1869
+    kernel_2157saved = cv.getGaborKernel((5, 5), 3, 1.5707963267948966,2.356194490192345, 1.5, 0, ktype=cv.CV_32F)  # Gabor2157
+    kernel_1676saved = cv.getGaborKernel((4, 4), 3, 0.7853981633974483,2.356194490192345, 1.4, 0, ktype=cv.CV_32F)  # Gabor1676
+    
+    results["kernel_2252saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_2252saved)).reshape(-1)
+    results["kernel_1869saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1869saved)).reshape(-1)
+    results["kernel_2157saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_2157saved)).reshape(-1)
+    results["kernel_1676saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1676saved)).reshape(-1)
+
+
     # Apply Canny
     #edges = cv.Canny(img, 100, 200)
     ##cv.imshow("edges", edges)

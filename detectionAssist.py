@@ -136,23 +136,27 @@ def detection_support(image,colour,captured_time):
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
-"""
-image_path = 'images\\captured\\original\\original (20241108_105652).jpg'
-image_path = 'images\\in\\Test_Image_ (146).jpg'
+#"""
+image_path = 'images\\captured\\original\\image_0000.jpg'
 image = cv.imread(image_path)
 
-processed_image,binary_image,_,_ = detection_support(image,"Skin",0)
-print(type(processed_image), processed_image.shape if processed_image is not None else "None")
+processed_image,binary_image,resized_image_defects_opened,_ = detection_support(image,"Skin",0)
 
 
-if processed_image is not None:
+if resized_image_defects_opened is not None:
     
-    resized_image1 = cv.resize(processed_image, (360, 640))
-    cv.imshow("view", resized_image1)
+    resized_image1 = cv.resize(resized_image_defects_opened, (360, 640))
+    cv.imshow("defects", resized_image1)
 else:
     print("Error: `detection_support` returned None.")
 
+if processed_image is not None:
+    
+    resized_image2 = cv.resize(processed_image, (360, 640))
+    cv.imshow("adhesive", resized_image2)
+else:
+    print("Error: `detection_support` returned None.")
 
 cv.waitKey(0)
 cv.destroyAllWindows()
-"""
+#"""

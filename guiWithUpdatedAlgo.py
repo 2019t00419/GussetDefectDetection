@@ -550,7 +550,6 @@ def expand():
 app = CTk()
 app.title("Gusset Inspector")
 app.iconbitmap("resources/logo.ico")
-
 # Bind the app with Escape keyboard to quit app whenever pressed
 app.bind('<Escape>', lambda e: app.quit())
 
@@ -600,7 +599,7 @@ expandButtonFrame.grid(row=1, column=6, rowspan=5, padx=(10, 5), pady=(10, 5), s
 
 
 previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
-previewFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
+previewFrame.grid(row=2, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
 # Set a fixed width for settingsFrame
 settingsFrame = CTkFrame(app, corner_radius=10, width=420,height = 400)  # Set desired width, e.g., 300
@@ -628,32 +627,6 @@ captured_adhesiveView.grid(row=3, column=0, padx=(10, 5), pady=(10, 5))
 
 
 
-# Ensure rows and columns expand proportionally for TroubleshootingView only
-app.grid_rowconfigure(0, weight=0)
-app.grid_rowconfigure(1, weight=1)
-app.grid_rowconfigure(2, weight=0)
-app.grid_rowconfigure(3, weight=0)
-app.grid_rowconfigure(4, weight=0)
-app.grid_rowconfigure(5, weight=0)
-app.grid_rowconfigure(6, weight=0)
-app.grid_columnconfigure(0, weight=0)
-app.grid_columnconfigure(1, weight=0)
-app.grid_columnconfigure(2, weight=0)
-app.grid_columnconfigure(3, weight=0)
-app.grid_columnconfigure(4, weight=1)
-app.grid_columnconfigure(5, weight=1)
-app.grid_columnconfigure(6, weight=0)
-
-# Prevent resizing of all frames except TroubleshootingView
-settingsFrame.grid_propagate(False)
-captureFrame.grid_propagate(False)
-cameraFrame.grid_propagate(False)
-defectsFrame.grid_propagate(False)
-statusFrame.grid_propagate(False)
-previewFrame.grid_propagate(False)
-expandButtonFrame.grid_propagate(False)
-TroubleshootingFrame.grid_propagate(True)
-TroubleshootingFrame.grid_forget()
 
 # Initialize dropdown with available COM ports
 available_ports = get_available_com_ports()
@@ -760,4 +733,46 @@ if (sample_longest_contour != 0  & sample_second_longest_contour != 0):
 else:
     sys_error = "sample contour error"
 # Create an infinite loop for displaying app on screen
+
+
+# Adjust the layout for proportional resizing
+app.grid_rowconfigure(0, weight=0)  # Labels row (fixed height)
+app.grid_rowconfigure(1, weight=1)  # Image frames row (proportional)
+app.grid_rowconfigure(2, weight=0)  # Preview frame row (fixed height)
+app.grid_rowconfigure(3, weight=0)  # Status frame row (fixed height)
+app.grid_rowconfigure(4, weight=1)  # Defects frame row (proportional)
+app.grid_rowconfigure(5, weight=1)  # Expand button row (proportional)
+
+app.grid_columnconfigure(0, weight=1)  # Camera frame column (proportional)
+app.grid_columnconfigure(1, weight=1)  # Capture frame column (proportional)
+app.grid_columnconfigure(2, weight=1)  # Settings and Preview (proportional)
+app.grid_columnconfigure(3, weight=1)  # Settings and Preview (proportional)
+app.grid_columnconfigure(4, weight=0)  # Expand button column (fixed width)
+
+# Make frames resize proportionally
+captureFrame.grid_propagate(True)
+cameraFrame.grid_propagate(True)
+previewFrame.grid_propagate(True)
+defectsFrame.grid_propagate(True)
+
+# Fix button sizes
+connectButton.configure(width=200, height=40)
+dropdown_menu.configure(width=200)
+startButton.configure(width=200, height=40)
+btn_bad.configure(width=200, height=40)
+btn_good.configure(width=200, height=40)
+conveyor_forward_button.configure(width=200, height=40)
+conveyor_backward_button.configure(width=200, height=40)
+uploadButton.configure(width=200, height=40)
+expand_button.configure(width=40, height=650)
+
+# Adjust TroubleshootingFrame dimensions dynamically
+TroubleshootingFrame.grid_propagate(True)
+
+# Ensure live and captured views fill their frames proportionally
+captureView.pack(fill="both", expand=True, padx=5, pady=5)
+cameraView.pack(fill="both", expand=True, padx=5, pady=5)
+
+# Adjust thumbnail view inside preview frame
+thumbnailView.pack(fill="both", expand=True, padx=5, pady=5)
 app.mainloop()

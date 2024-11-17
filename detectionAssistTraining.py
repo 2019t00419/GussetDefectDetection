@@ -9,6 +9,7 @@ import time
 import threading
 import sys
 
+
 colour = "Skin"  # Options: Bianco, Skin, Nero
 
 # Start total execution timer
@@ -33,7 +34,7 @@ for image in os.listdir(img_path):
     df = pd.DataFrame()  # Temporary data frame to capture information for each loop.
     
     input_img = cv.imread(img_path + image)  # Read images
-    detection_height = 2160  # Detection width is set for Landscape images
+    detection_height = 128 # Detection width is set for Landscape images
 
     input_image_width, input_image_height, _ = input_img.shape
     if input_image_width < input_image_height:  # Portrait
@@ -156,11 +157,14 @@ def mean_iou(y_true, y_pred, num_classes):
         else:
             iou = intersection / union
         iou_list.append(iou)
-    return np.mean(iou_list)
+    return np.mean(iou_list),iou_list
 
-mean_iou_score = mean_iou(y_test, prediction_test, num_classes=4)  # Adjust number of classes as needed
+mean_iou_score ,iou_list= mean_iou(y_test, prediction_test, num_classes=4)  # Adjust number of classes as needed
 print("Mean IoU:", mean_iou_score)
-
+print("IoU for Class 0 (Fabric):", iou_list[0])
+print("IoU for Class 1 (Adhesive):", iou_list[1])
+print("IoU for Class 2 (Background):", iou_list[2])
+print("IoU for Class 3 (Defects):", iou_list[3])
 from yellowbrick.classifier import ROCAUC
 roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4])
 roc_auc.fit(X_train, y_train)
@@ -171,7 +175,7 @@ print(f"Time taken for model evaluation: {evaluate_end - evaluate_start} seconds
 
 # SECTION 6: Save the model
 save_start = time.time()
-model_name = "detectionSupportModelHighRes"
+model_name = "detectionSupportModel"
 pickle.dump(model, open(model_name, 'wb'))
 save_end = time.time()
 print(f"Time taken for saving the model: {save_end - save_start} seconds")
