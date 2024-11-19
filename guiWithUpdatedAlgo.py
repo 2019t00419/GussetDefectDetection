@@ -508,7 +508,7 @@ def update_thumbnail():
     # Capture the latest frame and transform to image 
     thumbnail_Img = Image.fromarray(thumbnail) 
 
-    thumbnail_Img_photo_image = CTkImage(light_image=thumbnail_Img, size=(thumbnailView.winfo_width(), thumbnailView.winfo_height()))
+    thumbnail_Img_photo_image = CTkImage(light_image=thumbnail_Img, size=(thumbnailViewWidth, thumbnailViewHeight))
 
 
     # Displaying photoimage in the label 

@@ -7,6 +7,7 @@ from scipy import ndimage as nd
 def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
     
     results = {}
+    ksize = 3
     '''
     theta_min = 20
     theta_max = 30
@@ -58,17 +59,12 @@ def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
                             file.write(kernel_definition + '\n')
                             num += 1
 
-
+    """
     
-    #kernel11 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.04 , 1.3 ,np.pi/4, ktype=cv.CV_32F)
-    #kernel12 = cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.03, 1.3 ,np.pi/8, ktype=cv.CV_32F)
-    kernel13 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.04, 1.3 ,0, ktype=cv.CV_32F)
-    #kernel14 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.04 , 1.3 ,3*np.pi/4, ktype=cv.CV_32F)
-    #kernel15 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724 *1.04, 1.3 ,5*np.pi/6, ktype=cv.CV_32F)
       
     kernel10 =  cv.getGaborKernel((ksize, ksize), 1 , 4.9269908169872414 , 1.1780972450961724*1.01 , 1.3 ,0, ktype=cv.CV_32F)
    
-    #Gabor311 : theta= 5.105088062083414 : sigma= 1 : lamda= 2.748893571891069 : gamma= 0.5
+    
     #kernel = cv.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv.CV_32F) 
     #kernel1 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.3 ,0, ktype=cv.CV_32F)   
     kernel2 = cv.getGaborKernel((ksize, ksize), 1 , 4.897787143782138 , 1.1780972450961724 , 1.4 ,0, ktype=cv.CV_32F)
@@ -92,15 +88,25 @@ def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
 
 
     results["gabor_10"] = (cv.filter2D(img, cv.CV_8UC3, kernel10)).reshape(-1)
-   # results["gabor_11"] = (cv.filter2D(img, cv.CV_8UC3, kernel11)).reshape(-1)
-    #results["gabor_12"] = (cv.filter2D(img, cv.CV_8UC3, kernel12)).reshape(-1)
-    results["gabor_13"] = (cv.filter2D(img, cv.CV_8UC3, kernel13)).reshape(-1)
-   # results["gabor_14"] = (cv.filter2D(img, cv.CV_8UC3, kernel14)).reshape(-1)
-   # results["gabor_15"] = (cv.filter2D(img, cv.CV_8UC3, kernel15)).reshape(-1)
-
-   
 
     """
+    cv.imwrite(f"images/captured/kernel2.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel2)))
+    cv.imwrite(f"images/captured/kernel3.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel3)))
+    cv.imwrite(f"images/captured/kernel6.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel6)))
+    cv.imwrite(f"images/captured/kernel8.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel8)))
+    cv.imwrite(f"images/captured/kernel9.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel9)))
+    cv.imwrite(f"images/captured/kernel10.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel10)))
+
+
+    """
+
+
+
+
+   # results["gabor_11"] = (cv.filter2D(img, cv.CV_8UC3, kernel11)).reshape(-1)
+    #results["gabor_12"] = (cv.filter2D(img, cv.CV_8UC3, kernel12)).reshape(-1)
+   # results["gabor_14"] = (cv.filter2D(img, cv.CV_8UC3, kernel14)).reshape(-1)
+   # results["gabor_15"] = (cv.filter2D(img, cv.CV_8UC3, kernel15)).reshape(-1)
     kernel_2252saved = cv.getGaborKernel((5, 5), 3, 2.356194490192345,2.356194490192345, 1.4, 0, ktype=cv.CV_32F)  # Gabor2252
     kernel_1869saved = cv.getGaborKernel((4, 4), 3, 2.356194490192345,2.356194490192345, 1.5, 0, ktype=cv.CV_32F)  # Gabor1869
     kernel_2157saved = cv.getGaborKernel((5, 5), 3, 1.5707963267948966,2.356194490192345, 1.5, 0, ktype=cv.CV_32F)  # Gabor2157
@@ -110,6 +116,33 @@ def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
     results["kernel_1869saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1869saved)).reshape(-1)
     results["kernel_2157saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_2157saved)).reshape(-1)
     results["kernel_1676saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1676saved)).reshape(-1)
+
+    kernel_694saved = cv.getGaborKernel((1, 1), 1, 2.356194490192345,2.748893571891069, 1.3, 0, ktype=cv.CV_32F)  # Gabor694
+    kernel_591saved = cv.getGaborKernel((1, 1), 1, 1.5707963267948966,1.5707963267948966, 1.5, 0, ktype=cv.CV_32F)  # Gabor591
+    kernel_1018saved = cv.getGaborKernel((2, 2), 1, 1.9634954084936207,1.1780972450961724, 1.3, 0, ktype=cv.CV_32F)  # Gabor1018
+    kernel_571saved = cv.getGaborKernel((1, 1), 3, 1.1780972450961724,2.356194490192345, 1.3, 0, ktype=cv.CV_32F)  # Gabor571
+    kernel_1980saved = cv.getGaborKernel((5, 5), 1, 0.39269908169872414,1.1780972450961724, 1.5, 0, ktype=cv.CV_32F)  # Gabor1980
+    
+    results["kernel_694saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_694saved)).reshape(-1)
+    results["kernel_591saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_591saved)).reshape(-1)
+    results["kernel_1018saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1018saved)).reshape(-1)
+    results["kernel_571saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_571saved)).reshape(-1)
+    results["kernel_1980saved"] = (cv.filter2D(img, cv.CV_8UC3, kernel_1980saved)).reshape(-1)
+
+    """
+    cv.imwrite(f"images/captured/kernel_2252saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_2252saved)))
+    cv.imwrite(f"images/captured/kernel_1869saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_1869saved)))
+    cv.imwrite(f"images/captured/kernel_2157saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_2157saved)))
+    cv.imwrite(f"images/captured/kernel_1676saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_1676saved)))
+    
+    cv.imwrite(f"images/captured/kernel_694saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_694saved)))
+    cv.imwrite(f"images/captured/kernel_591saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_591saved)))
+    cv.imwrite(f"images/captured/kernel_1018saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_1018saved)))
+    cv.imwrite(f"images/captured/kernel_571saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_571saved)))
+    cv.imwrite(f"images/captured/kernel_1980saved.jpg",(cv.filter2D(img, cv.CV_8UC3, kernel_1980saved)))
+    """
+
+    
 
 
     # Apply Canny
@@ -148,11 +181,14 @@ def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
     ##cv.imshow("gaussian_img", gaussian_img)
     results['Gaussian s3'] = gaussian_img.reshape(-1)
 
+    #cv.imwrite(f"images/captured/gaussian_img.jpg",gaussian_img)
 
     # Apply Median with size=3
     median_img = nd.median_filter(img, size=3)
     ##cv.imshow("median_img", median_img)
     results['Median s3'] = median_img.reshape(-1)
+    
+    #cv.imwrite(f"images/captured/median_img.jpg", median_img)
 
     hsv = cv.cvtColor(imgc, cv.COLOR_BGR2HSV)
     # Extract the saturatin channel
@@ -162,7 +198,14 @@ def detection_filters(img, df,imgc,output_file="gabor_kernels.txt"):
     #h_channel = hsv[:, :, 0]
     s_channel = hsv[:, :, 1]
     v_channel = hsv[:, :, 2]
-
+    """
+    cv.imwrite(f"images/captured/b_channel.jpg",b_channel)
+    cv.imwrite(f"images/captured/g_channel.jpg",g_channel)
+    cv.imwrite(f"images/captured/r_channel.jpg",r_channel)
+    cv.imwrite(f"images/captured/s_channel.jpg",s_channel)
+    cv.imwrite(f"images/captured/v_channel.jpg",v_channel)
+    
+    """
     results['b_channel'] = b_channel.reshape(-1)
     results['g_channel'] = g_channel.reshape(-1)
     results['r_channel'] = r_channel.reshape(-1)

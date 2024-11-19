@@ -34,7 +34,7 @@ for image in os.listdir(img_path):
     df = pd.DataFrame()  # Temporary data frame to capture information for each loop.
     
     input_img = cv.imread(img_path + image)  # Read images
-    detection_height = 128 # Detection width is set for Landscape images
+    detection_height = 720 #81 # Detection width is set for Landscape images
 
     input_image_width, input_image_height, _ = input_img.shape
     if input_image_width < input_image_height:  # Portrait

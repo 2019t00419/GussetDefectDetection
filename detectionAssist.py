@@ -136,8 +136,8 @@ def detection_support(image,colour,captured_time):
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
-#"""
-image_path = 'images\\captured\\original\\image_0000.jpg'
+"""
+image_path = 'images\\captured\\original\\original (20241112_132104).jpg'
 image = cv.imread(image_path)
 
 processed_image,binary_image,resized_image_defects_opened,_ = detection_support(image,"Skin",0)
@@ -159,4 +159,4 @@ else:
 
 cv.waitKey(0)
 cv.destroyAllWindows()
-#"""
+"""
