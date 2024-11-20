@@ -77,7 +77,7 @@ def main():
     quantized_image = quantize_image(image, levels=64)
 
     # Set a single window size to use
-    window_size = 16  # Fixed window size for feature extraction
+    window_size = 8  # Fixed window size for feature extraction
     
     # Generate heatmaps for all GLCM features
     heatmaps = extract_glcm_features(quantized_image, distances=[1], angles=[0], levels=64, window_size=window_size)

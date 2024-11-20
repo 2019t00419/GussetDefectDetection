@@ -94,8 +94,12 @@ def detection_support(image,colour,captured_time):
 
     support_image_fabric_mask[segmented_8u == 0] = [255]
     support_image_fabric_mask[segmented_8u == 3] = [255]
+    support_image_fabric_mask[segmented_8u == 4] = [255]
+    support_image_fabric_mask[segmented_8u == 5] = [255]
 
     support_image_defects_mask[segmented_8u == 3] = [255]
+    support_image_defects_mask[segmented_8u == 4] = [255]
+    support_image_defects_mask[segmented_8u == 5] = [255]
 
 
     # Assuming support_image_defects_mask is a binary mask image
@@ -136,8 +140,8 @@ def detection_support(image,colour,captured_time):
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
-"""
-image_path = 'images\\captured\\original\\original (20241112_132104).jpg'
+#"""
+image_path = 'images\\captured\\original\\original (20241120_082319).jpg'
 image = cv.imread(image_path)
 
 processed_image,binary_image,resized_image_defects_opened,_ = detection_support(image,"Skin",0)
@@ -159,4 +163,4 @@ else:
 
 cv.waitKey(0)
 cv.destroyAllWindows()
-"""
+#"""

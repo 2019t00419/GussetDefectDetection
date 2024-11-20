@@ -83,10 +83,27 @@ for mask in os.listdir(mask_path):
     output_image = np.zeros((input_mask.shape[0], input_mask.shape[1]), dtype=np.uint8)
     blue_channel, green_channel, red_channel = input_mask[:, :, 0], input_mask[:, :, 1], input_mask[:, :, 2]
 
-    output_image[(red_channel > 0) & (blue_channel == 0) & (green_channel == 0)] = 1
-    output_image[(green_channel > 0) & (blue_channel == 0) & (red_channel == 0)] = 2
-    output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel == 0)] = 3
-    output_image[(blue_channel > 0) & (green_channel == 0) & (red_channel > 0)] = 4
+
+
+    # Define a small threshold for noise tolerance
+    threshold = 5
+
+    # Define the conditions for each mapping with tolerance
+    fabric = (red_channel > threshold) & (green_channel < threshold) & (blue_channel < threshold)  # Red only
+    adhesive = (green_channel > threshold) & (blue_channel < threshold) & (red_channel < threshold)  # Green only
+    background = (blue_channel > threshold) & (red_channel < threshold) & (green_channel < threshold)  # Blue only
+    stains = (red_channel > threshold) & (blue_channel > threshold) & (green_channel < threshold)   # Red and blue
+    yarnDamage = (green_channel > threshold) & (blue_channel > threshold) & (red_channel < threshold)   # Green and blue
+    exposedadhesive = (green_channel > threshold) & (blue_channel < threshold) & (red_channel > threshold)   # Red and Green
+
+    # Apply the mappings
+    output_image[fabric] = 1
+    output_image[adhesive] = 2
+    output_image[background] = 3
+    output_image[stains] = 4
+    output_image[yarnDamage] = 5
+    output_image[exposedadhesive] = 6
+
 
     label_values = output_image.reshape(-1)
     df2['Label_Value'] = label_values
@@ -159,18 +176,22 @@ def mean_iou(y_true, y_pred, num_classes):
         iou_list.append(iou)
     return np.mean(iou_list),iou_list
 
-mean_iou_score ,iou_list= mean_iou(y_test, prediction_test, num_classes=4)  # Adjust number of classes as needed
+mean_iou_score ,iou_list= mean_iou(y_test, prediction_test, num_classes=6)  # Adjust number of classes as needed
 print("Mean IoU:", mean_iou_score)
 print("IoU for Class 0 (Fabric):", iou_list[0])
 print("IoU for Class 1 (Adhesive):", iou_list[1])
 print("IoU for Class 2 (Background):", iou_list[2])
-print("IoU for Class 3 (Defects):", iou_list[3])
+print("IoU for Class 3 (YarnDamage):", iou_list[3])
+print("IoU for Class 4 (Stains):", iou_list[4])
+print("IoU for Class 5 (Exposed adhesive):", iou_list[5])
+
 from yellowbrick.classifier import ROCAUC
-roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4])
+roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4, 5])
 roc_auc.fit(X_train, y_train)
 roc_auc.score(X_test, y_test)
 roc_auc.show()
 evaluate_end = time.time()
+
 print(f"Time taken for model evaluation: {evaluate_end - evaluate_start} seconds")
 
 # SECTION 6: Save the model
