@@ -86,6 +86,7 @@ def detection_support(image,colour,captured_time):
     support_image_adhesive = np.zeros_like(segmented_8u)
     support_image_fabric_mask = np.zeros_like(segmented_8u)
     support_image_defects_mask = np.zeros_like(segmented_8u)
+    back  = np.zeros_like(segmented_8u)
     #image[segmented_8u == 0] = [0, 0, 255]  # BGR
     #image[segmented_8u == 1] = [0, 255, 0]  # BGR
     #image[segmented_8u == 2] = [255, 0, 0]  # BGR
@@ -100,6 +101,9 @@ def detection_support(image,colour,captured_time):
     support_image_defects_mask[segmented_8u == 3] = [255]
     support_image_defects_mask[segmented_8u == 4] = [255]
     support_image_defects_mask[segmented_8u == 5] = [255]
+
+    
+    back[segmented_8u == 2] = [255]
 
 
     # Assuming support_image_defects_mask is a binary mask image
@@ -137,11 +141,12 @@ def detection_support(image,colour,captured_time):
     cv.imwrite(f"images/captured/fabric/assisted_image ({captured_time}).jpg", resized_image_fabric_opened)
     #cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects)
     cv.imwrite(f"images/captured/defects/assisted_image ({captured_time}).jpg", resized_image_defects_opened)
+    cv.imwrite(f"images/captured/defects/background_image ({captured_time}).jpg", back)
 
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
 #"""
-image_path = 'images\\captured\\original\\original (20241120_082319).jpg'
+image_path = 'images\\captured\\original\\original (20241111_143009).jpg'
 image = cv.imread(image_path)
 
 processed_image,binary_image,resized_image_defects_opened,_ = detection_support(image,"Skin",0)
