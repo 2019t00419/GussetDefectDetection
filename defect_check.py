@@ -82,7 +82,7 @@ def checkBalanceOut(longest_contour, second_longest_contour, frame_contours,adhe
 def check_fabric_damage(assisted_defects_image,frame_contours):
     fabric_damage_bool = False
     # Threshold for detecting dense clusters
-    solidity_threshold = 0.6
+    area_threshold = 100
 
     # Find contours in the binary mask
     defect_contours, _ = cv.findContours(assisted_defects_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -94,15 +94,9 @@ def check_fabric_damage(assisted_defects_image,frame_contours):
         if contour_area == 0:
             continue
 
-        hull = cv.convexHull(defect_contour)
-        hull_area = cv.contourArea(hull)
-
-        # Calculate solidity (contour_area / hull_area)
-        solidity = contour_area / hull_area
-
         # Check if the contour is dense enough based on solidity
-        print(f"Solidity of potential fabric damages : {solidity}")
-        if solidity >= solidity_threshold:
+        print(f"Area of potential fabric damages : {contour_area}")
+        if contour_area >= area_threshold:
             fabric_damage_bool = True
             x, y, w, h = cv.boundingRect(defect_contour)  # Get bounding box coordinates
             cv.rectangle(frame_contours, (x, y), (x + w, y + h), (0, 0, 255), 3)  # Draw red rectangle

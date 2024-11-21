@@ -57,7 +57,6 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
         if longest_contour_area > 200: # longest_contour_area is OK
             gusset_identified = True
-            fabric_side = crop_image(original_frame, longest_contour,100)
             if match_longest_contour_shape < 0.2: # match_longest_contour_shape  is OK
                 #longest contour is OK
                 if second_longest_contour is not None:
@@ -103,7 +102,6 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
                 if longest_contour_check_area > 200:
                     gusset_identified = True
-                    fabric_side = crop_image(original_frame, longest_contour_check,100)
                     if match_longest_contour_shape < 0.2:
                         print("Front side identifed. No shape defects")
                         gusset_side = "Front"
@@ -139,13 +137,11 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
                     print("Front side identifed. No shape defects")
                     gusset_identified = True
                     gusset_side = "Front"
-                    fabric_side = crop_image(original_frame, longest_contour_check,100)
                 else:
                     print("Front side identifed. Defecive shape")
                     gusset_identified = True
                     gusset_side = "defective"
                     defects.append("Defecive shape")
-                    fabric_side = crop_image(original_frame, longest_contour_check,100)
             else:
                 print("No gusset identified. Consider as Noise")
                 gusset_identified = False
@@ -157,7 +153,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
 
 
-    if gusset_identified:     
+    if gusset_identified and gusset_side != "defective":     
         fabric_damage_bool,frame_contours=check_fabric_damage(assisted_defects_mask,frame_contours)
 
         if fabric_damage_bool :
@@ -169,6 +165,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
         if gusset_side == "Back" :
             balance_out_bool,printY,frame_contours = checkBalanceOut(longest_contour,second_longest_contour,frame_contours,adhesiveWidth,printY)
             panel_cut_damage_bool,frame_contours= checkPanelCutDamage(longest_contour,assisted_fabric_mask,frame_contours)
+            fabric_side = crop_image(original_frame, longest_contour,100)
             #Adding texture analysis 
             if panel_cut_damage_bool :
                 panel_cut_damage = "Panal cut damage"
@@ -185,6 +182,7 @@ def generateOutputFrame(captured_frame,sample_longest_contour,sample_second_long
 
         elif(gusset_side == "Front"):
             balance_out = "Front side of the gusset detected"
+            fabric_side = crop_image(original_frame, longest_contour_check,100)
     else:
         fabric_damage = "error"
         fabric_side = "error"
