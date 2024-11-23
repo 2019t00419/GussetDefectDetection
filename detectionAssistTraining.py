@@ -101,8 +101,8 @@ for mask in os.listdir(mask_path):
     output_image[adhesive] = 2
     output_image[background] = 3
     output_image[stains] = 4
-    output_image[yarnDamage] = 5
-    output_image[exposedadhesive] = 6
+    output_image[yarnDamage] = 4
+    output_image[exposedadhesive] = 5
 
 
     label_values = output_image.reshape(-1)
@@ -181,9 +181,9 @@ print("Mean IoU:", mean_iou_score)
 print("IoU for Class 0 (Fabric):", iou_list[0])
 print("IoU for Class 1 (Adhesive):", iou_list[1])
 print("IoU for Class 2 (Background):", iou_list[2])
-print("IoU for Class 3 (YarnDamage):", iou_list[3])
-print("IoU for Class 4 (Stains):", iou_list[4])
-print("IoU for Class 5 (Exposed adhesive):", iou_list[5])
+print("IoU for Class 3 (Stains):", iou_list[3])
+print("IoU for Class 4 (YarnDamage):", iou_list[4])
+#print("IoU for Class 5 (Exposed adhesive):", iou_list[5])
 
 from yellowbrick.classifier import ROCAUC
 roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4, 5])

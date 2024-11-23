@@ -12,7 +12,7 @@ import random
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 
-size = 64
+size = 100
 
 # Resize images to
 # Capture images and labels into arrays.
@@ -73,8 +73,8 @@ RF_model = RandomForestClassifier(n_estimators=50, random_state=42)
 RF_model.fit(X_for_RF, y_train)
 
 # Save the trained model and label encoder
-pickle.dump(RF_model, open("sideMixupdetectionModel", 'wb'))
-pickle.dump(le, open("SMD_encoder.pkl", 'wb'))
+pickle.dump(RF_model, open("sideMixupdetectionModel_temp", 'wb'))
+pickle.dump(le, open("SMD_encoder_temp.pkl", 'wb'))
 
 # Predict on Test data
 test_features = feature_extractor(x_test, imgc)
@@ -89,9 +89,7 @@ print("Accuracy =", metrics.accuracy_score(test_labels, test_prediction))
 
 # Confusion matrix
 cm = confusion_matrix(test_labels, test_prediction)
-fig, ax = plt.subplots(figsize=(6, 6))  # Sample figsize in inches
-sns.set(font_scale=1.6)
-sns.heatmap(cm, annot=True, ax=ax)
+
 
 # Check results on a few random images
 n = random.randint(0, x_test.shape[0] - 1)  # Select random index for testing
@@ -107,3 +105,13 @@ img_prediction = RF_model.predict(input_img_for_RF)
 img_prediction = le.inverse_transform(img_prediction.ravel())  # Ensure the label is correctly decoded
 print("The prediction for this image is:", img_prediction)
 print("The actual label for this image is:", test_labels[n])
+from sklearn.metrics import ConfusionMatrixDisplay
+
+# Display the confusion matrix using seaborn heatmap
+plt.figure(figsize=(8, 6))  # Adjust size as needed
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=le.classes_, yticklabels=le.classes_, cbar=False)
+
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.show()
