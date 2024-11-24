@@ -565,7 +565,6 @@ def expand():
 app = CTk()
 app.title("Gusset Inspector")
 app.iconbitmap("resources/logo.ico")
-app.geometry("1280*1080")
 # Bind the app with Escape keyboard to quit app whenever pressed
 app.bind('<Escape>', lambda e: app.quit())
 
@@ -579,7 +578,7 @@ cameraFrame.grid(row=0, column=0, padx=(5, 5), pady=(5, 5),stick ="nsew")
 
 
 # Set a fixed width for settingsFrame
-settingsFrame = CTkFrame(app, corner_radius=10)  # Set desired width, e.g., 300
+settingsFrame = CTkFrame(app, corner_radius=10,fg_color="black")  # Set desired width, e.g., 300
 settingsFrame.grid(row=0, column=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
 
 
@@ -600,14 +599,14 @@ defectsFrame.grid(row=1, column=1, padx=(5, 5), pady=(5, 5), sticky="nsew")
 expandButtonFrame = CTkFrame(app, corner_radius=3,width=4,fg_color="black")
 expandButtonFrame.grid(row=0, column=4, rowspan=2,padx=(5, 5), pady=(5, 5),sticky="nsew")
 
-conveyorStartButtonFrame = CTkFrame(app, corner_radius=3,width=4)
+conveyorStartButtonFrame = CTkFrame(app, corner_radius=3,fg_color="black")
 conveyorStartButtonFrame.grid(row=1, column=2,padx=(5, 5), pady=(5, 5),sticky="nsew")
 
 conveyor_start_button = CTkButton(conveyorStartButtonFrame, text="Start Conveyor", command=toggle_conveyor_forward,state="disabled")
 conveyor_start_button.grid(column=0, row=0,  padx=(5, 5), pady=(5, 5), stick ="nsew")
 
-cameraViewWidth = 360
-cameraViewHeight = 640
+cameraViewWidth = 405
+cameraViewHeight = 720
 
 # Load initial images
 initial_image_path = "resources/sample.png"  # Replace with your image path
@@ -726,7 +725,7 @@ conveyor_backward_button.grid(column=0, row=7,  padx=(5, 5), pady=(5, 5))
 uploadButton = CTkButton(TroubleshootingFrame, text="Upload Image", command=upload_image, state="disabled")
 uploadButton.grid(row=3, column=1, padx=(5, 5), pady=(5, 5))
 
-expand_button = CTkButton(expandButtonFrame, text='>',fg_color="grey17",text_color="grey40",command=expand )
+expand_button = CTkButton(expandButtonFrame, text='>',fg_color="grey17",text_color="grey40",command=expand)
 expand_button.grid(column=0, row=0, stick="nsew")
 
 
@@ -770,29 +769,29 @@ else:
 
 
 # Adjust the layout for proportional resizing
-app.grid_rowconfigure(0, weight=0)  
-app.grid_rowconfigure(1, weight=1)  
+app.grid_rowconfigure(0, weight=1)  
+app.grid_rowconfigure(1, weight=0)  
 app.grid_rowconfigure(2, weight=0)  
 app.grid_rowconfigure(3, weight=0) 
 app.grid_rowconfigure(4, weight=0)  
 app.grid_rowconfigure(5, weight=0)  
 
-app.grid_columnconfigure(0, weight=0)  
-app.grid_columnconfigure(1, weight=0)  
+app.grid_columnconfigure(0, weight=1)  
+app.grid_columnconfigure(1, weight=1)  
 app.grid_columnconfigure(2, weight=1) 
 app.grid_columnconfigure(3, weight=0) 
 app.grid_columnconfigure(4, weight=0)  
 
 
 expandButtonFrame.grid_rowconfigure(0, weight=1)
+
+TroubleshootingFrame.grid_rowconfigure(8, weight=1)
+
 settingsFrame.grid_columnconfigure(0, weight=1)
-settingsFrame.grid_rowconfigure(10, weight=1)
-conveyorStartButtonFrame.grid_rowconfigure(0, weight=1)
+
 conveyorStartButtonFrame.grid_columnconfigure(0, weight=1)
 
-# Make frames resize proportionally
-captureFrame.grid_propagate(True)
-cameraFrame.grid_propagate(True)
+
 previewFrame.grid_propagate(True)
 defectsFrame.grid_propagate(True)
 # Fix button sizes
