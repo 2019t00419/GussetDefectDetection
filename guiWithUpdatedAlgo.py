@@ -137,11 +137,19 @@ def toggle_conveyor_forward():
     global conveyor_on
     if conveyor_on:
         serialCom.write(bytes('s', 'utf-8'))  # Command to stop conveyor
+        conveyor_forward_button.configure(text="")
         conveyor_forward_button.configure(text="Conveyor Forward")
+        conveyor_start_button.configure(text="")
+        conveyor_backward_button.configure(text="Start Conveyor")
         print("Conveyor stopped")
     else:
         serialCom.write(bytes('f', 'utf-8'))  # Command to start conveyor
+        conveyor_forward_button.configure(text="")
         conveyor_forward_button.configure(text="Stop Conveyor")
+        conveyor_start_button.configure(text="")
+        conveyor_backward_button.configure(text="Stop Conveyor")
+        conveyor_backward_button.configure(text="")
+        conveyor_backward_button.configure(text="Stop Conveyor")
         print("Conveyor started")
     conveyor_on = not conveyor_on
 
@@ -149,10 +157,16 @@ def toggle_conveyor_backward():
     global conveyor_on
     if conveyor_on:
         serialCom.write(bytes('s', 'utf-8'))  # Command to stop conveyor
+        conveyor_backward_button.configure(text="")
         conveyor_backward_button.configure(text="Conveyor Backward")
         print("Conveyor stopped")
     else:
         serialCom.write(bytes('r', 'utf-8'))  # Command to start conveyor
+        conveyor_forward_button.configure(text="")
+        conveyor_forward_button.configure(text="Stop Conveyor")
+        conveyor_backward_button.configure(text="")
+        conveyor_backward_button.configure(text="Stop Conveyor")
+        conveyor_start_button.configure(text="")
         conveyor_backward_button.configure(text="Stop Conveyor")
         print("Conveyor started")
     conveyor_on = not conveyor_on
@@ -541,7 +555,8 @@ def upload_image():
 def expand():
     if expand_button._text == ">":
         expand_button.configure(text="<")
-        TroubleshootingFrame.grid(row=1, column=4, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+        TroubleshootingFrame.grid(row=0, column=4, rowspan=2, padx=(5, 5), pady=(5, 5), sticky="nesw")
+        expandButtonFrame.grid(row=0, column=5,rowspan=2, padx=(5, 5), pady=(5, 5), sticky="nesw")
     else:
         expand_button.configure(text=">")
         TroubleshootingFrame.grid_forget()
@@ -550,12 +565,46 @@ def expand():
 app = CTk()
 app.title("Gusset Inspector")
 app.iconbitmap("resources/logo.ico")
+app.geometry("1280*1080")
 # Bind the app with Escape keyboard to quit app whenever pressed
 app.bind('<Escape>', lambda e: app.quit())
 
+
 # Create frames to simulate borders for image views
-captureFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
-cameraFrame = CTkFrame(app, width=490, height=650, corner_radius=10, fg_color="black")
+captureFrame = CTkFrame(app,corner_radius=10, fg_color="black")
+captureFrame.grid(row=0, column=1, padx=(5, 5), pady=(5, 5),stick ="nsew")
+
+cameraFrame = CTkFrame(app,corner_radius=10, fg_color="black")
+cameraFrame.grid(row=0, column=0, padx=(5, 5), pady=(5, 5),stick ="nsew")
+
+
+# Set a fixed width for settingsFrame
+settingsFrame = CTkFrame(app, corner_radius=10)  # Set desired width, e.g., 300
+settingsFrame.grid(row=0, column=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+
+TroubleshootingFrame = CTkFrame(app, corner_radius=10)# Hide the TroubleshootingFrame
+TroubleshootingFrame.grid_forget()
+
+previewFrame = CTkFrame(settingsFrame, corner_radius=10,fg_color="black")
+previewFrame.grid(row=3, column=0, padx=(5, 5), pady=(5, 5), sticky="nwes")
+
+
+statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
+statusFrame.grid(row=1, column=0, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
+defectsFrame.grid(row=1, column=1, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+
+expandButtonFrame = CTkFrame(app, corner_radius=3,width=4,fg_color="black")
+expandButtonFrame.grid(row=0, column=4, rowspan=2,padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+conveyorStartButtonFrame = CTkFrame(app, corner_radius=3,width=4)
+conveyorStartButtonFrame.grid(row=1, column=2,padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+conveyor_start_button = CTkButton(conveyorStartButtonFrame, text="Start Conveyor", command=toggle_conveyor_forward,state="disabled")
+conveyor_start_button.grid(column=0, row=0,  padx=(5, 5), pady=(5, 5), stick ="nsew")
 
 cameraViewWidth = 360
 cameraViewHeight = 640
@@ -570,47 +619,23 @@ initial_image_tk = CTkImage(light_image=initial_image, size=(cameraViewWidth, ca
 captureView = CTkLabel(captureFrame, text="", width=cameraViewWidth, height=cameraViewHeight, image=initial_image_tk)
 cameraView = CTkLabel(cameraFrame, text="", width=cameraViewWidth, height=cameraViewHeight, image=initial_image_tk)
 
-captureView.pack(padx=5, pady=5)
-cameraView.pack(padx=5, pady=5)
+captureView.grid(row=1, column=0,padx=5, pady=5, stick="nsew")
+cameraView.grid(row=1, column=0,padx=5, pady=5, stick="nsew")
 
-# Apply rowspan to both image views
-captureFrame.grid(row=1, column=1, rowspan=6, padx=(10, 5), pady=(10, 5))
-cameraFrame.grid(row=1, column=0, rowspan=6, padx=(0, 10), pady=(10, 5))
 
 # Add Labels
-liveViewLabel = CTkLabel(app, text="Live Camera View")
-liveViewLabel.grid(row=0, column=0, padx=(10, 5), pady=(10, 5))
+liveViewLabel = CTkLabel(cameraFrame, text="Live Camera View")
+liveViewLabel.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
 
-capturedViewLabel = CTkLabel(app, text="Captured View")
-capturedViewLabel.grid(row=0, column=1, padx=(10, 5), pady=(10, 5))
+capturedViewLabel = CTkLabel(captureFrame, text="Captured View")
+capturedViewLabel.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
 
-settingsLabel = CTkLabel(app, text="Settings")
-settingsLabel.grid(row=0, column=2, columnspan=2, padx=(10, 5), pady=(10, 5))
-
-TroubleshootingFrame = CTkFrame(app, corner_radius=10)
-# Hide the TroubleshootingFrame
-TroubleshootingFrame.grid_forget()
+settingsLabel = CTkLabel(settingsFrame, text="Settings")
+settingsLabel.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
 
 
-expandButtonFrame = CTkFrame(app, corner_radius=3, width= 20)
-expandButtonFrame.grid(row=1, column=6, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-
-
-
-previewFrame = CTkFrame(app, corner_radius=10,fg_color="black")
-previewFrame.grid(row=2, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-# Set a fixed width for settingsFrame
-settingsFrame = CTkFrame(app, corner_radius=10, width=420,height = 400)  # Set desired width, e.g., 300
-settingsFrame.grid(row=1, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-
-statusFrame = CTkFrame(app, corner_radius=10, fg_color="black")
-statusFrame.grid(row=3, column=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
-
-defectsFrame = CTkFrame(app, corner_radius=10, fg_color="black")
-defectsFrame.grid(row=4, column=2, columnspan=2, rowspan=5, padx=(10, 5), pady=(10, 5), sticky="nsew")
+troubleshootLabel = CTkLabel(TroubleshootingFrame, text="Troubleshoot")
+troubleshootLabel.grid(row=0, column=0,columnspan=2, padx=(5, 5), pady=(5, 5))
 
 thumbnailViewWidth, thumbnailViewHeight = 100,150 # Replace with your actual dimensions
 # Convert the PIL Image to a CTkImage
@@ -619,11 +644,11 @@ thumbnailView.pack(padx=5, pady=5)
 
 # Convert the PIL Image to a CTkImage
 liveCannyView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
-liveCannyView.grid(row=1, column=0, padx=(10, 5), pady=(10, 5))
+liveCannyView.grid(row=2, column=0, padx=(5, 5), pady=(5, 5))
 
 # Convert the PIL Image to a CTkImage
 captured_adhesiveView = CTkLabel(TroubleshootingFrame, text="",fg_color="black",width=180,height=360)
-captured_adhesiveView.grid(row=3, column=0, padx=(10, 5), pady=(10, 5))
+captured_adhesiveView.grid(row=2, column=1, padx=(5, 5), pady=(5, 5))
 
 
 
@@ -632,97 +657,106 @@ captured_adhesiveView.grid(row=3, column=0, padx=(10, 5), pady=(10, 5))
 available_ports = get_available_com_ports()
 available_ports.insert(0, "Select COM Port")  # Default option
 
+
 comPortVar = StringVar(value="Select COM Port")
 comPort_dropdown_menu = CTkOptionMenu(settingsFrame,variable=comPortVar, values=available_ports,width=200)
-comPort_dropdown_menu.grid(row=1, column=2, padx=(10, 5), pady=(10, 5))
+comPort_dropdown_menu.grid(row=1, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 comPortVar.trace("w", lambda *args: update_com_port())
 
 connectButton = CTkButton(settingsFrame, text="Connect", command=start_serial_com, width=200, state="disabled")
-connectButton.grid(row=1, column=3, padx=(10, 5), pady=(10, 5))
+connectButton.grid(row=2, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
+
 
 # Add style selector
 styleLabel = CTkLabel(settingsFrame, text="Style")
-styleLabel.grid(row=2, column=2, padx=(10, 5), pady=(10, 5))
+styleLabel.grid(row=4, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 
 style_var = StringVar(value="Select Style")
-dropdown_menu = CTkOptionMenu(settingsFrame, variable=style_var, values=["CSI70", "SB70"],width=200)
-dropdown_menu.grid(row=2, column=3, padx=(10, 5), pady=(10, 5))
+style_dropdown_menu = CTkOptionMenu(settingsFrame, variable=style_var, values=["CSI70", "SB70"])
+style_dropdown_menu.grid(row=5, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 style_var.trace("w", lambda *args: update_thumbnail())
 
 
 # Add adhesiveWidth selector
 adhesiveWidthLabel = CTkLabel(settingsFrame, text="Adhesive Width")
-adhesiveWidthLabel.grid(row=3, column=2, padx=(10, 5), pady=(10, 5))
-
+adhesiveWidthLabel.grid(row=6, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 
 adhesiveWidth_var = StringVar(value="Select Adhesive Width")
-dropdown_menu = CTkOptionMenu(settingsFrame, variable=adhesiveWidth_var, values=["4mm", "6mm"],width=200)
-dropdown_menu.grid(row=3, column=3, padx=(10, 5), pady=(10, 5))
+width_dropdown_menu = CTkOptionMenu(settingsFrame, variable=adhesiveWidth_var, values=["4mm", "6mm"])
+width_dropdown_menu.grid(row=7, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 adhesiveWidth_var.trace("w", lambda *args: update_thumbnail())
+
 
 # Add colour selector
 styleLabel = CTkLabel(settingsFrame, text="Colour")
-styleLabel.grid(row=4, column=2, padx=(10, 5), pady=(10, 5))
+styleLabel.grid(row=8, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 
 colour_var = StringVar(value="Select Fabric Colour")
-dropdown_menu = CTkOptionMenu(settingsFrame, variable=colour_var, values=["Nero", "Skin","Bianco"],width=200)
-dropdown_menu.grid(row=4, column=3, padx=(10, 5), pady=(10, 5))
+colour_dropdown_menu = CTkOptionMenu(settingsFrame, variable=colour_var, values=["Nero", "Skin","Bianco"])
+colour_dropdown_menu.grid(row=9, column=0, padx=(5, 5), pady=(5, 5),stick="ew")
 colour_var.trace("w", lambda *args: update_thumbnail())
 
 
 # Create a button to open the camera in GUI app
-startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,width=200,state="disabled")
-startButton.grid(row=5, column=3, padx=(10, 5), pady=(10, 5))
+startButton = CTkButton(settingsFrame, text="Start", command=toggle_display,state="disabled")
+startButton.grid(row=10, column=0, padx=(5, 5), pady=(5, 5), sticky="nesw")
 
-label = CTkLabel(settingsFrame, text='Conveyor manual controller',width=200)
-label.grid(column=1, row=6, columnspan=3, padx=(10, 5), pady=(10, 5))
 
-btn_bad = CTkButton(settingsFrame, text='Defective',command=bad ,width=200)
-btn_bad.grid(column=3, row=7, padx=(10, 5), pady=(10, 5))
+liveCannyLabel = CTkLabel(TroubleshootingFrame, text='Live Contour View')
+liveCannyLabel.grid(column=0, row=1, padx=(5, 5), pady=(5, 5))
 
-btn_good = CTkButton(settingsFrame, text='Non-defective',command=good ,width=200)
-btn_good.grid(column=2, row=7, padx=(10, 5), pady=(10, 5))
+predictedLabel = CTkLabel(TroubleshootingFrame, text='Predicted components')
+predictedLabel.grid(column=1, row=1, padx=(5, 5), pady=(5, 5))
 
-conveyor_forward_button = CTkButton(settingsFrame, text="Conveyor Forward", command=toggle_conveyor_forward ,width=200)
-conveyor_forward_button.grid(column=3, row=8,  padx=(10, 5), pady=(10, 5))
+label = CTkLabel(TroubleshootingFrame, text='Conveyor manual controller')
+label.grid(column=0, row=5, columnspan=2, padx=(5, 5), pady=(5, 5))
 
-conveyor_backward_button = CTkButton(settingsFrame, text="Conveyor Backward", command=toggle_conveyor_backward ,width=200)
-conveyor_backward_button.grid(column=2, row=8,  padx=(10, 5), pady=(10, 5))
+btn_bad = CTkButton(TroubleshootingFrame, text='Defective',command=bad,state="disabled" )
+btn_bad.grid(column=1, row=6, padx=(5, 5), pady=(5, 5))
+
+btn_good = CTkButton(TroubleshootingFrame, text='Non-defective',command=good,state="disabled")
+btn_good.grid(column=0, row=6, padx=(5, 5), pady=(5, 5))
+
+conveyor_forward_button = CTkButton(TroubleshootingFrame, text="Conveyor Forward", command=toggle_conveyor_forward,state="disabled")
+conveyor_forward_button.grid(column=1, row=7,  padx=(5, 5), pady=(5, 5))
+
+conveyor_backward_button = CTkButton(TroubleshootingFrame, text="Conveyor Backward", command=toggle_conveyor_backward,state="disabled")
+conveyor_backward_button.grid(column=0, row=7,  padx=(5, 5), pady=(5, 5))
 
 uploadButton = CTkButton(TroubleshootingFrame, text="Upload Image", command=upload_image, state="disabled")
-uploadButton.grid(row=2, column=0, padx=(10, 5), pady=(10, 5))
+uploadButton.grid(row=3, column=1, padx=(5, 5), pady=(5, 5))
 
-expand_button = CTkButton(expandButtonFrame, text='>',command=expand ,height=650,width=6,fg_color="grey17",text_color="grey40")
-expand_button.grid(column=0, row=2)
+expand_button = CTkButton(expandButtonFrame, text='>',fg_color="grey17",text_color="grey40",command=expand )
+expand_button.grid(column=0, row=0, stick="nsew")
 
 
 statusLabel = CTkLabel(statusFrame, text="Program Status")
-statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+statusLabel.grid(row=0, column=0, padx=(10, 10), pady=(5, 5))
 
 fpsText = CTkLabel(statusFrame, text="")
-fpsText.grid(row=0, column=1, padx=(10, 10), pady=(10, 5))
+fpsText.grid(row=0, column=1, padx=(10, 10), pady=(5, 5))
 
 statusLabelText = CTkLabel(statusFrame, text="")
-statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
+statusLabelText.grid(row=1, column=0, padx=(10, 10), pady=(5, 5))
 
 confidenceText = CTkLabel(statusFrame, text="")
-confidenceText.grid(row=1, column=1, padx=(10, 10), pady=(10, 5))
+confidenceText.grid(row=1, column=1, padx=(10, 10), pady=(5, 5))
 
 gussetSideText = CTkLabel(defectsFrame, text="")
-gussetSideText.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+gussetSideText.grid(row=0, column=0, padx=(10, 10), pady=(5, 5))
 
 balanceOutText = CTkLabel(defectsFrame, text="")
-balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(10, 5))
+balanceOutText.grid(row=1, column=0, padx=(10, 10), pady=(5, 5))
 
 sideMixupText = CTkLabel(defectsFrame, text="")
-sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(10, 5))
+sideMixupText.grid(row=2, column=0, padx=(10, 10), pady=(5, 5))
 
 fabricDamageText = CTkLabel(defectsFrame, text="")
-fabricDamageText.grid(row=3, column=0, padx=(10, 10), pady=(10, 5))
+fabricDamageText.grid(row=3, column=0, padx=(10, 10), pady=(5, 5))
 
 # Output display (CTkTextbox for print statements)
-output_text = CTkTextbox(TroubleshootingFrame, height=200, width=400)
-output_text.grid(row=0, column=0, padx=10, pady=10)
+output_text = CTkTextbox(TroubleshootingFrame)
+output_text.grid(row=8, column=0,columnspan=2,padx=(10, 10), pady=(5, 5),stick="nesw")
 
 # Redirect print to the CTkTextbox
 sys.stdout = RedirectText(output_text)
@@ -736,42 +770,59 @@ else:
 
 
 # Adjust the layout for proportional resizing
-app.grid_rowconfigure(0, weight=0)  # Labels row (fixed height)
-app.grid_rowconfigure(1, weight=1)  # Image frames row (proportional)
-app.grid_rowconfigure(2, weight=0)  # Preview frame row (fixed height)
-app.grid_rowconfigure(3, weight=0)  # Status frame row (fixed height)
-app.grid_rowconfigure(4, weight=1)  # Defects frame row (proportional)
-app.grid_rowconfigure(5, weight=1)  # Expand button row (proportional)
+app.grid_rowconfigure(0, weight=0)  
+app.grid_rowconfigure(1, weight=1)  
+app.grid_rowconfigure(2, weight=0)  
+app.grid_rowconfigure(3, weight=0) 
+app.grid_rowconfigure(4, weight=0)  
+app.grid_rowconfigure(5, weight=0)  
 
-app.grid_columnconfigure(0, weight=1)  # Camera frame column (proportional)
-app.grid_columnconfigure(1, weight=1)  # Capture frame column (proportional)
-app.grid_columnconfigure(2, weight=1)  # Settings and Preview (proportional)
-app.grid_columnconfigure(3, weight=1)  # Settings and Preview (proportional)
-app.grid_columnconfigure(4, weight=0)  # Expand button column (fixed width)
+app.grid_columnconfigure(0, weight=0)  
+app.grid_columnconfigure(1, weight=0)  
+app.grid_columnconfigure(2, weight=1) 
+app.grid_columnconfigure(3, weight=0) 
+app.grid_columnconfigure(4, weight=0)  
+
+
+expandButtonFrame.grid_rowconfigure(0, weight=1)
+settingsFrame.grid_columnconfigure(0, weight=1)
+settingsFrame.grid_rowconfigure(10, weight=1)
+conveyorStartButtonFrame.grid_rowconfigure(0, weight=1)
+conveyorStartButtonFrame.grid_columnconfigure(0, weight=1)
 
 # Make frames resize proportionally
 captureFrame.grid_propagate(True)
 cameraFrame.grid_propagate(True)
 previewFrame.grid_propagate(True)
 defectsFrame.grid_propagate(True)
+# Fix button sizes
+connectButton.grid_propagate(True)
+colour_dropdown_menu.grid_propagate(True)
+width_dropdown_menu.grid_propagate(True)
+style_dropdown_menu.grid_propagate(True)
+startButton.grid_propagate(True)
+btn_bad.grid_propagate(True)
+btn_good.grid_propagate(True)
+conveyor_forward_button.grid_propagate(True)
+conveyor_backward_button.grid_propagate(True)
+uploadButton.grid_propagate(True)
+
+settingsFrame.grid_propagate(True)
+
+expandButtonFrame.grid_propagate(True)
+expand_button.grid_propagate(True)
 
 # Fix button sizes
-connectButton.configure(width=200, height=40)
-dropdown_menu.configure(width=200)
-startButton.configure(width=200, height=40)
-btn_bad.configure(width=200, height=40)
-btn_good.configure(width=200, height=40)
-conveyor_forward_button.configure(width=200, height=40)
-conveyor_backward_button.configure(width=200, height=40)
-uploadButton.configure(width=200, height=40)
-expand_button.configure(width=40, height=650)
+connectButton.configure(height=40)
+btn_bad.configure(height=40)
+btn_good.configure(height=40)
+conveyor_forward_button.configure(height=40)
+conveyor_backward_button.configure(height=40)
+uploadButton.configure(height=40)
+expand_button.configure(width=10)
 
 # Adjust TroubleshootingFrame dimensions dynamically
 TroubleshootingFrame.grid_propagate(True)
-
-# Ensure live and captured views fill their frames proportionally
-captureView.pack(fill="both", expand=True, padx=5, pady=5)
-cameraView.pack(fill="both", expand=True, padx=5, pady=5)
 
 # Adjust thumbnail view inside preview frame
 thumbnailView.pack(fill="both", expand=True, padx=5, pady=5)
