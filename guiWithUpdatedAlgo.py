@@ -49,7 +49,7 @@ processed_count = 0
 
 conveyor_ready = True
 
-last_execution_time = None
+last_processed_time = time.time()
 serialCom= None
 
 class RedirectText:
@@ -76,7 +76,11 @@ def start_serial_com():
         
         # If successful, update button text to "Connected"
         connectButton.configure(text="Connected", fg_color="green")  # Optionally, change color to indicate success
-
+        conveyor_backward_button.configure(state="enabled")
+        conveyor_forward_button.configure(state="enabled")
+        btn_bad.configure(state="enabled")
+        btn_good.configure(state="enabled")
+        conveyor_start_button.configure(state="enabled")
     except serial.SerialException:
         # If the connection fails, update button text to "Failed"
         connectButton.configure(text="Disconnected", fg_color="red")  # Optionally, change color to indicate failure
@@ -89,41 +93,33 @@ def update_com_port():
         connectButton.configure(state="enabled")
 
 def process_gussets():
-    global processed_count
-    global conveyor_ready
+    global processed_count, conveyor_ready, last_processed_time
+
     current_time = time.time()
-    #print("conveyor_ready : ",conveyor_ready)
 
-    # Check if there are gussets to process and if the processed_count is within bounds
-    if len(gusset_states) == 0 or len(capture_times) == 0:
-        return  # No gussets to process yet
-    else:
-        # If this is the first gusset, process it immediately
-        if capture_count == 1 and conveyor_ready:
-            if gusset_states[0]:  # Bad gusset
-                bad()
-            else:  # good gusset
-                good()
-        if processed_count < len(gusset_states):
-            # Check if 20 seconds have passed for the current gusset
-            elapsed_time = current_time - capture_times[processed_count]
-
-            print("Elapsed_time : ",elapsed_time)
-            #print("capture_count : ",capture_count)
-            #print("processed_count : ",processed_count)
-
-            if elapsed_time >= 20:  # 20 seconds have passed for this gusset
-                conveyor_ready = True
-                processed_count += 1
-
-    # Process the next gusset if it exists
+    # Check if there are gussets to process and the conveyor is ready
     if processed_count < len(gusset_states) and conveyor_ready:
-        conveyor_ready = False
-        if gusset_states[processed_count-1]:  # Good gusset
-            good()
-        else:  
-            bad()# Bad gusset
+        # Check if 20 seconds have passed since the last processed gusset
+        if current_time - last_processed_time >= 20:
+            # Process the current gusset
+            conveyor_ready = False  # Block further processing temporarily
 
+            if gusset_states[processed_count]:  # Bad gusset
+                bad()
+            else:  # Good gusset
+                good()
+
+            # Update the time and processed count
+            last_processed_time = current_time
+            processed_count += 1
+            conveyor_ready = True  # Allow the next gusset to be processed
+
+    # Debugging output
+    print(f"Current Time: {current_time}")
+    print(f"Last Processed Time: {last_processed_time}")
+    print(f"Elapsed Time: {current_time - last_processed_time}")
+    print(f"Processed Count: {processed_count}")
+    print(f"Conveyor Ready: {conveyor_ready}")
 
 def bad():
     serialCom.write(bytes('b', 'utf-8'))
@@ -218,9 +214,9 @@ def displayLive():
         if cx > (frame_width / 2) and not captured:
             #set the captured status to true and display the captured image.
             captured = True
-            toggle_conveyor_forward()
+            #toggle_conveyor_forward()
             displayCaptured()
-            toggle_conveyor_backward()
+            #-0toggle_conveyor_backward()
             count += 1
         #update the status label and the confidence of the gusset identification
         statusLabelText.configure(text=f"Gusset detected")

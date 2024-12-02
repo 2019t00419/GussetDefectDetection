@@ -96,13 +96,17 @@ for mask in os.listdir(mask_path):
     yarnDamage = (green_channel > threshold) & (blue_channel > threshold) & (red_channel < threshold)   # Green and blue
     exposedadhesive = (green_channel > threshold) & (blue_channel < threshold) & (red_channel > threshold)   # Red and Green
 
+    nonLabeled = (green_channel > threshold) & (blue_channel > threshold) & (red_channel > threshold)   # red green and blue
+    nonLabeled = (green_channel < threshold) & (blue_channel < threshold) & (red_channel < threshold)   # black
+
     # Apply the mappings
+    output_image[nonLabeled] = 0
     output_image[fabric] = 1
     output_image[adhesive] = 2
     output_image[background] = 3
     output_image[stains] = 4
-    output_image[yarnDamage] = 4
-    output_image[exposedadhesive] = 5
+    output_image[yarnDamage] = 5
+    output_image[exposedadhesive] = 6
 
 
     label_values = output_image.reshape(-1)
@@ -183,7 +187,7 @@ print("IoU for Class 1 (Adhesive):", iou_list[1])
 print("IoU for Class 2 (Background):", iou_list[2])
 print("IoU for Class 3 (Stains):", iou_list[3])
 print("IoU for Class 4 (YarnDamage):", iou_list[4])
-#print("IoU for Class 5 (Exposed adhesive):", iou_list[5])
+print("IoU for Class 5 (Exposed adhesive):", iou_list[5])
 
 from yellowbrick.classifier import ROCAUC
 roc_auc = ROCAUC(model, classes=[0, 1, 2, 3, 4, 5])
@@ -196,7 +200,7 @@ print(f"Time taken for model evaluation: {evaluate_end - evaluate_start} seconds
 
 # SECTION 6: Save the model
 save_start = time.time()
-model_name = "detectionSupportModel"
+model_name = "detectionSupportModelFinalDouble"
 pickle.dump(model, open(model_name, 'wb'))
 save_end = time.time()
 print(f"Time taken for saving the model: {save_end - save_start} seconds")

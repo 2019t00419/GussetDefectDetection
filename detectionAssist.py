@@ -56,7 +56,7 @@ def detection_support(image,colour,captured_time):
 
     # Model loading
     model_start_time = time.time()
-    filename = "detectionSupportModel"
+    filename = "detectionSupportModelFinalDouble"
     loaded_model = pickle.load(open(filename, 'rb'))
     model_end_time = time.time()
     print(f"Time taken to load model: {model_end_time - model_start_time:.6f} seconds")
@@ -141,7 +141,7 @@ def detection_support(image,colour,captured_time):
     return resized_support_image_adhesive, resized_image_fabric_opened,resized_image_defects_opened,resized_opened_support_image_fabric_mask
 
 """
-image_path = 'images\\captured\\original\\original (20241112_132104).jpg'
+image_path = 'test\\train_images\\train_0011.jpg'
 image = cv.imread(image_path)
 
 processed_image,binary_image,resized_image_defects_opened,_ = detection_support(image,"Skin",0)
@@ -149,8 +149,10 @@ processed_image,binary_image,resized_image_defects_opened,_ = detection_support(
 
 if resized_image_defects_opened is not None:
     
+    image = cv.resize(image, (360, 640))
     resized_image1 = cv.resize(resized_image_defects_opened, (360, 640))
     cv.imshow("defects", resized_image1)
+    cv.imshow("ORIGINAL", image)
 else:
     print("Error: `detection_support` returned None.")
 
